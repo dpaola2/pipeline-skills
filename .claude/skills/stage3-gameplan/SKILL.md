@@ -125,6 +125,8 @@ Write to `projects/$ARGUMENTS/gameplan.md` using the template from `templates/ga
 Update the header to reference the approved architecture:
 - Set "Approved Architecture" to the path of the architecture proposal
 
+**Important:** Include the Approval Checklist section from the template (with Status: Pending). This is the gate Stage 4 checks before generating tests.
+
 ## What NOT To Do
 
 - **Do not modify the architecture.** It has been approved. Flag issues as open questions.
@@ -140,4 +142,4 @@ Tell the user:
 1. The engineering gameplan has been written
 2. Summarize the milestone breakdown (number of milestones, names, estimated scope)
 3. List any open questions or risks that need human input
-4. **Remind them:** "This gameplan must be reviewed and approved before Stage 4 (Test Generation) can run. Review `projects/$ARGUMENTS/gameplan.md` and confirm the milestones, acceptance criteria, and sequencing are correct."
+4. **Remind them:** "This gameplan must be reviewed and approved before Stage 4 (Test Generation) can run. To approve: edit `projects/$ARGUMENTS/gameplan.md`, find the Approval Checklist near the bottom, and set Status to 'Approved'. Then run `/stage4-test-generation $ARGUMENTS`."
