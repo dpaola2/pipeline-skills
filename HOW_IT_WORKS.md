@@ -29,15 +29,18 @@ This pipeline automates **Gameplanning through pre-QA validation**. Framing and 
 
 ## The Seven Stages
 
-The pipeline has two halves separated by a human checkpoint:
+The pipeline has two halves separated by two human checkpoints:
 
 ```
 Analysis (low risk, produces documents)
   Stage 1: Discovery
   Stage 2: Architecture
+       ↓
+  Checkpoint 1: Architecture Review ← You approve the data model and API contract
+       ↓
   Stage 3: Gameplan
        ↓
-  Human Checkpoint ← You review and approve here
+  Checkpoint 2: Gameplan Review ← You approve the implementation plan
        ↓
 Execution (writes code, creates PRs)
   Stage 4: Test Generation
@@ -46,7 +49,7 @@ Execution (writes code, creates PRs)
   Stage 7: Validation
 ```
 
-Stages 1-3 are safe to run on any PRD with zero risk — they only produce documents. The expensive, risky part (writing code) only happens after human approval.
+Stages 1-2 are safe to run on any PRD with zero risk — they only produce documents. The architecture gets reviewed and locked down before the gameplan is generated, and the gameplan gets reviewed before any code is written. This two-checkpoint approach catches design issues early (when they're cheap to fix) rather than during implementation (when they're expensive).
 
 ---
 
@@ -78,7 +81,7 @@ Stages 1-3 are safe to run on any PRD with zero risk — they only produce docum
 
 ### Stage 3: Gameplan
 
-**What it does:** A planner agent synthesizes the PRD, Discovery Report, and Architecture Proposal into an engineering spec:
+**What it does:** A planner agent synthesizes the PRD, Discovery Report, and **approved** Architecture Proposal into an engineering spec:
 - Breaks the PRD into functional milestones (organized by feature area, not platform)
 - Generates testable acceptance criteria per milestone
 - Maps platform-specific tasks (Web/API, iOS, Android) within each milestone
@@ -91,22 +94,40 @@ Stages 1-3 are safe to run on any PRD with zero risk — they only produce docum
 
 ---
 
-### Human Checkpoint: Spec Review
+### Checkpoint 1: Architecture Review
 
-**This is non-negotiable.** Before any code is generated, the tech lead / CTO reviews and approves the gameplan.
+**This is non-negotiable.** Before the gameplan is generated, the tech lead / CTO reviews and approves the architecture proposal. The data model and API contract are the foundation everything builds on — getting them wrong is expensive to fix later.
 
 **What you're checking:**
-- Does the data model make sense architecturally?
-- Is the API design consistent with existing patterns?
-- Is backwards compatibility handled correctly?
+- Does the data model make sense? (Tables, columns, relationships, constraints)
+- Is the API design consistent with existing patterns? (Envelopes, error format, pagination)
+- Is backwards compatibility handled correctly? (Compatibility matrix filled out)
+- Is security scoping correct? (All queries scoped to account)
+- Is the migration strategy safe?
+- Are the open questions answerable?
+
+**Outcomes:**
+1. **Approved** — Stage 3 (Gameplan) begins
+2. **Approved with modifications** — agent incorporates feedback, re-generates affected sections
+3. **Rejected** — returns to Stage 2 (design issues) or Stage 1 (fundamental misunderstanding)
+
+---
+
+### Checkpoint 2: Gameplan Review
+
+**Also non-negotiable.** Before any code is generated, the tech lead / CTO reviews and approves the gameplan. The architecture has already been approved — this review focuses on the implementation plan.
+
+**What you're checking:**
 - Are milestones properly scoped and sequenced?
 - Are acceptance criteria correct and complete?
+- Is every PRD requirement traceable to a milestone?
+- Are platform tasks realistic?
 - Is anything missing that the agent wouldn't know about? (Upcoming related changes, customer promises, in-progress work on other branches, political context)
 
 **Outcomes:**
-1. **Approved** — Stage 4 begins, Linear tickets are created
+1. **Approved** — Stage 4 begins, Linear milestone tickets are created
 2. **Approved with modifications** — agent incorporates feedback, re-generates affected sections
-3. **Rejected** — returns to Stage 2 (architecture issues) or Stage 1 (fundamental misunderstanding)
+3. **Rejected** — returns to Stage 3 (gameplan issues) or Stage 2 (architecture needs revisiting)
 
 ---
 
@@ -205,7 +226,9 @@ Linear is the state machine for the entire pipeline:
 | Pipeline starts | Project created, linked to PRD |
 | Discovery complete | Project updated with findings |
 | Architecture proposed | Architecture review issue created |
-| Gameplan approved | Milestone tickets created |
+| Architecture approved | Project status → "Architecture Approved" |
+| Gameplan proposed | Gameplan review issue created |
+| Gameplan approved | Milestone tickets created, status → "Building" |
 | Tests generated | Test PRs linked to milestone tickets |
 | Implementation complete | Milestone tickets → "In Progress" |
 | Review passes | Milestone tickets → "In Review" |
@@ -222,7 +245,7 @@ These are non-negotiable across all stages:
 | Rule | Why |
 |------|-----|
 | Agents never have production access | No Heroku remotes, no App Store credentials, no Play Store credentials in agent environments |
-| Human approves before code generation | The spec review checkpoint catches what agents miss: product judgment, political context, undocumented work |
+| Human approves architecture and gameplan before code generation | Two checkpoints catch issues early: architecture review locks down the data model and API, gameplan review locks down the implementation plan |
 | All CI checks must pass | No bypassing failed checks, ever |
 | Human approves all merges | AI writes code → Human reviews → Human approves merge → CI/CD deploys |
 | Backwards compatibility is verified | ~75% of mobile users are on older versions that can't be force-updated |

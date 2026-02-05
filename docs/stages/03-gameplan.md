@@ -9,7 +9,7 @@
 | Field | Value |
 |-------|-------|
 | **Agent Type** | Project planner |
-| **Input** | PRD + Discovery Report + Architecture Proposal |
+| **Input** | PRD + Discovery Report + **Approved** Architecture Proposal |
 | **Output** | Engineering Gameplan (Spec) |
 | **Repos Accessed** | None (works from documents) |
 | **Human Review** | **Required** - this is the human checkpoint |
@@ -19,7 +19,9 @@
 
 ## What This Stage Does
 
-The gameplan agent produces a complete engineering spec - the document the team builds against. It synthesizes the PRD (what to build), the discovery report (what exists), and the architecture proposal (how to build it) into an actionable implementation plan.
+The gameplan agent produces a complete engineering spec — the document the team builds against. It synthesizes the PRD (what to build), the discovery report (what exists), and the **approved** architecture proposal (how to build it) into an actionable implementation plan.
+
+**Important:** The architecture has already been reviewed and approved. The gameplan agent should treat the data model, API endpoints, and compatibility matrix as settled decisions. If the agent discovers issues with the architecture while building the gameplan, it should flag them as open questions for human review — not modify the architecture itself.
 
 ### Specific Tasks
 
@@ -113,19 +115,18 @@ Key sections:
 
 ---
 
-## Human Checkpoint
+## Human Checkpoint: Gameplan Review
 
-**This is the critical gate in the pipeline.**
+**This is the second checkpoint in the pipeline.** The architecture has already been approved — this review focuses on the implementation plan.
 
 The human reviewer (tech lead / CTO) checks:
 
 ### Must Approve
-- [ ] Data model is architecturally sound
-- [ ] API design is consistent with existing patterns
-- [ ] Backwards compatibility is handled correctly
 - [ ] Milestones are properly scoped and sequenced
 - [ ] Acceptance criteria are correct and complete
-- [ ] Security implications are addressed
+- [ ] Every PRD requirement is traceable to a milestone
+- [ ] Platform tasks are realistic and well-defined
+- [ ] Gameplan is consistent with the approved architecture (no contradictions or drift)
 
 ### Should Check
 - [ ] Nothing missed that the agent wouldn't know about
@@ -135,11 +136,15 @@ The human reviewer (tech lead / CTO) checks:
   - Customer promises or commitments
 - [ ] Estimates feel reasonable
 - [ ] Release plan makes sense for the business
+- [ ] Non-functional requirements checklist is complete
+
+### What Does NOT Belong Here
+Data model correctness, API design, backwards compatibility, and security scoping are reviewed in the **Architecture Review checkpoint** (after Stage 2). If the gameplan reveals issues with the architecture, it should flag them for re-review rather than attempting to fix them.
 
 ### Approval Outcomes
-1. **Approved** → Stage 4 begins, Linear tickets created
+1. **Approved** → Stage 4 begins, Linear milestone tickets created
 2. **Approved with modifications** → Agent incorporates feedback, re-generates affected sections
-3. **Rejected** → Returns to Stage 2 (if architecture issues) or Stage 1 (if fundamental misunderstanding)
+3. **Rejected** → Returns to Stage 3 (gameplan issues) or Stage 2 (architecture needs revisiting)
 
 ---
 

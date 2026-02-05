@@ -4,7 +4,7 @@
 > **Date:** [Date]
 > **PRD:** [Link]
 > **Discovery Report:** [Link]
-> **Architecture Proposal:** [Link]
+> **Approved Architecture:** [Link]
 > **Linear Project:** [Link]
 
 ---
@@ -49,8 +49,8 @@
 ### M0: Discovery & Alignment (Complete)
 - [x] PRD parsed and understood (Stage 1)
 - [x] Current state documented across platforms (Stage 1)
-- [x] Data model proposed and aligned (Stage 2)
-- [x] API endpoints designed with example payloads (Stage 2)
+- [x] Data model proposed and **approved** (Stage 2 + Architecture Review)
+- [x] API endpoints designed with example payloads and **approved** (Stage 2 + Architecture Review)
 - [x] Open questions resolved (Stages 1-2)
 
 ### M1: [Feature Area 1 - e.g., Data Model & Core API]
@@ -126,20 +126,12 @@
 
 ## 4. Non-Functional Requirements Checklist
 
-### Data Model
-- [ ] New/changed fields documented (see Architecture Proposal)
-- [ ] Migrations planned (DDL, concurrent indexes, backfills)
-- [ ] Indexes identified for query patterns
-- [ ] Data model aligned across platforms
-- [ ] Expected data volumes documented
-- [ ] UUIDv7 for primary keys
+### Data Model & API
+> These were reviewed and approved in the Architecture Review checkpoint. Reference the approved architecture for details.
 
-### API
-- [ ] New/changed endpoints documented with example payloads
-- [ ] Serializers/Blueprints planned
-- [ ] API versioning considered
-- [ ] Pagination needed? [Yes/No]
-- [ ] Human-readable formats (ISO 8601, string enums)
+- [ ] Architecture proposal approved: [Link]
+- [ ] Milestones correctly reference the approved data model and API design
+- [ ] No contradictions between gameplan and approved architecture
 
 ### Security & Access Control
 - [ ] All queries scoped to account/user

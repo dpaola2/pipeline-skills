@@ -256,3 +256,30 @@ end
 |------|---------|
 | `app/models/[existing_model].rb` | Add association |
 | `config/routes.rb` | Add new routes |
+
+---
+
+## Approval Checklist
+
+> **This architecture proposal requires human review and approval before the gameplan is generated.**
+
+### Reviewer: [Name]
+### Date: [Date]
+### Status: [Pending / Approved / Approved with Modifications / Rejected]
+
+#### Must Verify
+- [ ] Data model is architecturally sound (tables, columns, relationships, constraints)
+- [ ] API design is consistent with existing patterns (envelopes, error format, pagination)
+- [ ] Backwards compatibility is handled correctly (compatibility matrix filled out)
+- [ ] Security scoping is correct (all queries scoped to account, authorization checked)
+- [ ] Migration strategy is safe (concurrent indexes, backfill approach)
+
+#### Should Check
+- [ ] Serializer design matches existing conventions
+- [ ] Export impact is addressed
+- [ ] Open questions are answerable
+- [ ] API payloads are complete enough for mobile engineers to build against
+- [ ] No conflicts with in-progress work or upcoming changes
+
+#### Notes
+[Reviewer notes, modifications requested, or rejection reasons]

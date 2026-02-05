@@ -10,10 +10,12 @@
 graph TD
     PRD[PRD Input] --> S1[Stage 1: Discovery]
     S1 --> S2[Stage 2: Architecture]
-    S2 --> S3[Stage 3: Gameplan]
-    S3 --> HC1{Human Checkpoint:<br/>Spec Review}
-    HC1 -->|Approved| S4[Stage 4: Test Generation]
-    HC1 -->|Revision needed| S3
+    S2 --> HC1{Human Checkpoint:<br/>Architecture Review}
+    HC1 -->|Approved| S3[Stage 3: Gameplan]
+    HC1 -->|Revision needed| S2
+    S3 --> HC2{Human Checkpoint:<br/>Gameplan Review}
+    HC2 -->|Approved| S4[Stage 4: Test Generation]
+    HC2 -->|Revision needed| S3
     S4 --> S5[Stage 5: Implementation]
     S5 --> S6[Stage 6: Review]
     S6 -->|Issues found| S5
@@ -23,6 +25,7 @@ graph TD
 
     style PRD fill:#4a5568,stroke:#718096,color:#fff
     style HC1 fill:#744210,stroke:#975a16,color:#fff
+    style HC2 fill:#744210,stroke:#975a16,color:#fff
     style QA fill:#276749,stroke:#38a169,color:#fff
 ```
 
@@ -65,9 +68,40 @@ The architecture agent proposes the technical design: data model changes, API en
 
 ---
 
+### Human Checkpoint: Architecture Review
+
+**This is non-negotiable.**
+
+The architecture proposal must be reviewed and approved before the gameplan is generated. The data model and API contract are the foundation everything else builds on — getting them wrong is expensive to fix later.
+
+The human reviewer (tech lead / CTO) checks:
+
+#### Must Approve
+- [ ] Data model is architecturally sound (tables, columns, relationships, constraints)
+- [ ] API design is consistent with existing patterns (envelopes, error format, pagination)
+- [ ] Backwards compatibility is handled correctly (compatibility matrix filled out)
+- [ ] Security scoping is correct (all queries scoped to account, authorization checked)
+- [ ] Migration strategy is safe (concurrent indexes, backfill approach)
+
+#### Should Check
+- [ ] Serializer design matches existing conventions (Blueprinter for new code)
+- [ ] Export impact is addressed
+- [ ] Open questions are answerable (not punting critical decisions)
+- [ ] API payloads are complete enough that a mobile engineer could build against them
+- [ ] Nothing is missed that the agent wouldn't know about (upcoming related changes, in-progress work)
+
+#### Approval Outcomes
+1. **Approved** → Stage 3 (Gameplan) begins
+2. **Approved with modifications** → Agent incorporates feedback, re-generates affected sections
+3. **Rejected** → Returns to Stage 2 (design issues) or Stage 1 (fundamental misunderstanding)
+
+**Linear:** Architecture review is tracked as a Linear issue. Approval transitions the project to "Architecture Approved" status.
+
+---
+
 ### Stage 3: Gameplan
 **Agent Type:** Project planner
-**Input:** PRD + Discovery Report + Architecture Proposal
+**Input:** PRD + Discovery Report + **Approved** Architecture Proposal
 **Output:** Engineering Gameplan (Spec)
 
 The gameplan agent produces a complete engineering spec following the gameplan template. This is the document the team builds against.
@@ -83,23 +117,38 @@ The gameplan agent produces a complete engineering spec following the gameplan t
 
 ---
 
-### Human Checkpoint: Spec Review
+### Human Checkpoint: Gameplan Review
 
 **This is non-negotiable.**
 
-Before any code is generated, a human (tech lead / CTO) reviews and approves:
+Before any code is generated, a human (tech lead / CTO) reviews and approves the gameplan. The architecture has already been approved — this review focuses on the implementation plan.
 
-- [ ] Data model makes sense architecturally
-- [ ] API design is consistent with existing patterns
-- [ ] Backwards compatibility is handled correctly
+The human reviewer checks:
+
+#### Must Approve
 - [ ] Milestones are properly scoped and sequenced
 - [ ] Acceptance criteria are correct and complete
-- [ ] Security implications are addressed
-- [ ] Nothing is missed that the agent wouldn't know about (political context, upcoming changes, related work in progress)
+- [ ] Every PRD requirement is traceable to a milestone
+- [ ] Platform tasks are realistic and well-defined
+
+#### Should Check
+- [ ] Nothing is missed that the agent wouldn't know about
+  - Political context ("Matt wants it done this way")
+  - Customer promises or commitments
+  - In-progress work on other branches
+  - Upcoming related changes
+- [ ] Estimates feel reasonable
+- [ ] Release plan makes sense for the business
+- [ ] Gameplan is consistent with the approved architecture (no contradictions or drift)
+
+#### Approval Outcomes
+1. **Approved** → Stage 4 begins, Linear milestone tickets created
+2. **Approved with modifications** → Agent incorporates feedback, re-generates affected sections
+3. **Rejected** → Returns to Stage 3 (gameplan issues) or Stage 2 (architecture needs revisiting)
 
 **Why:** Agents are bad at product judgment, political context, and knowing about undocumented in-progress work. This checkpoint catches what agents miss.
 
-**Linear:** Spec review is tracked as a Linear issue. Approval transitions the project to "Building" status.
+**Linear:** Gameplan approval is tracked as a Linear issue. Approval transitions the project to "Building" status and creates milestone tickets.
 
 ---
 
@@ -193,7 +242,9 @@ Linear is the coordination layer throughout the pipeline:
 | Pipeline starts | Create project, link to PRD |
 | Discovery complete | Update project with findings |
 | Architecture proposed | Create architecture review issue |
-| Gameplan approved | Create milestone tickets |
+| Architecture approved | Update project status to "Architecture Approved" |
+| Gameplan proposed | Create gameplan review issue |
+| Gameplan approved | Create milestone tickets, status → "Building" |
 | Tests generated | Link test PRs to milestone tickets |
 | Implementation complete | Update milestone ticket status |
 | Review passes | Transition tickets to "In Review" |

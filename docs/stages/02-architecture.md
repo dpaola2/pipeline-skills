@@ -12,7 +12,7 @@
 | **Input** | PRD + Discovery Report |
 | **Output** | Architecture Proposal |
 | **Repos Accessed** | Rails (primary), iOS/Android (reference) |
-| **Human Review** | Included in Stage 3 checkpoint |
+| **Human Review** | **Required** — Architecture Review checkpoint (before Stage 3) |
 | **Linear** | Creates architecture review issue |
 
 ---
@@ -75,7 +75,7 @@ The agent should:
 1. **Start from the discovery report** - Build on what exists, don't reinvent
 2. **Follow existing patterns** - If the codebase uses service objects, use service objects. If it uses concerns, use concerns.
 3. **Be explicit about everything** - No "TBD" or "we'll figure it out." If a decision can't be made, flag it as an open question.
-4. **Design for the spec checklist** - The output should make the gameplan agent's job easy
+4. **Design for approval** - The output must be reviewable and complete. A human will approve this before the gameplan is generated. No "TBD" allowed.
 
 ### Convention Adherence
 
@@ -152,6 +152,33 @@ For each endpoint, the proposal should include:
 
 ---
 
+## Human Checkpoint: Architecture Review
+
+This stage produces a checkpoint artifact. The architecture proposal must be **reviewed and approved** before Stage 3 (Gameplan) begins.
+
+### Why This Is a Separate Checkpoint
+
+The data model and API contract are the foundation everything builds on. Mistakes here propagate through the gameplan, tests, and implementation. Catching issues early (before the full gameplan is generated) is dramatically cheaper than catching them after implementation has started.
+
+### What the Reviewer Checks
+
+See `docs/pipeline-architecture.md` → "Human Checkpoint: Architecture Review" for the full checklist.
+
+Key questions:
+- Is the data model correct? (Tables, columns, relationships, constraints)
+- Is the API design consistent with existing patterns?
+- Is backwards compatibility handled?
+- Is security scoping correct?
+- Is the migration strategy safe?
+- Are the open questions answerable?
+
+### Approval Outcomes
+1. **Approved** → Stage 3 (Gameplan) begins with the approved architecture as input
+2. **Approved with modifications** → Agent incorporates feedback, re-generates affected sections
+3. **Rejected** → Returns to Stage 2 (design issues) or Stage 1 (fundamental misunderstanding)
+
+---
+
 ## Success Criteria
 
 - [ ] Data model is complete (no "TBD" fields)
@@ -162,6 +189,7 @@ For each endpoint, the proposal should include:
 - [ ] Proposal follows existing codebase patterns (from discovery report)
 - [ ] Open questions are specific and actionable
 - [ ] A mobile engineer could read the API section and know exactly what to build against
+- [ ] The proposal is self-contained enough for a human to review without running code
 
 ---
 
