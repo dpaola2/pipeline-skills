@@ -39,7 +39,8 @@ If the second argument is missing, **STOP** and tell the user:
 - **Input 4:** `projects/PROJECT_SLUG/discovery-report.md` — existing codebase context
 - **Input 5:** `projects/PROJECT_SLUG/prd.md` — requirement details and edge cases
 - **Input 6:** Test files in `~/projects/orangeqc/orangeqc/spec/` — the failing tests you must make pass
-- **Output:** Implementation code in `~/projects/orangeqc/orangeqc/` (the Rails repo), committed to the project branch
+- **Output 1:** Implementation code in `~/projects/orangeqc/orangeqc/` (the Rails repo), committed to the project branch
+- **Output 2:** `projects/PROJECT_SLUG/progress.md` — updated with milestone completion data (in the agent-pipeline repo)
 - **Stage spec:** `docs/stages/05-implementation.md` (read for full behavioral guidance)
 
 ## Pre-Flight Checks (MANDATORY)
@@ -102,6 +103,17 @@ cd ~/projects/orangeqc/orangeqc && bundle exec rspec <prior-milestone-test-files
 If prior milestone tests FAIL, they haven't been implemented yet. **STOP**:
 
 > "Tests from prior milestones are failing. MILESTONE depends on earlier milestones being implemented. Please implement them first."
+
+### Check 6: Read Progress File
+
+Read `projects/PROJECT_SLUG/progress.md` if it exists. This file tracks milestone completion across invocations.
+
+- Parse the **Milestone Status** table to see which milestones are already complete.
+- If the requested MILESTONE is already marked **Complete**, warn the user:
+
+> "Milestone MILESTONE was already completed (commit `COMMIT_SHA` on DATE). Re-implementing will overwrite prior work on the same branch. Continue? If yes, run the command again with `--force`."
+
+- If the file doesn't exist yet, that's fine — you'll create it in Step 10 after committing.
 
 ## Before You Start
 
@@ -304,6 +316,94 @@ Pipeline: deficient-line-items-report | Stage: implementation | Milestone: M1
 
 3. Do NOT push unless the user asks you to.
 
+### 10. Update AGENTS.md (if applicable)
+
+Review what you learned during this milestone. If you discovered **codebase patterns, conventions, or gotchas** that aren't already documented in the target repo's `AGENTS.md`, add them.
+
+**What to document:**
+- Patterns you discovered by reading existing code (e.g., "Reports::BaseController provides `require_read_reports_permission` and `set_default_date_range`")
+- Gotchas you hit during implementation (e.g., "PostgreSQL `ROUND(double_precision, integer)` doesn't exist — cast to `::numeric` first")
+- Conventions not yet captured (e.g., "No `sort_link` helper — use inline `link_to` with sort params")
+- Scoping chains, module interfaces, or helper patterns that future developers would need to know
+
+**What NOT to document:**
+- Project-specific details (those go in `progress.md`)
+- Pipeline process notes (those go in MEMORY.md)
+- Anything already in AGENTS.md
+
+**How:**
+1. Read the current `AGENTS.md` in the target repo
+2. Check whether your insights are already covered
+3. If not, add them to the appropriate section (or create a new subsection if needed)
+4. Stage and amend the milestone commit: `git add AGENTS.md && git commit --amend --no-edit`
+
+If you have no new insights for this milestone, skip this step.
+
+### 11. Update Progress File
+
+After committing to the Rails repo, update the progress file in the **agent-pipeline repo** (NOT the Rails repo).
+
+**File:** `projects/PROJECT_SLUG/progress.md`
+
+If the file doesn't exist yet, create it with the full structure. If it already exists, update the **Milestone Status** table and add/replace the milestone entry section.
+
+The progress file has this structure:
+
+```markdown
+# Implementation Progress — PROJECT_SLUG
+
+| Field | Value |
+|-------|-------|
+| **Branch** | `pipeline/PROJECT_SLUG` |
+| **Rails repo** | `~/projects/orangeqc/orangeqc/` |
+| **Milestones** | M0–M_LAST_ |
+
+## Milestone Status
+
+| Milestone | Description | Status |
+|-----------|-------------|--------|
+| M0 | ... | Complete (Stages 1-3) |
+| M1 | ... | **Complete** |
+| M2 | ... | Pending |
+| ... | ... | ... |
+
+---
+
+## M_N_: Milestone Title
+
+**Status:** Complete
+**Date:** YYYY-MM-DD
+**Commit:** `SHORT_SHA`
+
+### Files Created
+- `path/to/file.rb` — brief description
+
+### Files Modified
+- `path/to/file.rb` — what changed
+
+### Test Results
+- **This milestone tests:** X passing, Y failing
+- **Prior milestone tests:** all passing / N regressions
+
+### Acceptance Criteria
+- [x] Criterion description
+- [ ] Criterion that failed (with reason)
+
+### Spec Gaps
+None (or describe gaps found)
+
+### Notes
+Any implementation notes, gotchas, or lessons learned
+```
+
+**Rules:**
+- Update the milestone's row in the status table to **Complete**
+- Add the milestone section with all details — put it AFTER any existing milestone sections (chronological order)
+- Include the actual commit SHA from the commit you just made
+- List ALL acceptance criteria from the gameplan with checked/unchecked status
+- Record any spec gaps or implementation notes
+- Do NOT commit this file to the Rails repo — it lives in the agent-pipeline repo only
+
 ## When the Spec Has Gaps
 
 If you discover that the architecture proposal or gameplan is incomplete, ambiguous, or contradictory:
@@ -341,6 +441,7 @@ Only files specified in the gameplan's platform tasks for this milestone:
 - `app/views/` — new view/partial files
 - `app/javascript/controllers/` — new Stimulus controllers
 - `config/routes.rb` — route modifications
+- `AGENTS.md` — codebase insights discovered during implementation (Step 10)
 
 ### Files You May NOT Create or Modify
 
@@ -365,7 +466,9 @@ Tell the user:
    - [x] Satisfied (test passes)
    - [ ] Not satisfied (and why)
 5. **Spec gaps discovered:** Any issues found in the architecture or gameplan
-6. **Next step:** "The next milestone is M_NEXT_. Run `/stage5-implementation PROJECT_SLUG M_NEXT_` when ready."
+6. **AGENTS.md updates:** List any insights added to the target repo's AGENTS.md, or "None" if no new insights
+7. **Progress file:** Confirm that `projects/PROJECT_SLUG/progress.md` was updated with the milestone entry
+8. **Next step:** "The next milestone is M_NEXT_. Run `/stage5-implementation PROJECT_SLUG M_NEXT_` when ready."
 
 If this was the **last milestone**, instead say:
 
