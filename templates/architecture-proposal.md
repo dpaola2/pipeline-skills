@@ -111,16 +111,16 @@ end
 **Error Response (422):**
 ```json
 {
-  "errors": {
-    "[field]": ["[error message]"]
-  }
+  "error": "Unprocessable Entity",
+  "message": "[Human-readable error message]"
 }
 ```
 
 **Error Response (401):**
 ```json
 {
-  "error": "Unauthorized"
+  "error": "Unauthorized",
+  "message": "[Human-readable error message]"
 }
 ```
 

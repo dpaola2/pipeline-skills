@@ -160,10 +160,19 @@ AI/humans follow updated conventions → Same comment never needed again
 | Shanitha | Senior Android | Android | Eagerly adopting | Growing quickly with AI |
 | Stepwyz (Dan) | Agency | Rails | Using AI (limited hours) | ~7 hrs/week, limited responsiveness |
 
+### Test Infrastructure Status
+
+| Platform | Status | Pipeline-Ready? |
+|----------|--------|:---------------:|
+| Rails | RSpec suite in CI, coverage expanding | Yes |
+| iOS | Developing rapidly | Not yet |
+| Android | Developing rapidly | Not yet |
+
 ### Implications for Pipeline
 
 - **Rails capacity is the bottleneck** - Dave is effectively the only full-time Rails developer
 - **Pipeline must maximize Rails throughput** - Automating Rails implementation has highest leverage
+- **Pipeline starts with Rails-only projects** - Rails test infrastructure is ready; iOS/Android will be added when their test suites mature
 - **Mobile engineers will use pipeline output differently** - Chris may prefer reviewing agent output more carefully; Shanitha may run agents more autonomously
 - **The pipeline should produce artifacts that work for different adoption levels** - Detailed specs work for manual builders AND agents
 
@@ -196,3 +205,70 @@ Even "minor" tweaks after a feature ships need mini-PRDs:
 - Get alignment before implementation
 
 The pipeline can be used for post-ship changes too - just with a smaller PRD as input. The same stages apply at reduced scale.
+
+---
+
+## Reference Materials for Pipeline Agents
+
+Pipeline agents need access to these resources. Each serves a different purpose.
+
+### Rails AGENTS.md (`~/projects/orangeqc/orangeqc/AGENTS.md`)
+
+**What it contains:** Codebase conventions for agents writing Rails code.
+- Code style, architecture patterns (services, presenters, strategies)
+- Multi-tenancy scoping (`current_account`, `accessible_to(user)`)
+- Permissions and access control (roles, supervisory zones)
+- Testing conventions (RSpec `describe`/`context`/`subject` pattern, custom matchers like `is_anticipated`, FactoryBot, default_contexts)
+- Database conventions (table tiers, concurrent indexes, backfill guidance, UUIDv7 via `DistributedEntity`)
+- Serialization (Blueprinter for new, ActiveModel::Serializers for legacy)
+- API versioning (date-based versioning: `/api/v20260201/`, plus legacy `/api/v4/`)
+- Frontend conventions (Stimulus, Tailwind migration, ViewComponent)
+- Production database snapshot with table sizes and access patterns
+
+**Pipeline stages that use it:** Discovery (Stage 1), Architecture (Stage 2), Implementation (Stage 5), Review (Stage 6)
+
+### API Documentation (`~/projects/orangeqc/apiv4/`)
+
+**What it contains:** Complete API endpoint documentation for mobile clients.
+- Endpoint specs with full request/response JSON examples
+- Authentication mechanism (POST `/api/v4/authenticate` → `single_access_token` → `user_credentials` query param)
+- Error response format (see below)
+- Pagination patterns (legacy page-based and modern cursor-based)
+- Sync patterns (tombstone sync, optimistic locking, PUT upsert with client-generated UUIDs)
+- Download and upload endpoint conventions
+- Postman collection and staging environment config
+
+**Pipeline stages that use it:** Architecture (Stage 2), Test Generation (Stage 4), Review (Stage 6), Validation (Stage 7)
+
+### Key API Conventions
+
+These conventions are documented in the apiv4 repo but are critical enough to call out here since they differ from Rails defaults.
+
+**Response envelope:** Resource-keyed, not a generic wrapper.
+- Collections: `{ "tickets": [...] }`
+- Single resources: `{ "ticket": {...} }`
+
+**Error responses:** Flat format, not field-level.
+```json
+{
+  "error": "Unprocessable Entity",
+  "message": "Name can't be blank"
+}
+```
+The `error` field is one of: `Unauthorized`, `Forbidden`, `Unprocessable Entity`. The `message` is a human-readable string. This is NOT the Rails default `{ "errors": { "field": ["msg"] } }` format.
+
+**Two API generations exist side by side:**
+
+| Convention | Legacy (v4) | Modern (date-versioned) |
+|---|---|---|
+| IDs | Integer | UUIDv7 |
+| Pagination | `page` param, empty response = done | Cursor-based, `meta.next_cursor` |
+| Idempotency | `guid` / `submission_token` field | PUT with client-generated UUID in path |
+| Deletion | `DELETE` endpoint, soft delete | PUT with `deleted_at` field (tombstone) |
+| Timestamps | ISO 8601 | ISO 8601 with milliseconds |
+
+**New features should follow the modern conventions** (date-versioned endpoints, UUIDv7, cursor pagination, PUT upsert, tombstone sync) unless there's a specific reason not to. The apiv4 docs contain examples of both patterns.
+
+### Swagger / API Docs in Rails Repo
+
+The Rails repo also contains Swagger API documentation (`swagger/` directory, `/api-docs` endpoint) and architectural decision records (`doc/adrs/`). These are supplementary to the apiv4 docs.

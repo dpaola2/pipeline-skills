@@ -232,13 +232,26 @@ These are non-negotiable across all stages:
 
 ## Current Status
 
-**This pipeline is in the design phase.** The stage specs, templates, and process documentation are complete. What doesn't exist yet:
+**This pipeline is in the design phase, preparing for first use on Rails-only projects.**
 
-1. **Orchestration code** — each stage would currently be run as a manual Claude Code session. Automated stage-chaining comes later.
-2. **Test infrastructure** — without automated test suites that run in CI, Stages 4-7 have no verification mechanism. This is the highest-leverage gap to close.
-3. **AGENTS.md per repo** — without documented conventions, agent output is generic instead of OrangeQC-flavored.
+The pipeline launches with **Rails only**. Rails test infrastructure is in place (RSpec in CI, coverage expanding), and Rails capacity is the team's biggest bottleneck. iOS and Android test infrastructure is developing rapidly but isn't ready for pipeline use yet. Mobile stages will be added later.
 
-See `docs/gap-analysis.md` for the full prioritized list of what needs to be built.
+For Rails-only projects, the pipeline still designs the API contract that mobile will eventually build against — we don't skip API design, we just defer mobile implementation.
+
+**What's ready:**
+- Stage specs, templates, and process documentation are complete
+- Rails test infrastructure (RSpec in CI)
+
+**What's next:**
+1. **AGENTS.md for the Rails repo** — documented conventions so agents produce OrangeQC-flavored code
+2. **A structured PRD** — convert one real PRD to the pipeline's input format
+3. **Prototype Stages 1-3** — run Discovery → Architecture → Gameplan against the real PRD and evaluate output
+
+**What comes later:**
+- Orchestration code (currently each stage runs as a manual Claude Code session)
+- iOS/Android expansion (when their test suites mature)
+
+See `docs/gap-analysis.md` for the full prioritized roadmap.
 
 ---
 
