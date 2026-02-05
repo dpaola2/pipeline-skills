@@ -141,11 +141,15 @@ If the agent discovers the spec is incomplete or incorrect during implementation
 
 ### Branch Naming
 
+One branch per project, shared across all stages and milestones:
+
 ```
-pipeline/[project-id]/m[milestone]-[platform]-[brief-description]
-Example: pipeline/sections/m1-rails-core-model
-Example: pipeline/sections/m2-ios-section-ui
+pipeline/[project-id]
+Example: pipeline/sections
+Example: pipeline/deficient-line-items-report
 ```
+
+Stage 4 creates the branch. Stage 5 commits milestone implementations to the same branch. The branch becomes a PR against the default branch when all milestones are complete.
 
 ### Commit Messages
 

@@ -193,14 +193,14 @@ The Rails repo is at `~/projects/orangeqc/orangeqc/`.
 1. `cd ~/projects/orangeqc/orangeqc/`
 2. Verify the working tree is clean (`git status`). If there are uncommitted changes, **STOP** and ask the user how to proceed.
 3. Fetch the latest from origin: `git fetch origin`
-4. Create and check out a new branch from `origin/main`: `git checkout -b pipeline/$ARGUMENTS/stage4-tests origin/main`
+4. Create and check out a new branch from `origin/staging`: `git checkout -b pipeline/$ARGUMENTS origin/staging`
 
-If the branch `pipeline/$ARGUMENTS/stage4-tests` already exists, **STOP** and ask the user whether to overwrite it or use a different name. Do not delete existing branches without explicit approval.
+If the branch `pipeline/$ARGUMENTS` already exists, **STOP** and ask the user whether to overwrite it or use a different name. Do not delete existing branches without explicit approval.
 
 ### Pre-Write Verification
 
 **Before writing any files**, verify:
-1. You're on the correct branch (`pipeline/$ARGUMENTS/stage4-tests`)
+1. You're on the correct branch (`pipeline/$ARGUMENTS`)
 2. You're writing to the correct directory within `spec/` (use `ls` and `Glob` to check structure)
 3. No existing file will be overwritten (use `Glob` to check)
 4. New factory files don't conflict with existing factories
@@ -223,7 +223,7 @@ If the branch `pipeline/$ARGUMENTS/stage4-tests` already exists, **STOP** and as
 
 ### Commit the Test Files
 
-In the Rails repo (`~/projects/orangeqc/orangeqc/`), commit all new files on the `pipeline/$ARGUMENTS/stage4-tests` branch:
+In the Rails repo (`~/projects/orangeqc/orangeqc/`), commit all new files on the `pipeline/$ARGUMENTS` branch:
 
 1. `git add` each new file by name (do NOT use `git add .` or `git add -A`)
 2. Commit with message: `Add Stage 4 test suite for $ARGUMENTS`
@@ -232,7 +232,7 @@ In the Rails repo (`~/projects/orangeqc/orangeqc/`), commit all new files on the
 ### Report to User
 
 Tell the user:
-1. The branch name: `pipeline/$ARGUMENTS/stage4-tests` in the Rails repo
+1. The branch name: `pipeline/$ARGUMENTS` in the Rails repo
 2. List every file created with a brief description of what it tests
 3. The coverage matrix has been written to `projects/$ARGUMENTS/test-coverage-matrix.md`
 4. How many acceptance criteria are covered and by how many test cases total
