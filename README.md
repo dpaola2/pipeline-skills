@@ -53,6 +53,13 @@ This is not a generic CI/CD tool. It encodes OrangeQC's specific:
 │   ├── architecture-proposal.md       # Architecture stage output
 │   ├── gameplan.md                    # Gameplan stage output
 │   └── qa-readiness-report.md         # Validation stage output
+├── .claude/skills/                    # Pipeline stage skills (custom commands)
+│   ├── stage1-discovery/SKILL.md      # /stage1-discovery <project-slug>
+│   ├── stage2-architecture/SKILL.md   # /stage2-architecture <project-slug>
+│   └── stage3-gameplan/SKILL.md       # /stage3-gameplan <project-slug>
+├── projects/                          # Pipeline project runs
+│   └── deficient-line-items-report/   # First test project
+│       └── prd.md                     # PRD input
 └── pipeline/                          # (future) Orchestration code lives here
 ```
 

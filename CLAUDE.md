@@ -37,6 +37,54 @@ This pipeline automates **Gameplanning → Building → pre-QA validation**. Fra
 
 ---
 
+## Pipeline Skills (Running the Pipeline)
+
+### Project Levels
+
+OrangeQC categorizes projects by scope:
+- **Level 1:** Small projects that Matt and Dave can pull from idea to fruition
+- **Level 2:** Projects involving web only (Rails) — the pipeline's current sweet spot
+- **Level 3:** Projects involving all three platforms (Rails + iOS + Android)
+
+The PRD header specifies the level. Skills adapt their output accordingly.
+
+### Project Directory Convention
+
+Each pipeline project lives in `projects/<slug>/` where `<slug>` is a kebab-case name:
+
+```
+projects/deficient-line-items-report/
+  prd.md                        # Input: the structured PRD
+  discovery-report.md            # Output of Stage 1
+  architecture-proposal.md       # Output of Stage 2 (requires human approval)
+  gameplan.md                    # Output of Stage 3 (requires human approval)
+```
+
+### Running Stages 1-3
+
+The pipeline runs manually, one stage at a time:
+
+```
+/stage1-discovery <project-slug>        → produces discovery-report.md
+                                          (optional: review discovery report)
+
+/stage2-architecture <project-slug>     → produces architecture-proposal.md
+                                          REQUIRED: review and approve architecture
+
+/stage3-gameplan <project-slug>         → produces gameplan.md (checks for approval first)
+                                          REQUIRED: review and approve gameplan
+```
+
+### Human Checkpoints
+
+**After Stage 2 (Architecture Review):**
+Edit `projects/<slug>/architecture-proposal.md`, find the Approval Checklist at the bottom, set Status to "Approved" (or "Approved with Modifications"), and fill in the reviewer checklist. Stage 3 will refuse to run until this is done.
+
+**After Stage 3 (Gameplan Review):**
+Review `projects/<slug>/gameplan.md` and confirm the milestones, acceptance criteria, and sequencing are correct before any future stages run.
+
+---
+
 ## Working in This Project
 
 ### Design Phase (Current)
@@ -44,6 +92,7 @@ This pipeline automates **Gameplanning → Building → pre-QA validation**. Fra
 - Edit and improve docs, templates, and stage specs
 - Think critically about gaps, edge cases, and failure modes
 - Reference OrangeQC's actual process and constraints
+- Pipeline skills (`.claude/skills/`) are now available for prototyping Stages 1-3
 
 ### Implementation Phase (Future)
 - Build orchestration code in `pipeline/`
