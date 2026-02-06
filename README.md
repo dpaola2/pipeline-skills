@@ -46,20 +46,29 @@ This is not a generic CI/CD tool. It encodes OrangeQC's specific:
 │       ├── 04-test-generation.md      # Spec → Failing Tests (TDD)
 │       ├── 05-implementation.md       # Tests → Passing Code
 │       ├── 06-review.md              # Code → Reviewed Code
-│       └── 07-validation.md           # Reviewed Code → QA-Ready
+│       └── 07-validation.md           # Reviewed Code → QA Plan
 ├── templates/
 │   ├── prd-intake.md                  # Structured PRD input format
 │   ├── discovery-report.md            # Discovery stage output
 │   ├── architecture-proposal.md       # Architecture stage output
 │   ├── gameplan.md                    # Gameplan stage output
-│   └── qa-readiness-report.md         # Validation stage output
-├── .claude/skills/                    # Pipeline stage skills (custom commands)
+│   └── qa-plan.md                     # QA Plan stage output
+├── .claude/skills/                    # Pipeline stage skills (Claude Code custom commands)
 │   ├── stage1-discovery/SKILL.md      # /stage1-discovery <project-slug>
 │   ├── stage2-architecture/SKILL.md   # /stage2-architecture <project-slug>
-│   └── stage3-gameplan/SKILL.md       # /stage3-gameplan <project-slug>
+│   ├── stage3-gameplan/SKILL.md       # /stage3-gameplan <project-slug>
+│   ├── stage4-test-generation/SKILL.md # /stage4-test-generation <project-slug>
+│   ├── stage5-implementation/SKILL.md # /stage5-implementation <project-slug> <milestone>
+│   └── stage7-qa-plan/SKILL.md       # /stage7-qa-plan <project-slug>
 ├── projects/                          # Pipeline project runs
-│   └── deficient-line-items-report/   # First test project
-│       └── prd.md                     # PRD input
+│   └── deficient-line-items-report/   # First project (Level 2, web-only) — complete
+│       ├── prd.md                     # Input: structured PRD
+│       ├── discovery-report.md        # Stage 1 output
+│       ├── architecture-proposal.md   # Stage 2 output (approved)
+│       ├── gameplan.md                # Stage 3 output (approved)
+│       ├── test-coverage-matrix.md    # Stage 4 output
+│       ├── progress.md               # Stage 5 output (milestone tracking)
+│       └── qa-plan.md                # Stage 7 output
 └── pipeline/                          # (future) Orchestration code lives here
 ```
 
@@ -83,12 +92,14 @@ This pipeline is Linear-enabled:
 - Each pipeline stage can create/update Linear issues
 - Milestones from gameplans become Linear tickets
 - Stage transitions update issue status
-- QA readiness reports link back to all related issues
+- QA plans link back to all related issues
 
 ---
 
 ## Status
 
-**Phase: Design & Documentation**
+**Phase: Operational (Rails-only projects)**
 
-This project is in the design phase. The markdown files in this repo define the pipeline. Implementation will follow.
+The pipeline is running on real projects. Stages 1-5 and 7 have Claude Code skills (`/stage1-discovery`, `/stage2-architecture`, etc.) and have been validated end-to-end on the first project (deficient-line-items-report). Stage 6 (Review) is spec'd but not yet automated — code review is currently manual.
+
+Each stage runs as a manual Claude Code session. Automated orchestration (stage chaining, Linear integration) is a future phase.

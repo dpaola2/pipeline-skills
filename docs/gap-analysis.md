@@ -57,14 +57,13 @@ The pipeline shifts the constraint from execution to clarity. Everything in this
 
 ### 1.3 PRDs in Structured Markdown
 
-**Status:** PRDs likely exist in Google Docs or similar.
-**Why it blocks everything:** Agents need machine-readable input. The pipeline starts with a PRD file.
+**Status:** First PRD converted and validated. Pipeline intake template exists and works.
 
 **What's needed:**
-- [ ] PRD intake template (see `templates/prd-intake.md`)
-- [ ] Process for converting existing PRDs to structured markdown
+- [x] PRD intake template (see `templates/prd-intake.md`)
+- [x] Process for converting existing PRDs to structured markdown — validated on deficient-line-items-report
 - [ ] Or: agent that converts Google Doc PRDs to structured markdown (Stage 0)
-- [ ] PRDs stored in a repo or accessible location
+- [x] PRDs stored in a repo or accessible location — `projects/<slug>/prd.md`
 
 **Leverage:** High. This is the pipeline's input format.
 
@@ -74,18 +73,18 @@ The pipeline shifts the constraint from execution to clarity. Everything in this
 
 ### 2.1 Orchestration Layer
 
-**Status:** Does not exist.
+**Status:** Claude Code skills (custom commands) are in use for Stages 1-5 and 7. Each stage runs as a manual session.
 **Why it matters:** Something needs to chain stages, manage state, and insert human checkpoints.
 
 **Options (evaluate):**
 | Option | Pros | Cons |
 |--------|------|------|
-| Claude Code custom commands | Lowest friction, already in use | Manual orchestration, no state management |
+| Claude Code custom commands | Lowest friction, **currently in use** | Manual orchestration, no state management |
 | Claude Agent SDK | Programmatic, composable, state management | Requires building, new dependency |
 | Simple shell scripts | Dead simple, transparent | Limited error handling, brittle |
 | GitHub Actions workflow | Built-in CI/CD, event-driven | Opinionated, may not fit all stages |
 
-**Recommendation:** Start with Claude Code custom commands for prototyping individual stages. Move to Agent SDK when you need automated stage-chaining.
+**Current approach:** Claude Code skills for individual stages. Move to Agent SDK when automated stage-chaining is needed.
 
 ### 2.2 Linear Integration
 
@@ -114,42 +113,45 @@ The pipeline shifts the constraint from execution to clarity. Everything in this
 ## Priority 3: Stage-Specific Gaps
 
 ### 3.1 Discovery Stage Gaps
-- [ ] No standardized "discovery report" format (template needed)
-- [ ] No automated way to map "PRD concept" → "existing code locations"
-- [ ] Need few-shot examples of good discovery reports
+- [x] ~~No standardized "discovery report" format~~ — `templates/discovery-report.md` exists, validated on first project
+- [x] ~~No automated way to map "PRD concept" → "existing code locations"~~ — Stage 1 skill does this
+- [x] Need few-shot examples of good discovery reports — `projects/deficient-line-items-report/discovery-report.md`
 
 ### 3.2 Architecture Stage Gaps
-- [ ] No codified data model conventions beyond gameplan template
-- [ ] Example payloads from past features not collected (needed as few-shot examples)
-- [ ] Backwards compatibility matrix pattern not templated
-- [ ] Migration planning conventions not documented
+- [x] ~~No codified data model conventions~~ — `templates/architecture-proposal.md` covers schema, migrations, API design
+- [x] Example payloads from past features — first project provides reference output
+- [x] ~~Backwards compatibility matrix pattern not templated~~ — included in architecture template
+- [x] ~~Migration planning conventions not documented~~ — included in architecture template
+- [ ] Example payloads from additional features not yet collected (more few-shot examples would improve output)
 
 ### 3.3 Gameplan Stage Gaps
-- [ ] Gameplan template exists but needs refinement for agent use
-- [ ] Acceptance criteria extraction from PRDs is currently ad-hoc
+- [x] ~~Gameplan template needs refinement~~ — refined through first project, includes QA Test Data milestone
+- [x] ~~Acceptance criteria extraction from PRDs is ad-hoc~~ — Stage 3 skill handles this
 - [ ] Milestone sizing heuristics not documented
 
 ### 3.4 Test Generation Stage Gaps
-- [ ] **Test infrastructure** (see 1.1 - this is the critical gap)
-- [ ] Few-shot test examples needed per platform
-- [ ] Test naming and organization conventions not documented
-- [ ] No mapping from "acceptance criterion" → "test type"
+- [x] ~~Test infrastructure~~ — Rails RSpec in CI, expanding coverage
+- [x] ~~Few-shot test examples needed~~ — Stage 4 skill explores existing patterns in the Rails repo
+- [x] ~~Test naming and organization conventions~~ — documented in AGENTS.md
+- [x] ~~No mapping from "acceptance criterion" → "test type"~~ — test-coverage-matrix.md maps every criterion
 
 ### 3.5 Implementation Stage Gaps
-- [ ] Per-milestone implementation prompts not templated
-- [ ] Branch naming conventions for agent-created branches
+- [x] ~~Per-milestone implementation prompts not templated~~ — Stage 5 skill handles per-milestone invocation
+- [x] ~~Branch naming conventions~~ — `pipeline/<slug>` created by Stage 4, shared by Stage 5
 - [ ] PR template for agent-created PRs
-- [ ] Convention for agent commit messages
+- [x] ~~Convention for agent commit messages~~ — Stage 5 skill defines commit message format
 
 ### 3.6 Review Stage Gaps
 - [ ] Review criteria not formalized beyond AGENTS.md
 - [ ] No automated way to check cross-platform payload consistency
 - [ ] Escalation criteria (when does review escalate to human?) not defined
+- [ ] **Stage 6 skill not yet built** — review is currently manual
 
-### 3.7 Validation Stage Gaps
-- [ ] QA readiness report format not defined (template needed)
-- [ ] No automated acceptance criteria → test coverage mapping
+### 3.7 QA Plan Stage Gaps
+- [x] ~~QA plan format not defined~~ — `templates/qa-plan.md` exists, validated on first project
+- [x] ~~No automated acceptance criteria → test coverage mapping~~ — test-coverage-matrix.md + qa-plan.md
 - [ ] Feature flag validation not automated
+- [ ] Linear ticket transitions not automated
 
 ---
 
@@ -185,44 +187,28 @@ This means:
 - Mobile stages will be added when iOS/Android test suites mature
 - The architecture proposal still designs the API contract that mobile will eventually build against — we don't skip API design, we just defer mobile implementation
 
-### Phase 1: Foundation (Now)
+### Phase 1: Foundation — COMPLETE
 
-```mermaid
-graph TD
-    A[1.3 Structured PRD] --> B[Prototype Stages 1-3<br/>against real PRD]
-    B --> C[Evaluate output quality]
-    C -->|Good| D[Move to Phase 2]
-    C -->|Needs work| E[Improve templates]
-    E --> B
-
-    A -.->|"START HERE"| A
-
-    style A fill:#744210,stroke:#975a16,color:#fff
-```
-
-**Foundations (done):**
-1. ~~Test infrastructure for Rails~~ — Done. Continue expanding coverage.
+1. ~~Test infrastructure for Rails~~ — Done. RSpec in CI.
 2. ~~AGENTS.md for Rails repo~~ — Done. Comprehensive.
 3. ~~API documentation~~ — Done. Full endpoint docs at `~/projects/orangeqc/apiv4/`.
+4. ~~Convert one real PRD to structured markdown format~~ — Done. `projects/deficient-line-items-report/prd.md`.
+5. ~~Prototype Stages 1-3 against the real PRD~~ — Done. Discovery, Architecture, Gameplan all produced and approved.
 
-**Do now:**
-4. Convert one real PRD to structured markdown format
-5. Prototype Stages 1-3 (Discovery → Architecture → Gameplan) against the real PRD
-6. Evaluate output — does it produce a spec you'd actually build from?
+### Phase 2: Code Generation (Rails Only) — COMPLETE
 
-### Phase 2: Code Generation (Rails Only)
+1. ~~Prototype Stage 4 (Test Generation)~~ — Done. 7 test files, 123 test cases.
+2. ~~Prototype Stage 5 (Implementation)~~ — Done. 8 milestones, 17 new files, all tests passing.
+3. ~~Prototype Stage 7 (QA Plan)~~ — Done. 40 manual test scenarios.
+4. Stage 6 (Review) — **Not yet built.** Code review was manual for the first project.
 
-Once Stages 1-3 produce good output:
-1. Prototype Stage 4 (Test Generation) — write failing Rails tests from the approved spec
-2. Prototype Stage 5 (Implementation) — make the tests pass
-3. Prototype Stages 6-7 (Review + Validation) — review and verify
+### Phase 3: Orchestration (Current)
 
-### Phase 3: Orchestration
-
-Once individual stages work well when run manually:
-1. Build orchestration layer (Claude Code custom commands → Agent SDK)
-2. Wire up Linear integration (automated ticket creation, status transitions)
-3. Run a complete end-to-end pipeline on a real Rails project
+Now that individual stages work well when run manually:
+1. Build Stage 6 (Review) skill — automated code review against AGENTS.md
+2. Build orchestration layer (Claude Code custom commands → Agent SDK)
+3. Wire up Linear integration (automated ticket creation, status transitions)
+4. Run a second project end-to-end to validate pipeline repeatability
 
 ### Phase 4: Mobile Expansion
 

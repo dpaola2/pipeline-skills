@@ -23,7 +23,7 @@ This pipeline automates **Gameplanning through pre-QA validation**. Framing and 
 **Output:**
 - Merged code across Rails, iOS, and Android
 - Passing test suites with comprehensive coverage
-- A QA Readiness Report telling a human tester exactly what to test
+- A QA Plan telling a human tester exactly what to test
 
 ---
 
@@ -185,24 +185,23 @@ One PR per milestone per platform. The agent follows AGENTS.md conventions for e
 
 ---
 
-### Stage 7: Validation
+### Stage 7: QA Plan
 
-**What it does:** After all PRs are reviewed and merged, a validator agent runs a final sweep:
-- Full test suite across all platforms (zero failures, zero regressions)
-- Acceptance criteria coverage audit (every criterion either has automated tests or is flagged for manual QA)
-- Backwards compatibility verification
-- Feature flag configuration check
-- Cross-platform consistency final check
+**What it does:** After all milestones are implemented and tests pass, a QA plan agent consolidates everything a human tester needs:
+- Collects manual QA items from the test-coverage-matrix (criteria not testable by automation)
+- Documents test data setup (how to run the seed rake task)
+- Produces a manual testing checklist with steps, expected results, and criteria references
+- Identifies known limitations, regression risks, and rollback plan
 
-**Output:** A QA Readiness Report that tells a human tester:
-- What was built (milestone summary)
-- What's tested automatically (with test references)
-- What needs manual/exploratory testing (with steps and expected results)
-- Backwards compatibility scenarios to verify
-- How to set up test data
+**Output:** A QA Plan (`qa-plan.md`) that tells a human tester:
+- What was built (milestone summary with commits)
+- What's tested automatically (with test file references)
+- What needs manual/exploratory testing (numbered scenarios with steps)
+- Edge cases and boundary conditions to verify
+- How to set up test data (rake task)
 - How to roll back if issues are found
 
-Linear tickets transition to "Ready for QA."
+A QA tester can pick up the plan and start testing without asking questions.
 
 ---
 
@@ -210,7 +209,7 @@ Linear tickets transition to "Ready for QA."
 
 The pipeline's job is done. What follows is human-driven:
 
-- **Manual QA** — exploratory testing, UX review, real-device testing (guided by the QA Readiness Report)
+- **Manual QA** — exploratory testing, UX review, real-device testing (guided by the QA Plan)
 - **Stakeholder review** — demo, approval
 - **Production deployment** — human-triggered, agents never have production access
 - **Post-deploy monitoring**
@@ -234,7 +233,7 @@ Linear is the state machine for the entire pipeline:
 | Review passes | Milestone tickets → "In Review" |
 | Validation passes | Milestone tickets → "Ready for QA" |
 
-Every artifact links back: PRD → Discovery Report → Architecture Proposal → Gameplan → Test PRs → Implementation PRs → QA Report. Traceability is end-to-end.
+Every artifact links back: PRD → Discovery Report → Architecture Proposal → Gameplan → Test PRs → Implementation PRs → QA Plan. Traceability is end-to-end.
 
 ---
 
@@ -255,23 +254,24 @@ These are non-negotiable across all stages:
 
 ## Current Status
 
-**This pipeline is in the design phase, preparing for first use on Rails-only projects.**
+**The pipeline is operational for Rails-only (Level 2) projects.**
 
-The pipeline launches with **Rails only**. Rails test infrastructure is in place (RSpec in CI, coverage expanding), and Rails capacity is the team's biggest bottleneck. iOS and Android test infrastructure is developing rapidly but isn't ready for pipeline use yet. Mobile stages will be added later.
+The first project — Deficient Line Items Report — has completed all seven stages successfully. Stages 1-5 and 7 have Claude Code skills that run as manual sessions. Stage 6 (Review) is spec'd but not yet automated; code review is currently manual.
+
+The pipeline currently targets **Rails only**. Rails test infrastructure is in place (RSpec in CI), and Rails capacity is the team's biggest bottleneck. iOS and Android test infrastructure is developing but isn't ready for pipeline use yet. Mobile stages will be added later.
 
 For Rails-only projects, the pipeline still designs the API contract that mobile will eventually build against — we don't skip API design, we just defer mobile implementation.
 
-**What's ready:**
-- Stage specs, templates, and process documentation are complete
+**What's working:**
+- Stage specs, templates, and process documentation
+- Claude Code skills for Stages 1-5 and 7 (run via `/stage1-discovery`, etc.)
 - Rails test infrastructure (RSpec in CI)
+- Complete end-to-end run on first project (8 milestones, 123 tests, 40 QA scenarios)
 
 **What's next:**
-1. **AGENTS.md for the Rails repo** — documented conventions so agents produce OrangeQC-flavored code
-2. **A structured PRD** — convert one real PRD to the pipeline's input format
-3. **Prototype Stages 1-3** — run Discovery → Architecture → Gameplan against the real PRD and evaluate output
-
-**What comes later:**
-- Orchestration code (currently each stage runs as a manual Claude Code session)
+- Stage 6 (Review) skill — automated code review against AGENTS.md conventions
+- Orchestration layer — automated stage chaining (currently each stage runs as a manual Claude Code session)
+- Linear integration — automated ticket creation and status transitions
 - iOS/Android expansion (when their test suites mature)
 
 See `docs/gap-analysis.md` for the full prioritized roadmap.

@@ -58,21 +58,31 @@ projects/deficient-line-items-report/
   discovery-report.md            # Output of Stage 1
   architecture-proposal.md       # Output of Stage 2 (requires human approval)
   gameplan.md                    # Output of Stage 3 (requires human approval)
+  test-coverage-matrix.md        # Output of Stage 4
+  progress.md                    # Output of Stage 5 (milestone tracking)
+  qa-plan.md                     # Output of Stage 7
 ```
 
-### Running Stages 1-3
+### Running the Pipeline
 
 The pipeline runs manually, one stage at a time:
 
 ```
-/stage1-discovery <project-slug>        → produces discovery-report.md
-                                          (optional: review discovery report)
+/stage1-discovery <project-slug>                  → produces discovery-report.md
+                                                    (optional: review discovery report)
 
-/stage2-architecture <project-slug>     → produces architecture-proposal.md
-                                          REQUIRED: review and approve architecture
+/stage2-architecture <project-slug>               → produces architecture-proposal.md
+                                                    REQUIRED: review and approve architecture
 
-/stage3-gameplan <project-slug>         → produces gameplan.md (checks for approval first)
-                                          REQUIRED: review and approve gameplan
+/stage3-gameplan <project-slug>                   → produces gameplan.md (checks for approval first)
+                                                    REQUIRED: review and approve gameplan
+
+/stage4-test-generation <project-slug>            → produces failing tests in Rails repo + test-coverage-matrix.md
+
+/stage5-implementation <project-slug> <milestone> → implements one milestone, updates progress.md
+                                                    (run once per milestone: M1, M2, ...)
+
+/stage7-qa-plan <project-slug>                    → produces qa-plan.md (checks all milestones complete)
 ```
 
 ### Human Checkpoints
@@ -87,19 +97,18 @@ Review `projects/<slug>/gameplan.md` and confirm the milestones, acceptance crit
 
 ## Working in This Project
 
-### Design Phase (Current)
-- The markdown files ARE the deliverable right now
-- Edit and improve docs, templates, and stage specs
-- Think critically about gaps, edge cases, and failure modes
-- Reference OrangeQC's actual process and constraints
-- Pipeline skills (`.claude/skills/`) are now available for prototyping Stages 1-3
+### Current Phase: Operational (Rails-only)
+- Skills exist for Stages 1-5 and 7 (`.claude/skills/`)
+- Each stage runs as a manual Claude Code session
+- First project (deficient-line-items-report) has completed all stages end-to-end
+- Stage 6 (Review) is spec'd but not yet automated — code review is manual
+- Improve skills, templates, and stage specs based on lessons from completed projects
 
-### Implementation Phase (Future)
-- Build orchestration code in `pipeline/`
-- Implement each stage as a discrete agent
-- Wire up Linear integration
-- Build human checkpoint interfaces
-- Test against real PRDs
+### Future Phase: Orchestration
+- Build orchestration code in `pipeline/` for automated stage chaining
+- Wire up Linear integration (automated ticket creation, status transitions)
+- Build Stage 6 (Review) skill
+- iOS/Android expansion when their test suites mature
 
 ### Key Principles
 - **Templates are the program.** Agent output quality is determined by template quality.

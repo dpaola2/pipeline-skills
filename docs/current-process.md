@@ -203,7 +203,7 @@ Mobile depends on API. Backend proposes data model + endpoints, mobile reviews, 
 - All automated tests passing (unit, integration, E2E)
 - All acceptance criteria from spec covered by tests
 - Feature flag configured
-- QA readiness report produced with:
+- QA plan produced with:
   - What was built (milestone summary)
   - What's tested automatically
   - What needs manual/exploratory testing

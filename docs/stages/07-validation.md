@@ -10,7 +10,7 @@
 |-------|-------|
 | **Agent Type** | Quality validator |
 | **Input** | All reviewed & merged PRs for the feature |
-| **Output** | QA Readiness Report |
+| **Output** | QA Plan |
 | **Repos Accessed** | All (read access) + CI |
 | **Human Review** | Report is delivered to QA team / human tester |
 | **Linear** | Transitions tickets to "Ready for QA" |
@@ -19,7 +19,7 @@
 
 ## What This Stage Does
 
-The validation agent runs after all milestone PRs are reviewed and merged. It performs a final quality sweep and produces a QA readiness report that tells a human tester exactly what's been built, what's been tested automatically, and what needs manual exploration.
+The validation agent runs after all milestone PRs are reviewed and merged. It performs a final quality sweep and produces a QA plan that tells a human tester exactly what's been built, what's been tested automatically, and what needs manual exploration.
 
 ### Specific Tasks
 
@@ -53,7 +53,7 @@ The validation agent runs after all milestone PRs are reviewed and merged. It pe
    - Metrics/analytics tracking configured (if specified in spec)
    - Debug paths exist (can diagnose failures from logs alone)
 
-7. **Produce QA Readiness Report**
+7. **Produce QA Plan**
    - Comprehensive summary for human QA
 
 ---
@@ -111,10 +111,10 @@ What was built, which milestones are included, overall scope.
 
 ## Linear Integration
 
-Upon producing the QA Readiness Report:
+Upon producing the QA Plan:
 
 1. **Transition all milestone tickets** to "Ready for QA"
-2. **Create a QA ticket** with the readiness report as description
+2. **Create a QA ticket** with the QA plan as description
 3. **Link QA ticket** to all milestone tickets
 4. **Assign QA ticket** to the designated tester (or unassigned for team pickup)
 5. **Add comment** to parent project with summary
@@ -128,7 +128,7 @@ Upon producing the QA Readiness Report:
 - [ ] Every acceptance criterion either has automated tests or is flagged for manual QA
 - [ ] Backwards compatibility matrix is verified
 - [ ] Feature flag is configured and documented
-- [ ] QA readiness report is complete and actionable
+- [ ] QA plan is complete and actionable
 - [ ] A QA tester could pick up the report and start testing without asking questions
 - [ ] Linear tickets are updated to correct status
 
@@ -152,7 +152,7 @@ The pipeline's job is done. The output is:
 
 1. **Merged code** across all three platforms
 2. **Passing test suite** with comprehensive coverage
-3. **QA Readiness Report** for manual/exploratory testing
+3. **QA Plan** for manual/exploratory testing
 
 What follows is human-driven:
 - **Manual QA** (exploratory testing, UX review, real-device testing)
@@ -173,4 +173,4 @@ The pipeline does NOT:
 - **Requires:** All milestone PRs reviewed and merged (Stages 5-6 complete)
 - **Requires:** CI pipeline that runs full test suite
 - **Requires:** Feature flag infrastructure
-- **Produces:** QA Readiness Report (final pipeline output)
+- **Produces:** QA Plan (final pipeline output)
