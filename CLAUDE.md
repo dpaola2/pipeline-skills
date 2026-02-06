@@ -83,6 +83,8 @@ The pipeline runs manually, one stage at a time:
                                                     (run once per milestone: M1, M2, ...)
 
 /stage7-qa-plan <project-slug>                    → produces qa-plan.md (checks all milestones complete)
+
+/create-pr <project-slug>                         → pushes branch, creates PR against staging with generated summary
 ```
 
 ### Human Checkpoints

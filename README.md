@@ -59,7 +59,8 @@ This is not a generic CI/CD tool. It encodes OrangeQC's specific:
 │   ├── stage3-gameplan/SKILL.md       # /stage3-gameplan <project-slug>
 │   ├── stage4-test-generation/SKILL.md # /stage4-test-generation <project-slug>
 │   ├── stage5-implementation/SKILL.md # /stage5-implementation <project-slug> <milestone>
-│   └── stage7-qa-plan/SKILL.md       # /stage7-qa-plan <project-slug>
+│   ├── stage7-qa-plan/SKILL.md       # /stage7-qa-plan <project-slug>
+│   └── create-pr/SKILL.md            # /create-pr <project-slug>
 ├── projects/                          # Pipeline project runs
 │   └── deficient-line-items-report/   # First project (Level 2, web-only) — complete
 │       ├── prd.md                     # Input: structured PRD
