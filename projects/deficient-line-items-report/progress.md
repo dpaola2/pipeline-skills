@@ -4,7 +4,7 @@
 |-------|-------|
 | **Branch** | `pipeline/deficient-line-items-report` |
 | **Rails repo** | `~/projects/orangeqc/orangeqc/` |
-| **Milestones** | M0–M8 |
+| **Milestones** | M0–M8 + QA Test Data |
 
 ## Milestone Status
 
@@ -19,6 +19,7 @@
 | M6 | Drill-Down View — Trend Chart & Mixed Areas | **Complete** |
 | M7 | Export — PDF & CSV | **Complete** |
 | M8 | Empty States, Edge Cases & Polish | **Complete** |
+| QA Test Data | Seed task for manual QA testing | **Complete** |
 
 ---
 
@@ -413,12 +414,53 @@ None
 
 ---
 
+## QA Test Data
+
+**Status:** Complete
+**Date:** 2026-02-06
+**Commit:** `f9c3652`
+
+### Files Created
+- `lib/tasks/pipeline/seed_deficient_line_items_report.rake` — idempotent rake task seeding all QA scenarios
+
+### What It Creates
+- **Area hierarchy:** QA Campus → Building Alpha (3 floors), Building Beta (2 wings), Building Gamma (+ Basement)
+- **Inspection forms:** Daily Janitorial, Monthly Deep Clean, Quarterly Audit
+- **10 line items** with varying deficiency profiles (see plan for full table)
+- **242 inspections** spread across 120 days (60 current + 60 prior period)
+- **Restricted user:** `qa_restricted` / `password` (read_reports=false)
+- **Admin user:** existing `crash` account admin (Company-level zone covers all QA areas)
+
+### Scenarios Covered
+- HIGH RISK: Floor Care (60% deficiency rate)
+- Trend worsening: Floor Care, Trash Removal, Restroom Supplies (current > prior period rates)
+- Trend improving: Window Cleaning, Dusting (current < prior period rates)
+- Below thresholds: Carpet Stains (1/10 = below repeat threshold), HVAC Filters (3/4 = below sample size), Door Hardware (0 deficiencies)
+- Mixed area: Building Gamma (has sub-areas AND direct inspections)
+- Form comparison: leaf areas have inspections from multiple forms
+- Permission denial: qa_restricted user has no read_reports permission
+
+### Run Command
+```bash
+cd ~/projects/orangeqc/orangeqc
+bundle exec rake pipeline:seed_deficient_line_items_report
+```
+
+### Notes
+- Uses existing account ratings (reuses first percentage rating from Builders::RatingBuilder)
+- Admin supervisory zone check avoids overlap with existing Company-level zone
+- InspectionForm requires at least one InspectionFormItem — created with a "General" item
+- User login validation requires underscores, not hyphens (`qa_restricted`, not `qa-restricted`)
+- Idempotent: detects existing data via `job_number: "pipeline-qa-dlir"` tag on structures
+
+---
+
 ## Project Complete
 
-All milestones M1–M8 are implemented. The branch `pipeline/deficient-line-items-report` is ready for review.
+All milestones M1–M8 + QA Test Data are implemented. The branch `pipeline/deficient-line-items-report` is ready for review.
 
 **Summary:**
 - 12 commits on branch (ahead of staging)
 - 123 automated tests, 0 failures
-- Files created: 16 new files (migration, model, service, controller, 10 view templates, 2 exporters, 1 Stimulus controller)
+- Files created: 17 new files (migration, model, service, controller, 10 view templates, 2 exporters, 1 Stimulus controller, 1 rake task)
 - Files modified: 4 existing files (routes, reports index, report_export model, controllers/index.js, AGENTS.md)
