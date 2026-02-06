@@ -54,7 +54,8 @@ Organize by **feature area**, not by platform:
 - **M0: Discovery & Alignment** — Always complete (Stages 1-2 did this). Mark as done.
 - **M1** typically: Data model, core backend, foundational API
 - **M2+**: Progressive feature areas building on M1
-- Final milestone typically: Export, polish, edge cases
+- **Penultimate milestone (always):** QA Test Data — a rake task that seeds realistic data for manual QA. Comes after all feature implementation milestones and before the final polish/edge-cases milestone. See the gameplan template for the standard structure and acceptance criteria.
+- **Final milestone:** Empty states, edge cases, polish
 
 Guidelines:
 - Each milestone should be independently shippable (even behind a feature flag)
@@ -115,6 +116,7 @@ Before writing the output, verify:
 - [ ] No milestone has undefined acceptance criteria
 - [ ] Dependencies form a valid sequence (no cycles)
 - [ ] Non-functional checklist is complete (every item checked or marked N/A with reason)
+- [ ] A QA Test Data milestone exists that covers all scenarios requiring manual QA
 
 If any check fails, fix it before writing the output.
 

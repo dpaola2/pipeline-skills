@@ -58,9 +58,11 @@ The validation agent runs after all milestone PRs are reviewed and merged. It pe
 
 ---
 
-## QA Readiness Report
+## QA Plan
 
-Uses template: `templates/qa-readiness-report.md`
+**Skill:** `/stage7-qa-plan <project-slug>` (see `.claude/skills/stage7-qa-plan/SKILL.md`)
+
+Uses template: `templates/qa-plan.md`
 
 ### Report Sections
 
@@ -94,10 +96,11 @@ What was built, which milestones are included, overall scope.
 - Known issues or trade-offs
 - Out-of-scope items from the PRD
 
-#### 7. Test Accounts & Data
-- How to set up test data for QA
-- Which test accounts to use
-- Seed data or setup steps needed
+#### 7. Test Data Setup
+- Instructions for running the QA Test Data milestone's rake task (`pipeline:seed_<slug>`)
+- What scenarios are seeded (accounts, permissions, data volumes, edge cases)
+- Credentials and URLs produced by the seed task
+- If no seed task exists (older project), describe what data must be set up manually
 
 #### 8. Rollback Plan
 - How to disable if issues found (feature flag off)

@@ -120,7 +120,45 @@
 
 ---
 
-[Continue milestones as needed]
+[Continue feature milestones as needed]
+
+---
+
+### M_PENULTIMATE_: QA Test Data
+**What:** Create a rake task that seeds realistic test data covering all feature scenarios. This enables manual QA without requiring testers to construct their own data.
+
+**Acceptance Criteria:**
+- [ ] Rake task `pipeline:seed_<slug>` exists in `lib/tasks/pipeline/`
+- [ ] Task creates test account(s) with appropriate permissions and roles
+- [ ] Task seeds data covering: happy path, empty states, edge cases, threshold boundaries
+- [ ] Task is idempotent (can re-run without duplicating data)
+- [ ] Task prints a summary of what was created (account credentials, key IDs, URLs to test)
+- [ ] All scenarios from the manual QA checklist have supporting test data
+
+**Web/API:**
+- [ ] `lib/tasks/pipeline/seed_<slug>.rake` — idempotent rake task
+- [ ] Uses existing factories/builders where available
+- [ ] No production-unsafe operations (dev/staging only)
+
+**iOS:** N/A
+**Android:** N/A
+
+**Dependencies:** All prior feature milestones (needs the full feature implemented)
+
+---
+
+### M_LAST_: Empty States, Edge Cases & Polish
+**What:** [Implement all empty state messages, handle edge cases, polish UI]
+
+**Acceptance Criteria:**
+- [ ] [UI empty state scenarios]
+- [ ] [Edge case handling]
+- [ ] [Print styles, responsive behavior]
+
+**Web/API:**
+- [ ] [View updates]
+
+**Dependencies:** All prior milestones
 
 ---
 

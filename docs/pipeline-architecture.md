@@ -213,19 +213,19 @@ The review agent examines each PR against conventions, security requirements, an
 
 ---
 
-### Stage 7: Validation
-**Agent Type:** Quality validator
-**Input:** Reviewed code (all milestone PRs)
-**Output:** QA Readiness Report
+### Stage 7: QA Plan *(Implemented)*
+**Agent Type:** QA planner
+**Skill:** `/stage7-qa-plan <project-slug>`
+**Input:** All project artifacts (PRD, gameplan, test-coverage-matrix, progress file, architecture)
+**Output:** QA Plan (`projects/<slug>/qa-plan.md`)
 
-The validation agent runs the full test suite and produces a QA readiness report.
+The QA plan agent consolidates all manual testing needs into an actionable document for human QA.
 
-- Runs complete test suite (unit + integration + E2E)
-- Validates all acceptance criteria are covered by passing tests
-- Checks feature flag configuration
-- Verifies backwards compatibility (old API versions still work)
-- Produces QA readiness report with manual testing guidance
-- Updates Linear issues with final status
+- Collects manual QA items from test-coverage-matrix, spec gaps, and gameplan
+- Documents test data setup (rake task from QA Test Data milestone)
+- Produces a manual testing checklist with steps, expected results, and criteria references
+- Identifies known limitations, regression risks, and rollback plan
+- A QA tester can pick up the plan and start testing without asking questions
 
 **See:** `docs/stages/07-validation.md` for full specification
 
