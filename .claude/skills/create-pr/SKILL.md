@@ -12,7 +12,7 @@ allowed-tools:
 
 # Create PR
 
-You **push the implementation branch and create a GitHub pull request** against the default branch (from `pipeline.md`) with a summary generated from the project's pipeline artifacts. This is the delivery step after all pipeline stages are complete.
+You **push the implementation branch and create a GitHub pull request** against the default branch (from the target repo's `PIPELINE.md`) with a summary generated from the project's pipeline artifacts. This is the delivery step after all pipeline stages are complete.
 
 **This skill does not write or modify any files.** It reads project artifacts, generates a PR summary, and runs git/gh commands.
 
@@ -27,7 +27,7 @@ You **push the implementation branch and create a GitHub pull request** against 
 
 Run ALL of these checks before doing anything else. If any check fails, **STOP** and report the issue to the user.
 
-First, read `pipeline.md` to determine the primary repository path, branch prefix, and PR base branch.
+First, read `pipeline.md` to determine the primary repository path, then read `PIPELINE.md` in that repo to determine the branch prefix and PR base branch.
 
 ### Check 1: All Milestones Complete
 

@@ -5,7 +5,7 @@
 This is the design and implementation of an agent-orchestrated development pipeline for OrangeQC. The pipeline takes a PRD (Product Requirements Document) as input and produces implementation code across three platforms (Rails web/API, iOS, Android) that is ready for QA.
 
 **Read these files to get oriented:**
-1. `pipeline.md` - Platform-specific configuration (repo paths, branch conventions, framework, directory structure). **This is the single file to edit when using the pipeline on a different project.**
+1. `pipeline.md` - Maps this pipeline to target repositories (repo paths, project tracker)
 2. `docs/pipeline-architecture.md` - The full pipeline design
 3. `docs/current-process.md` - The OrangeQC development process this automates
 4. `docs/orangeqc-constraints.md` - Platform, team, and guardrail constraints
@@ -39,16 +39,30 @@ This pipeline automates **Gameplanning → Building → pre-QA validation**. Fra
 
 ---
 
-## Pipeline Configuration (`pipeline.md`)
+## Pipeline Configuration (Two-File Architecture)
 
-All platform-specific settings live in `pipeline.md` at the repo root. Skills read this file first to determine:
+Configuration is split between two files:
+
+### `pipeline.md` (this repo)
+Maps the pipeline to target repositories. Contains:
 - **Target repository paths** (primary repo, API docs, mobile repos)
-- **Branch conventions** (default branch, branch prefix, PR base)
+- **Project tracker** (Linear, GitHub Issues, or none)
+
+### `PIPELINE.md` (each target repo)
+Describes how the target repo works. Contains:
+- **Repository details** (default branch, branch prefix, test command, conventions file)
+- **Platforms** (which platforms this project targets)
 - **Framework & stack** (language, test framework, serialization, database)
 - **Directory structure** (where models, controllers, tests, etc. live)
-- **Optional concerns** (API conventions, multi-tenant security, backwards compatibility, feature flags)
+- **Implementation order** (natural build sequence for milestones)
+- **Optional sections** (API conventions, multi-tenant security, backwards compat, feature flags, guardrails)
 
-**To use this pipeline on a different project:** Edit `pipeline.md` with your repo's details. Skills and templates are generic — they read `pipeline.md` and the target repo's conventions file (AGENTS.md) to adapt. No skill or template changes needed.
+Skills read `pipeline.md` first to find repo paths, then read `PIPELINE.md` from the primary repo for all framework-specific details.
+
+**To use this pipeline on a different project:**
+1. Edit `pipeline.md` with your repo paths
+2. Create a `PIPELINE.md` in your target repo describing how it works
+3. Skills and templates adapt automatically — no skill changes needed
 
 Sections marked REQUIRED apply to every project. Sections marked OPTIONAL can be omitted if they don't apply (e.g., a personal project with no API, no multi-tenancy, no mobile).
 

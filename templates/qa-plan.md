@@ -51,7 +51,7 @@
 ### Rake Task
 
 ```bash
-cd [primary repo path from pipeline.md]
+cd [primary repo path from pipeline.md Target Repositories]
 [run seed task per framework — e.g., bundle exec rake pipeline:seed_[slug]]
 ```
 

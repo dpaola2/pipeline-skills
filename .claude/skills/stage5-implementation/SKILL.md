@@ -119,12 +119,13 @@ Read `projects/PROJECT_SLUG/progress.md` if it exists. This file tracks mileston
 
 After passing all pre-flight checks, read these files:
 
-1. The pipeline config at `pipeline.md` — understand repo paths, branch conventions, framework details.
-2. The gameplan at `projects/PROJECT_SLUG/gameplan.md` — find the **MILESTONE section** specifically. Read the goals, acceptance criteria, and platform tasks.
-3. The architecture proposal at `projects/PROJECT_SLUG/architecture-proposal.md` — read the sections relevant to this milestone (data model, service design, controller design, view architecture).
-4. The test-coverage-matrix at `projects/PROJECT_SLUG/test-coverage-matrix.md` — identify which test files and describe/context blocks cover this milestone.
-5. The stage spec at `docs/stages/05-implementation.md` — understand your role and success criteria.
-6. The conventions file in the primary repository (path from pipeline.md) — **critical**: conventions for the framework's models, controllers, services, views, routes, migrations, and JavaScript.
+1. The pipeline config at `pipeline.md` — get the primary repository path and other repo locations
+2. The repo config at `PIPELINE.md` in the primary repository (path from `pipeline.md`) — understand branch conventions, framework, directory structure, test commands, implementation order, and all repo-specific details
+3. The gameplan at `projects/PROJECT_SLUG/gameplan.md` — find the **MILESTONE section** specifically. Read the goals, acceptance criteria, and platform tasks.
+4. The architecture proposal at `projects/PROJECT_SLUG/architecture-proposal.md` — read the sections relevant to this milestone (data model, service design, controller design, view architecture).
+5. The test-coverage-matrix at `projects/PROJECT_SLUG/test-coverage-matrix.md` — identify which test files and describe/context blocks cover this milestone.
+6. The stage spec at `docs/stages/05-implementation.md` — understand your role and success criteria.
+7. The conventions file in the primary repository (path from `PIPELINE.md` Repository Details) — **critical**: conventions for the framework's models, controllers, services, views, routes, migrations, and JavaScript.
 
 ## Step-by-Step Procedure
 
@@ -156,15 +157,15 @@ For each test file:
 Search the primary repository (path from pipeline.md) for:
 
 **If this milestone creates a migration:**
-- Find 2-3 existing migration examples in the migrations directory (from pipeline.md Directory Structure) — study the style, naming, index creation patterns
+- Find 2-3 existing migration examples in the migrations directory (from PIPELINE.md Directory Structure) — study the style, naming, index creation patterns
 - Read the schema file for related tables mentioned in the architecture
 
 **If this milestone creates a model:**
-- Find the most similar existing model in the models directory (from pipeline.md Directory Structure) — study validations, associations, scopes, class methods
+- Find the most similar existing model in the models directory (from PIPELINE.md Directory Structure) — study validations, associations, scopes, class methods
 - Check for concerns referenced in the architecture
 
 **If this milestone creates a service:**
-- Find existing services in the services directory (from pipeline.md Directory Structure) that follow the same pattern referenced in the architecture
+- Find existing services in the services directory (from PIPELINE.md Directory Structure) that follow the same pattern referenced in the architecture
 - Study how they are initialized, what modules they include, how they are tested
 
 **If this milestone creates a controller:**
@@ -173,20 +174,20 @@ Search the primary repository (path from pipeline.md) for:
 - Look at the parent class referenced in the architecture
 
 **If this milestone creates views:**
-- Find the most similar existing views in the views directory (from pipeline.md Directory Structure)
+- Find the most similar existing views in the views directory (from PIPELINE.md Directory Structure)
 - Study layout, partial structure, template patterns
 - Look at how JavaScript controllers are connected in the markup
 
 **If this milestone creates JavaScript controllers:**
-- Find existing JavaScript controllers in the JS controllers directory (from pipeline.md Directory Structure)
+- Find existing JavaScript controllers in the JS controllers directory (from PIPELINE.md Directory Structure)
 - Study the naming convention, lifecycle methods, patterns
 
 **If this milestone modifies routes:**
-- Read the routes file (from pipeline.md Directory Structure) — find the relevant namespace block where new routes should go
+- Read the routes file (from PIPELINE.md Directory Structure) — find the relevant namespace block where new routes should go
 
 ### 4. Plan the Implementation Order
 
-Based on the tests and the gameplan's platform tasks, follow the Implementation Order from pipeline.md. This ensures dependencies are satisfied as you build.
+Based on the tests and the gameplan's platform tasks, follow the Implementation Order from PIPELINE.md. This ensures dependencies are satisfied as you build.
 
 1. **Migration(s)** — schema changes first (if any)
 2. **Model(s)** — with validations, associations, scopes, class methods
@@ -196,7 +197,7 @@ Based on the tests and the gameplan's platform tasks, follow the Implementation 
 6. **Views** — templates and partials
 7. **JavaScript controller(s)** — interactive behavior
 
-Refer to pipeline.md for the canonical ordering and any framework-specific adjustments.
+Refer to PIPELINE.md for the canonical ordering and any framework-specific adjustments.
 
 ### 5. Implement the Code
 
@@ -248,7 +249,7 @@ After implementing all files for this milestone, run the relevant test files:
 cd <primary-repo-path> && <test-command> <test-files-for-this-milestone> --format documentation 2>&1
 ```
 
-(The repo path and test command come from pipeline.md.)
+(The repo path comes from pipeline.md Target Repositories; the test command comes from PIPELINE.md Repository Details.)
 
 Identify the specific test files from the test-coverage-matrix.
 
@@ -273,7 +274,7 @@ After this milestone's tests pass, verify no prior milestone tests regressed. Ru
 cd <primary-repo-path> && <test-command> <all-feature-test-files> --format documentation 2>&1
 ```
 
-(The repo path and test command come from pipeline.md.)
+(The repo path comes from pipeline.md Target Repositories; the test command comes from PIPELINE.md Repository Details.)
 
 Check the results:
 - **Prior milestone tests** should still pass. If any regressed, fix the regression.
@@ -289,7 +290,7 @@ Before committing, verify:
 - No commented-out code
 - No dead code (unused methods, unreachable branches)
 - All files follow existing code style
-- Security: all queries follow the scoping rules from pipeline.md (if Multi-Tenant Security section exists)
+- Security: all queries follow the scoping rules from PIPELINE.md (if Multi-Tenant Security section exists)
 - No files created outside the scope of this milestone
 
 ### 9. Commit
@@ -433,11 +434,11 @@ If you discover that the architecture proposal or gameplan is incomplete, ambigu
 
 ## Working in the Primary Repository
 
-The primary repository path and default branch are specified in pipeline.md Repository Details.
+The primary repository path and default branch are specified in PIPELINE.md Repository Details.
 
 ### Files You MAY Create or Modify
 
-Only files in directories listed in pipeline.md Directory Structure that this milestone's gameplan tasks reference:
+Only files in directories listed in PIPELINE.md Directory Structure that this milestone's gameplan tasks reference:
 
 - Migration files
 - Model files
@@ -455,7 +456,7 @@ Only files in directories listed in pipeline.md Directory Structure that this mi
 - Database configuration or other infrastructure config
 - Deployment scripts or CI configuration
 - `.env` or any credentials files
-- The default branch (from pipeline.md) — never commit directly to it
+- The default branch (from PIPELINE.md) — never commit directly to it
 
 ## When You're Done
 

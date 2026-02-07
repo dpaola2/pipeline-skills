@@ -125,10 +125,10 @@
 ---
 
 ### M_PENULTIMATE_: QA Test Data
-**What:** Create a seed task that populates realistic test data covering all feature scenarios. This enables manual QA without requiring testers to construct their own data. (Task format per `pipeline.md` Framework & Stack — e.g., rake task, management command, script.)
+**What:** Create a seed task that populates realistic test data covering all feature scenarios. This enables manual QA without requiring testers to construct their own data. (Task format per `PIPELINE.md` Framework & Stack — e.g., rake task, management command, script.)
 
 **Acceptance Criteria:**
-- [ ] Seed task exists in the appropriate location (per `pipeline.md` Directory Structure, e.g., seed tasks directory)
+- [ ] Seed task exists in the appropriate location (per `PIPELINE.md` Directory Structure, e.g., seed tasks directory)
 - [ ] Task creates test account(s) with appropriate permissions and roles
 - [ ] Task seeds data covering: happy path, empty states, edge cases, threshold boundaries
 - [ ] Task is idempotent (can re-run without duplicating data)

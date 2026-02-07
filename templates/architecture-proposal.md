@@ -14,7 +14,7 @@
 
 ```sql
 CREATE TABLE [table_name] (
-  id [primary key type per pipeline.md API Conventions],
+  id [primary key type per PIPELINE.md API Conventions],
   [column_name] [type] [constraints],
   [foreign_key]_id uuid NOT NULL REFERENCES [parent_table](id),
   created_at timestamptz NOT NULL DEFAULT NOW(),
@@ -45,7 +45,7 @@ class [Model] < ApplicationRecord
   validates :[field], presence: true
   # [other validations]
 
-  scope :[scoping_scope_name], [per pipeline.md Multi-Tenant Security, if applicable]
+  scope :[scoping_scope_name], [per PIPELINE.md Multi-Tenant Security, if applicable]
 end
 ```
 
@@ -83,7 +83,7 @@ end
 
 **Authorization:** [Who can call this, what permissions needed]
 
-**Scoping:** [per pipeline.md Multi-Tenant Security, if applicable]
+**Scoping:** [per PIPELINE.md Multi-Tenant Security, if applicable]
 
 **Request:**
 ```json
@@ -110,12 +110,12 @@ end
 
 **Error Response (422):**
 ```json
-[Error format per pipeline.md API Conventions]
+[Error format per PIPELINE.md API Conventions]
 ```
 
 **Error Response (401):**
 ```json
-[Error format per pipeline.md API Conventions]
+[Error format per PIPELINE.md API Conventions]
 ```
 
 ---
@@ -135,7 +135,7 @@ end
 ### Serializers
 
 ```
-[Serializer code following the serialization framework from pipeline.md Framework & Stack
+[Serializer code following the serialization framework from PIPELINE.md Framework & Stack
 and patterns from the conventions file in the primary repository.
 Include fields, associations, and custom formatting.]
 ```
@@ -180,8 +180,8 @@ Include fields, associations, and custom formatting.]
 
 | Resource | Scoping Chain |
 |----------|--------------|
-| [Resource] | [Scoping chain per pipeline.md Multi-Tenant Security] |
-| [Nested resource] | [Scoping chain per pipeline.md Multi-Tenant Security] |
+| [Resource] | [Scoping chain per PIPELINE.md Multi-Tenant Security] |
+| [Nested resource] | [Scoping chain per PIPELINE.md Multi-Tenant Security] |
 
 ### Authorization
 

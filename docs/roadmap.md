@@ -123,15 +123,19 @@ Add a final stage (or sub-stage of implementation) that runs linters, security s
 **Status:** Done
 **Theme:** Portability
 
-Created `pipeline.md` at the repo root as the single source of truth for all platform-specific configuration. Updated all 7 skills, 4 templates, and 2 docs to reference `pipeline.md` instead of hardcoding OrangeQC-specific values. Zero hardcoded `~/projects/orangeqc/` paths remain in skills or templates.
+Externalized all platform-specific configuration using a two-file architecture. Updated all 7 skills, 4 templates, and 2 docs. Zero hardcoded `~/projects/orangeqc/` paths remain in skills or templates.
 
 **What was built:**
-- `pipeline.md` with REQUIRED sections (repos, branch config, framework, directory structure, implementation order, guardrails) and OPTIONAL sections (API conventions, multi-tenant security, backwards compatibility, feature flags, project tracker)
-- All skills read `pipeline.md` as item #1 in their "Before You Start" reading list
-- Templates use generic placeholders that reference `pipeline.md` sections
-- Three-layer architecture: `pipeline.md` (where things are) + AGENTS.md (how to write code) + constraints doc (why things are the way they are)
+- **`pipeline.md`** (pipeline repo) — maps the pipeline to target repositories (repo paths, project tracker). This is the only file to edit when pointing the pipeline at different repos.
+- **`PIPELINE.md`** (each target repo) — describes how that repo works (branch config, framework, directory structure, implementation order, test commands, guardrails, plus optional sections for API conventions, multi-tenant security, backwards compat, feature flags)
+- All skills read `pipeline.md` first for repo paths, then `PIPELINE.md` from the primary repo for all framework-specific details
+- Templates use generic placeholders that reference `PIPELINE.md` sections
+- Three-layer architecture: `pipeline.md` (where repos are) + `PIPELINE.md` (how the repo works) + AGENTS.md (how to write code) + constraints doc (why things are the way they are)
 
-**To use on a different project:** Edit `pipeline.md` with your repo paths, framework, and directory structure. Delete optional sections that don't apply. Skills and templates adapt automatically.
+**To use on a different project:**
+1. Edit `pipeline.md` with your repo paths
+2. Create `PIPELINE.md` in your target repo with framework details, directory structure, test command, and any optional sections that apply
+3. Skills and templates adapt automatically — no changes needed
 
 ---
 
@@ -305,7 +309,7 @@ Add a "ludicrous speed" mode that auto-approves human checkpoints when there are
 | ROAD-02 | Post-Stage Notifications | Orchestration | Planned |
 | ROAD-03 | Per-Milestone Gameplans | Pipeline architecture | Planned |
 | ROAD-04 | Post-Flight Checks | Quality assurance | Planned |
-| ROAD-05 | Externalize Platform Config | Portability | **Done** |
+| ROAD-05 | Externalize Platform Config (two-file) | Portability | **Done** |
 | ROAD-06 | Project Document Linking | Developer experience | Planned |
 | ROAD-07 | ADR Integration | Knowledge capture | Planned |
 | ROAD-08 | Linear Automation | Orchestration | Planned |

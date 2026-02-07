@@ -25,7 +25,7 @@ You are a **test writer**. You write comprehensive, failing test suites BEFORE a
 - **Input 2:** `projects/$ARGUMENTS/architecture-proposal.md` — data model, query patterns, security design
 - **Input 3:** `projects/$ARGUMENTS/prd.md` — requirement IDs and edge cases (Section 10)
 - **Input 4:** `projects/$ARGUMENTS/discovery-report.md` — existing codebase context
-- **Output 1:** Test files in the primary repository's test directory (path from pipeline.md)
+- **Output 1:** Test files in the primary repository's test directory (path from the repo's `PIPELINE.md`)
 - **Output 2:** `projects/$ARGUMENTS/test-coverage-matrix.md` — maps acceptance criteria to test locations
 - **Stage spec:** `docs/stages/04-test-generation.md` (read for full behavioral guidance)
 
@@ -44,12 +44,13 @@ This gate is non-negotiable.
 
 After passing the pre-flight check, read these files:
 
-1. The pipeline config at `pipeline.md` — understand repo paths, branch conventions, framework details
-2. The approved gameplan at `projects/$ARGUMENTS/gameplan.md` — your primary input (milestones, acceptance criteria, platform tasks)
-3. The architecture proposal at `projects/$ARGUMENTS/architecture-proposal.md` — data model, query patterns, serialization, security scoping
-4. The PRD at `projects/$ARGUMENTS/prd.md` — edge cases (Section 10), detailed requirement descriptions
-5. The stage spec at `docs/stages/04-test-generation.md` — your role and success criteria
-6. The conventions file in the primary repository (path from pipeline.md) — **critical**: test conventions, directory structure, factory patterns, test framework configuration
+1. The pipeline config at `pipeline.md` — get the primary repository path and other repo locations
+2. The repo config at `PIPELINE.md` in the primary repository (path from `pipeline.md`) — understand branch conventions, framework, directory structure, test commands, and all repo-specific details
+3. The approved gameplan at `projects/$ARGUMENTS/gameplan.md` — your primary input (milestones, acceptance criteria, platform tasks)
+4. The architecture proposal at `projects/$ARGUMENTS/architecture-proposal.md` — data model, query patterns, serialization, security scoping
+5. The PRD at `projects/$ARGUMENTS/prd.md` — edge cases (Section 10), detailed requirement descriptions
+6. The stage spec at `docs/stages/04-test-generation.md` — your role and success criteria
+7. The conventions file in the primary repository (path from `PIPELINE.md` Repository Details) — **critical**: test conventions, directory structure, factory patterns, test framework configuration
 
 ## Step-by-Step Procedure
 
@@ -57,28 +58,28 @@ After passing the pre-flight check, read these files:
 
 Search the primary repository (path from pipeline.md) to understand how tests are currently written. **Use Task agents for parallel exploration** — launch multiple explore agents simultaneously to gather patterns from different areas.
 
-**Model specs** — Find 2-3 examples in the model specs directory (from pipeline.md Directory Structure):
+**Model specs** — Find 2-3 examples in the model specs directory (from PIPELINE.md Directory Structure):
 - How validations, associations, and scopes are tested
 - `let`/`before` setup patterns
 - Factory usage
 
-**Request/Controller specs** — Find 2-3 examples in the request/controller specs directory (from pipeline.md Directory Structure):
+**Request/Controller specs** — Find 2-3 examples in the request/controller specs directory (from PIPELINE.md Directory Structure):
 - How authentication is set up in tests
 - How authorization is tested (permission checks, scoping)
 - How JSON responses are asserted
 - How error cases are tested
 
-**Service specs** — Find examples in the service specs directory (from pipeline.md Directory Structure):
+**Service specs** — Find examples in the service specs directory (from PIPELINE.md Directory Structure):
 - How service objects are instantiated and tested
 - How complex queries are tested
 - Test data setup for analytics/reporting
 
-**System specs** — Find examples in the system/feature specs directory (from pipeline.md Directory Structure):
+**System specs** — Find examples in the system/feature specs directory (from PIPELINE.md Directory Structure):
 - Capybara driver configuration
 - How pages are visited, interacted with, and asserted
 - How JavaScript-dependent features are tested
 
-**Factories** — Read the factories directory (from pipeline.md Directory Structure):
+**Factories** — Read the factories directory (from PIPELINE.md Directory Structure):
 - Existing factory definitions for models referenced in the architecture
 - Factory traits and sequences in use
 - What factories exist vs. what needs creating
@@ -194,7 +195,7 @@ The primary repository path is specified in pipeline.md Target Repositories.
 1. `cd <primary-repo-path>` (path from pipeline.md Target Repositories)
 2. Verify the working tree is clean (`git status`). If there are uncommitted changes, **STOP** and ask the user how to proceed.
 3. Fetch the latest from origin: `git fetch origin`
-4. Create and check out a new branch: `git checkout -b <branch-prefix>$ARGUMENTS origin/<default-branch>` (branch prefix and default branch from pipeline.md Repository Details)
+4. Create and check out a new branch: `git checkout -b <branch-prefix>$ARGUMENTS origin/<default-branch>` (branch prefix and default branch from PIPELINE.md Repository Details)
 
 If the branch `pipeline/$ARGUMENTS` already exists, **STOP** and ask the user whether to overwrite it or use a different name. Do not delete existing branches without explicit approval.
 

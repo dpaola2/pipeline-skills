@@ -31,7 +31,7 @@
 ### Related Models
 | Model | File | Key Associations | Notes |
 |-------|------|------------------|-------|
-| [Model] | [models directory from pipeline.md]/model.[ext] | [associations] | [Relevant notes] |
+| [Model] | [models directory from PIPELINE.md]/model.[ext] | [associations] | [Relevant notes] |
 
 ### Current Schema (Related Tables)
 
@@ -45,12 +45,12 @@ CREATE TABLE [table_name] (
 ### Related Controllers
 | Controller | File | Actions | Auth Pattern |
 |-----------|------|---------|--------------|
-| [Controller] | [controllers directory from pipeline.md]/... | index, show, create | [How auth works] |
+| [Controller] | [controllers directory from PIPELINE.md]/... | index, show, create | [How auth works] |
 
 ### Related Serializers
 | Serializer | File | Fields Exposed |
 |-----------|------|----------------|
-| [Serializer] | [serializers directory from pipeline.md]/... | [List of fields] |
+| [Serializer] | [serializers directory from PIPELINE.md]/... | [List of fields] |
 
 ### Related API Endpoints (Current)
 | Method | Path | Purpose | Response Shape |
@@ -75,7 +75,7 @@ CREATE TABLE [table_name] (
 ### Related Background Jobs
 | Job | File | Purpose |
 |-----|------|---------|
-| [Job] | [jobs directory from pipeline.md]/... | [Purpose] |
+| [Job] | [jobs directory from PIPELINE.md]/... | [Purpose] |
 
 ---
 

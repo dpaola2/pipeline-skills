@@ -28,11 +28,12 @@ You are a **codebase explorer**. Your job is to understand how things work TODAY
 
 Read these files in order:
 
-1. The pipeline config at `pipeline.md` — understand repo paths, branch conventions, framework details
-2. The PRD at `projects/$ARGUMENTS/prd.md` — understand what we're building
-3. The stage spec at `docs/stages/01-discovery.md` — understand your role and success criteria
-4. The output template at `templates/discovery-report.md` — understand your output format
-5. The conventions file in the primary repository (path and filename from `pipeline.md` Target Repositories and Repository Details) — understand codebase conventions
+1. The pipeline config at `pipeline.md` — get the primary repository path and other repo locations
+2. The repo config at `PIPELINE.md` in the primary repository (path from `pipeline.md`) — understand branch conventions, framework, directory structure, test commands, and all repo-specific details
+3. The PRD at `projects/$ARGUMENTS/prd.md` — understand what we're building
+4. The stage spec at `docs/stages/01-discovery.md` — understand your role and success criteria
+5. The output template at `templates/discovery-report.md` — understand your output format
+6. The conventions file in the primary repository (path and filename from `PIPELINE.md` Repository Details) — understand codebase conventions
 
 ## Step-by-Step Procedure
 
@@ -50,7 +51,7 @@ Extract:
 
 The primary repository path is specified in `pipeline.md` Target Repositories.
 
-For each entity/keyword extracted from the PRD, search the directories listed in `pipeline.md` Directory Structure. For each directory purpose (Models, Controllers, Views, etc.), search the corresponding path for related code.
+For each entity/keyword extracted from the PRD, search the directories listed in the primary repo's `PIPELINE.md` Directory Structure. For each directory purpose (Models, Controllers, Views, etc.), search the corresponding path for related code.
 
 For each finding, record:
 - File path with line numbers
@@ -59,7 +60,7 @@ For each finding, record:
 
 ### 3. Search the API Documentation
 
-If `pipeline.md` Target Repositories lists an API docs repository, search it.
+If `pipeline.md` Target Repositories lists an API docs repository, search it. (If that repo has its own `PIPELINE.md`, read it for repo-specific details.)
 
 Look for:
 - Existing endpoint documentation for related resources
@@ -73,7 +74,7 @@ Check the PRD header for the project level:
 
 - **Level 1** (small project): Focus on Rails. Lightweight discovery.
 - **Level 2** (web only): Focus on the primary platform. Mark other platform sections as "N/A — Level 2 (web-only) project."
-- **Level 3** (all platforms): Search all repositories listed in `pipeline.md` Target Repositories that have Active status in the Platforms table.
+- **Level 3** (all platforms): Search all repositories listed in `pipeline.md` Target Repositories that have Active status in the primary repo's `PIPELINE.md` Platforms table.
 
 ### 5. Document Cross-Platform Patterns
 
