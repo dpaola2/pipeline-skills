@@ -31,6 +31,7 @@
 | ROAD-21 | Pipeline Dashboard (Factorio Theme) | Visibility | Planned |
 | ROAD-22 | Pipeline Status MCP Server | Visibility | Planned |
 | ROAD-23 | Stage 4 Test Quality Heuristics | Quality assurance | **Done** |
+| ROAD-24 | Merge PIPELINE.md into Conventions Files | Portability | Planned |
 
 ---
 
@@ -990,3 +991,131 @@ Add a "Test Quality Heuristics" section to the Stage 4 skill, referenced during 
 - Pairs well with ROAD-15 (Knowledge Extraction) — test antipatterns discovered during Stage 5 should flow back into this list
 
 **Related:** ROAD-15 (Knowledge Extraction — antipatterns are learnable), ROAD-18 (Gameplan Coherence — quality gates at different stages)
+
+---
+
+### ROAD-24: Merge PIPELINE.md into Conventions Files
+
+**Status:** Planned
+**Theme:** Portability
+**Supersedes:** ROAD-05 (two-file architecture becomes a one-file-per-repo architecture)
+
+Eliminate `PIPELINE.md` as a standalone file. Fold its unique content into each target repo's conventions file (`AGENTS.md` for OrangeQC, `CLAUDE.md` for Show Notes). One file per repo, one source of truth.
+
+**Why:** ROAD-05 created a two-file architecture: `pipeline.md` (where repos are) + `PIPELINE.md` (how the repo works). In practice, `PIPELINE.md` overlaps ~80% with the conventions file and the two have already drifted — `AGENTS.md` says the default branch is `dave/agents-staging`, `PIPELINE.md` says `staging` (correct). Having two files that describe the same repo invites inconsistency. The conventions file already serves every Claude Code session; `PIPELINE.md` only serves pipeline skills. Merging them means pipeline skills and ad-hoc Claude sessions read the same truth.
+
+**Current state (three layers):**
+```
+pipeline.md (pipeline repo)     → where repos are
+  ↓
+PIPELINE.md (each target repo)  → how the repo works (branch, framework, dirs, checks, guardrails)
+  ↓
+AGENTS.md / CLAUDE.md           → how to write code (conventions, patterns, gotchas)
+```
+
+**Proposed state (two layers):**
+```
+pipeline.md (pipeline repo)     → where repos are + which conventions file to read
+  ↓
+AGENTS.md / CLAUDE.md           → how the repo works + how to write code (everything in one file)
+```
+
+**What changes:**
+
+#### 1. Add "Pipeline Configuration" section to each conventions file
+
+**OrangeQC AGENTS.md** — add near the top (after "Git Branch and Push Policy"):
+- Fix default branch from `dave/agents-staging` to `staging`
+- New section with: default branch, test command, branch prefix, platforms, seed tasks dir
+- Implementation order (7 steps)
+- Post-flight checks (StandardRB, Brakeman, ripsecrets)
+- Guardrails
+- Directory structure table for spec paths (app/ paths are already covered in "Codebase Structure")
+
+Don't duplicate what AGENTS.md already covers (framework, app/ directory structure, multi-tenant patterns, API conventions — these are already there in different form).
+
+**Show Notes CLAUDE.md** — add at the end. Larger addition since CLAUDE.md has less technical reference:
+- Repository details, framework & stack table, directory structure, platforms
+- Implementation order, post-flight checks, guardrails
+
+#### 2. Update pipeline.md format
+
+Add `Conventions File` column to the Target Repositories table:
+
+```markdown
+| Repository | Path | Conventions File | Purpose |
+|-----------|------|-----------------|---------|
+| Primary | `~/projects/orangeqc/orangeqc/` | `AGENTS.md` | Rails web app + API backend |
+```
+
+Update: `pipeline.md.example`, `pipelines/orangeqc.md`, `pipelines/show-notes.md`, and the active `pipeline.md`.
+
+Remove the blockquote paragraphs about `PIPELINE.md` from all pipeline configs.
+
+#### 3. Update all 9 skills
+
+Mechanical find-and-replace across all skills:
+- "Read `PIPELINE.md` in the primary repository" → "Read the conventions file (name from pipeline.md Target Repositories)"
+- "from `PIPELINE.md` Repository Details" → "from the conventions file"
+- Merge the two "read config" steps (PIPELINE.md + conventions file) into one step
+- Remove the self-referential "Conventions file" row instructions
+
+**Files:**
+- `.claude/skills/stage0-prd/SKILL.md`
+- `.claude/skills/stage1-discovery/SKILL.md`
+- `.claude/skills/stage2-architecture/SKILL.md`
+- `.claude/skills/stage3-gameplan/SKILL.md`
+- `.claude/skills/stage4-test-generation/SKILL.md`
+- `.claude/skills/stage5-implementation/SKILL.md`
+- `.claude/skills/stage7-qa-plan/SKILL.md`
+- `.claude/skills/create-pr/SKILL.md`
+- `.claude/skills/setup-repo/SKILL.md` — biggest change: generates a "Pipeline Configuration" section in the existing conventions file (or creates one if none exists) instead of generating a standalone `PIPELINE.md`
+
+#### 4. Update pipeline repo docs
+
+- `CLAUDE.md` — update "Pipeline Configuration" section (three-layer → two-layer), remove all `PIPELINE.md` references
+- `pipelines/README.md` — remove `PIPELINE.md` references from "Creating a config" instructions
+- `docs/roadmap.md` — update ROAD-05 description to note it was superseded by ROAD-24
+- `docs/pipeline-architecture.md` — update if it references `PIPELINE.md`
+
+#### 5. Delete PIPELINE.md from both repos
+
+- `~/projects/orangeqc/orangeqc/PIPELINE.md` — delete
+- `~/projects/show-notes/PIPELINE.md` — delete
+
+#### 6. Update MEMORY.md
+
+Reflect the new two-layer architecture. Remove references to PIPELINE.md as a separate file.
+
+**Execution order:**
+
+1. Add Pipeline Config section to OrangeQC AGENTS.md + fix default branch
+2. Add Pipeline Config section to Show Notes CLAUDE.md
+3. Update pipeline repo — all skills, docs, pipeline.md format (single commit)
+4. Delete PIPELINE.md from both repos (one commit per repo)
+5. Update MEMORY.md
+
+**Verification:**
+
+After all changes:
+1. `grep -r "PIPELINE.md" .claude/skills/` → zero results (except possibly setup-repo explaining the migration)
+2. Activate OrangeQC config, verify pipeline.md has conventions file column
+3. Activate Show Notes config, verify same
+4. Verify PIPELINE.md is gone from both repos
+5. Spot-check a skill (e.g., stage4) reads correctly from the conventions file
+
+**Files modified (by repo):**
+
+| Repo | Files |
+|------|-------|
+| OrangeQC Rails (`~/projects/orangeqc/orangeqc/`) | `AGENTS.md` (edit), `PIPELINE.md` (delete) |
+| Show Notes (`~/projects/show-notes/`) | `CLAUDE.md` (edit), `PIPELINE.md` (delete) |
+| Pipeline (`~/projects/orangeqc/agent-pipeline/`) | 9 skill files, `pipeline.md.example`, `pipeline.md`, `pipelines/orangeqc.md`, `pipelines/show-notes.md`, `pipelines/README.md`, `CLAUDE.md`, `docs/roadmap.md`, `docs/pipeline-architecture.md`, `MEMORY.md` |
+
+**Considerations:**
+- This is a zero-behavior-change refactor — skills read the same information, just from one file instead of two
+- The conventions file grows, but most of the added content is structured tables that are easy to skip when reading for other purposes
+- `/setup-repo` becomes simpler to explain to users: "it adds a section to your conventions file" vs. "it creates a separate PIPELINE.md file"
+- Future products onboarded via `/setup-repo` only need one file created, not two
+
+**Related:** ROAD-05 (superseded), ROAD-12 (Multi-Product — setup-repo changes), ROAD-15 (Knowledge Extraction — conventions file is now the single target for repo-scoped knowledge)
