@@ -2,3 +2,9 @@
 # These directories should not exist in the pipeline repo
 projects/
 inbox/
+
+# Pipeline configs contain machine-specific paths (like .env files)
+# Use /setup-repo to generate yours, or copy from pipeline.md.example
+pipeline.md
+pipelines/*.md
+!pipelines/README.md

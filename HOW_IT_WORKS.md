@@ -6,7 +6,7 @@
 
 ## The Big Picture
 
-OrangeQC's development process has five phases:
+A typical development process looks something like:
 
 ```
 Framing → Shaping (PRD) → Gameplanning (Spec) → Building → Testing/QA
@@ -21,7 +21,7 @@ This pipeline automates **Gameplanning through pre-QA validation**. Framing and 
 **Input:** A PRD in structured markdown — every requirement numbered (e.g., SEC-001), platforms explicit, edge cases tabled, backwards compatibility matrix filled out.
 
 **Output:**
-- Merged code across Rails, iOS, and Android
+- Implementation code on a feature branch, ready for PR
 - Passing test suites with comprehensive coverage
 - A QA Plan telling a human tester exactly what to test
 
@@ -55,7 +55,7 @@ Stages 1-2 are safe to run on any PRD with zero risk — they only produce docum
 
 ### Stage 1: Discovery
 
-**What it does:** An explorer agent reads the PRD, extracts entity names and keywords, then searches across all three repos (Rails, iOS, Android). It finds existing models, controllers, serializers, tests, and API endpoints related to the feature.
+**What it does:** An explorer agent reads the PRD, extracts entity names and keywords, then searches across the target repo(s). It finds existing models, controllers, serializers, tests, and API endpoints related to the feature.
 
 **Output:** A Discovery Report documenting "here's how things work TODAY." This is the automated version of M0 Discovery — understanding the current state before proposing changes.
 
@@ -66,12 +66,12 @@ Stages 1-2 are safe to run on any PRD with zero risk — they only produce docum
 ### Stage 2: Architecture
 
 **What it does:** A designer agent takes the PRD + Discovery Report and proposes the technical design:
-- New tables with full schema (UUIDv7 PKs, indexes, constraints)
-- Migration plan (DDL, concurrent indexes, backfills)
-- Full API endpoint specs with example request AND response JSON
-- Backwards compatibility matrix (what each app version sees)
-- Security scoping chains (how every query is scoped to account)
-- Export impact (how new data appears in existing exports)
+- New tables/models with full schema (columns, indexes, constraints)
+- Migration plan (DDL, backfills, safety considerations)
+- API endpoint specs with example request and response JSON (if applicable)
+- Backwards compatibility matrix (if applicable — e.g., mobile apps that can't be force-updated)
+- Security scoping (how queries are scoped to the correct user/account)
+- Impact on existing features (exports, integrations, etc.)
 
 **Output:** An Architecture Proposal — the shared contract that all platforms build against.
 
@@ -135,13 +135,9 @@ Stages 1-2 are safe to run on any PRD with zero risk — they only produce docum
 
 **What it does:** A test writer agent reads the approved spec and writes failing tests — before any implementation code exists. Each acceptance criterion maps to one or more tests:
 
-- **Rails:** Request specs (API endpoints), model specs (validations, associations), system specs (admin UI)
-- **iOS:** Unit tests (model parsing, API client calls)
-- **Android:** Unit tests (model parsing, API client calls)
+Test types depend on the framework (e.g., request specs, model specs, system specs for Rails; unit tests for mobile). The agent also produces a coverage matrix mapping every acceptance criterion to its test files.
 
-The agent also produces a coverage matrix mapping every acceptance criterion to its test files and line numbers.
-
-**Output:** PRs containing failing test suites, organized by milestone. All tests should fail — nothing is implemented yet.
+**Output:** Failing test suites on a feature branch, organized by milestone. All tests should fail — nothing is implemented yet.
 
 **Why it matters:** Tests define the contract. They're the objective measure of "done" for implementation.
 
@@ -149,22 +145,11 @@ The agent also produces a coverage matrix mapping every acceptance criterion to 
 
 ### Stage 5: Implementation
 
-**What it does:** A builder agent works milestone-by-milestone, writing code to make the failing tests pass. The execution order is strict:
+**What it does:** A builder agent works milestone-by-milestone, writing code to make the failing tests pass. It follows the implementation order defined in the repo's `PIPELINE.md` (e.g., migrations → models → controllers → views) and the conventions in the repo's conventions file (e.g., `AGENTS.md`, `CLAUDE.md`).
 
-```
-For each milestone:
-  1. Rails API (migrations → models → controllers → serializers)
-     → Deploy to staging
-  2. iOS (builds against real staging API)
-  3. Android (parallel with iOS, also against staging API)
-  4. Rails Admin UI (parallel with mobile)
-```
+For multi-platform products, the primary platform (typically the API backend) is implemented first so other platforms can build against it.
 
-One PR per milestone per platform. The agent follows AGENTS.md conventions for each repo.
-
-**Output:** Implementation PRs with passing tests.
-
-**Why Rails goes first:** Mobile agents build against a real staging API, not a spec document. This catches integration mismatches early instead of at QA time, which is where multi-platform coordination historically breaks down.
+**Output:** Implementation commits with passing tests, one milestone at a time.
 
 ---
 
@@ -243,38 +228,33 @@ These are non-negotiable across all stages:
 
 | Rule | Why |
 |------|-----|
-| Agents never have production access | No Heroku remotes, no App Store credentials, no Play Store credentials in agent environments |
+| Agents never have production access | No deploy credentials, no production remotes, no production database access in agent environments |
 | Human approves architecture and gameplan before code generation | Two checkpoints catch issues early: architecture review locks down the data model and API, gameplan review locks down the implementation plan |
 | All CI checks must pass | No bypassing failed checks, ever |
 | Human approves all merges | AI writes code → Human reviews → Human approves merge → CI/CD deploys |
-| Backwards compatibility is verified | ~75% of mobile users are on older versions that can't be force-updated |
-| All queries scoped to account | Multi-tenant. No cross-tenant data leakage. |
+| Backwards compatibility is verified (if applicable) | Old clients that can't be force-updated must continue to work |
+| Security scoping is enforced (if applicable) | Multi-tenant apps must scope all queries to the correct account/user |
 
 ---
 
 ## Current Status
 
-**The pipeline is operational for Rails-only (Level 2) projects.**
+**The pipeline is operational and has been validated end-to-end on multiple projects.**
 
-The first project — Deficient Line Items Report — has completed all seven stages successfully. Stages 1-5 and 7 have Claude Code skills that run as manual sessions. Stage 6 (Review) is spec'd but not yet automated; code review is currently manual.
-
-The pipeline currently targets **Rails only**. Rails test infrastructure is in place (RSpec in CI), and Rails capacity is the team's biggest bottleneck. iOS and Android test infrastructure is developing but isn't ready for pipeline use yet. Mobile stages will be added later.
-
-For Rails-only projects, the pipeline still designs the API contract that mobile will eventually build against — we don't skip API design, we just defer mobile implementation.
+Stages 0-5 and 7 have Claude Code skills that run as manual sessions. Stage 6 (Review) is spec'd but not yet automated; code review is currently manual.
 
 **What's working:**
 - Stage specs, templates, and process documentation
-- Claude Code skills for Stages 1-5 and 7 (run via `/stage1-discovery`, etc.)
-- Rails test infrastructure (RSpec in CI)
-- Complete end-to-end run on first project (8 milestones, 123 tests, 40 QA scenarios)
+- Claude Code skills for Stages 0-5 and 7 (run via `/stage0-prd`, `/stage1-discovery`, etc.)
+- Multi-product support (switch between products via pipeline configs)
+- Complete end-to-end runs on real projects
 
 **What's next:**
-- Stage 6 (Review) skill — automated code review against AGENTS.md conventions
+- Stage 6 (Review) skill — automated code review against repo conventions
 - Orchestration layer — automated stage chaining (currently each stage runs as a manual Claude Code session)
-- Linear integration — automated ticket creation and status transitions
-- iOS/Android expansion (when their test suites mature)
+- Project tracker integration — automated ticket creation and status transitions
 
-See `docs/gap-analysis.md` for the full prioritized roadmap.
+See `docs/roadmap.md` for planned improvements.
 
 ---
 
@@ -283,8 +263,7 @@ See `docs/gap-analysis.md` for the full prioritized roadmap.
 | Document | What It Covers |
 |----------|---------------|
 | `docs/pipeline-architecture.md` | Detailed stage specs, error handling, cross-cutting concerns |
-| `docs/current-process.md` | The OrangeQC development process this automates |
-| `docs/orangeqc-constraints.md` | Platform, team, and guardrail constraints |
-| `docs/gap-analysis.md` | What's missing, priority order, implementation sequence |
+| `docs/current-process.md` | The development process this pipeline automates |
 | `docs/stages/01-07` | Deep specs for each individual stage |
 | `templates/` | Input/output templates used by each stage |
+| `docs/roadmap.md` | Planned improvements |

@@ -52,9 +52,7 @@ The **active** pipeline config. Skills read this file to find repo paths and wor
 This is always the file skills read. To switch products, copy the right config from `pipelines/`.
 
 ### `pipelines/` (this repo — the product library)
-Named pipeline configs per product. Each file has the same format as `pipeline.md`:
-- `pipelines/orangeqc.md` — OrangeQC (Rails + API + iOS + Android)
-- `pipelines/show-notes.md` — Show Notes (Rails web app)
+Named pipeline configs per product. Each file has the same format as `pipeline.md`. These are gitignored (machine-specific paths) — see `pipelines/README.md` for how to create and manage them.
 
 **To switch products:** `cp pipelines/<product>.md pipeline.md`
 
@@ -75,7 +73,7 @@ Skills read `pipeline.md` first to find repo paths, then read `PIPELINE.md` from
 
 Sections marked REQUIRED apply to every project. Sections marked OPTIONAL can be omitted if they don't apply (e.g., a personal project with no API, no multi-tenancy, no mobile).
 
-**Why project artifacts live outside the pipeline repo:** Project artifacts (PRDs, gameplans, progress files) are *pipeline-scoped*, not *repo-scoped*. An OrangeQC Level 3 project may touch Rails, iOS, and Android repos simultaneously — its artifacts can't live inside any single target repo. Placing them in a per-product directory (e.g., `~/projects/orangeqc/pipeline-projects/`) lets project work span multiple repos while keeping products isolated from each other.
+**Why project artifacts live outside the pipeline repo:** Project artifacts (PRDs, gameplans, progress files) are *pipeline-scoped*, not *repo-scoped*. A multi-platform project may touch several repos simultaneously — its artifacts can't live inside any single target repo. Placing them in a per-product work directory lets project work span multiple repos while keeping products isolated from each other.
 
 ---
 
@@ -106,10 +104,6 @@ Project artifacts live **outside this repo**, in a configurable directory per pr
 ```
 
 The inbox (raw input notes for Stage 0) also lives externally, at `pipeline.md` Work Directory → Inbox.
-
-Current work directories:
-- **OrangeQC:** `~/projects/orangeqc/pipeline-projects/`
-- **Show Notes:** `~/projects/show-notes/pipeline-projects/`
 
 ### Running the Pipeline
 

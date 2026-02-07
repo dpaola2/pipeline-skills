@@ -1,0 +1,43 @@
+# Pipeline Configuration — [Product Name]
+
+> Maps this pipeline instance to target repositories for [Product Name].
+> To activate: `cp pipelines/[product-name].md pipeline.md`
+
+---
+
+## Target Repositories
+
+(REQUIRED — where does the code live?)
+
+| Repository | Path | Purpose |
+|-----------|------|---------|
+| Primary | `/path/to/your/repo` | [e.g., Rails web app, Node.js API] |
+
+> Each repository listed here should have a `PIPELINE.md` at its root with repo-specific config
+> (branch conventions, framework, directory structure, test commands, guardrails, and any optional
+> sections like API conventions or multi-tenant security).
+>
+> The primary repository's `PIPELINE.md` is the one skills read most — it has the framework details,
+> directory structure, and implementation order that drive Stages 1-7.
+
+---
+
+## Project Tracker
+
+(OPTIONAL — only if using an external tracker)
+
+| Setting | Value |
+|---------|-------|
+| **Tool** | [Linear, GitHub Issues, or None] |
+| **Workspace** | [workspace or repo name] |
+
+---
+
+## Work Directory
+
+(REQUIRED — where do project artifacts and inbox files live?)
+
+| Setting | Path |
+|---------|------|
+| **Projects** | `/path/to/pipeline-projects/` |
+| **Inbox** | `/path/to/pipeline-projects/inbox/` |
