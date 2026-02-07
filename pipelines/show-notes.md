@@ -23,3 +23,14 @@
 |---------|-------|
 | **Tool** | GitHub Issues |
 | **Repository** | show-notes |
+
+---
+
+## Work Directory
+
+(REQUIRED — where do project artifacts and inbox files live?)
+
+| Setting | Path |
+|---------|------|
+| **Projects** | `~/projects/show-notes/pipeline-projects/` |
+| **Inbox** | `~/projects/show-notes/pipeline-projects/inbox/` |

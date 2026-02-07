@@ -21,22 +21,22 @@ You are a **test writer**. You write comprehensive, failing test suites BEFORE a
 
 ## Inputs & Outputs
 
-- **Input 1:** `projects/$ARGUMENTS/gameplan.md` (MUST be approved) — milestones and acceptance criteria
-- **Input 2:** `projects/$ARGUMENTS/architecture-proposal.md` — data model, query patterns, security design
-- **Input 3:** `projects/$ARGUMENTS/prd.md` — requirement IDs and edge cases (Section 10)
-- **Input 4:** `projects/$ARGUMENTS/discovery-report.md` — existing codebase context
+- **Input 1:** `<projects-path>/$ARGUMENTS/gameplan.md` (MUST be approved) — milestones and acceptance criteria
+- **Input 2:** `<projects-path>/$ARGUMENTS/architecture-proposal.md` — data model, query patterns, security design
+- **Input 3:** `<projects-path>/$ARGUMENTS/prd.md` — requirement IDs and edge cases (Section 10)
+- **Input 4:** `<projects-path>/$ARGUMENTS/discovery-report.md` — existing codebase context
 - **Output 1:** Test files in the primary repository's test directory (path from the repo's `PIPELINE.md`)
-- **Output 2:** `projects/$ARGUMENTS/test-coverage-matrix.md` — maps acceptance criteria to test locations
+- **Output 2:** `<projects-path>/$ARGUMENTS/test-coverage-matrix.md` — maps acceptance criteria to test locations
 - **Stage spec:** `docs/stages/04-test-generation.md` (read for full behavioral guidance)
 
 ## Pre-Flight Check (MANDATORY)
 
-Before doing anything else, read `projects/$ARGUMENTS/gameplan.md` and scroll to the **Approval Checklist** section near the bottom.
+Before doing anything else, read `<projects-path>/$ARGUMENTS/gameplan.md` and scroll to the **Approval Checklist** section near the bottom.
 
 - If **Status** is "Approved" or "Approved with Modifications" → proceed.
 - If **Status** is "Pending" or "Rejected" or the checklist is missing → **STOP** and tell the user:
 
-> "The gameplan has not been approved yet. Please review and approve it before running Stage 4. To approve: edit `projects/$ARGUMENTS/gameplan.md`, find the Approval Checklist near the bottom, and set Status to 'Approved'."
+> "The gameplan has not been approved yet. Please review and approve it before running Stage 4. To approve: edit `<projects-path>/$ARGUMENTS/gameplan.md`, find the Approval Checklist near the bottom, and set Status to 'Approved'."
 
 This gate is non-negotiable.
 
@@ -44,11 +44,11 @@ This gate is non-negotiable.
 
 After passing the pre-flight check, read these files:
 
-1. The pipeline config at `pipeline.md` — get the primary repository path and other repo locations
+1. The pipeline config at `pipeline.md` — get the primary repository path, the **projects path** (from Work Directory → Projects), and other repo locations
 2. The repo config at `PIPELINE.md` in the primary repository (path from `pipeline.md`) — understand branch conventions, framework, directory structure, test commands, and all repo-specific details
-3. The approved gameplan at `projects/$ARGUMENTS/gameplan.md` — your primary input (milestones, acceptance criteria, platform tasks)
-4. The architecture proposal at `projects/$ARGUMENTS/architecture-proposal.md` — data model, query patterns, serialization, security scoping
-5. The PRD at `projects/$ARGUMENTS/prd.md` — edge cases (Section 10), detailed requirement descriptions
+3. The approved gameplan at `<projects-path>/$ARGUMENTS/gameplan.md` — your primary input (milestones, acceptance criteria, platform tasks)
+4. The architecture proposal at `<projects-path>/$ARGUMENTS/architecture-proposal.md` — data model, query patterns, serialization, security scoping
+5. The PRD at `<projects-path>/$ARGUMENTS/prd.md` — edge cases (Section 10), detailed requirement descriptions
 6. The stage spec at `docs/stages/04-test-generation.md` — your role and success criteria
 7. The conventions file in the primary repository (path from `PIPELINE.md` Repository Details) — **critical**: test conventions, directory structure, factory patterns, test framework configuration
 
@@ -145,7 +145,7 @@ Check the PRD header for the project level:
 
 ### 6. Write the Coverage Matrix
 
-Write to `projects/$ARGUMENTS/test-coverage-matrix.md`:
+Write to `<projects-path>/$ARGUMENTS/test-coverage-matrix.md`:
 
 ```markdown
 # Test Coverage Matrix — [Feature Name]
@@ -236,7 +236,7 @@ In the primary repository, commit all new files on the `pipeline/$ARGUMENTS` bra
 Tell the user:
 1. The branch name: `pipeline/$ARGUMENTS` in the Rails repo
 2. List every file created with a brief description of what it tests
-3. The coverage matrix has been written to `projects/$ARGUMENTS/test-coverage-matrix.md`
+3. The coverage matrix has been written to `<projects-path>/$ARGUMENTS/test-coverage-matrix.md`
 4. How many acceptance criteria are covered and by how many test cases total
 5. Any acceptance criteria that couldn't be fully tested (and why)
 6. Results of the syntax check (`ruby -c`)

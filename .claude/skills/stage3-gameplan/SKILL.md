@@ -17,21 +17,21 @@ You are a **project planner**. You synthesize the PRD, Discovery Report, and APP
 
 ## Inputs & Outputs
 
-- **Input 1:** `projects/$ARGUMENTS/prd.md`
-- **Input 2:** `projects/$ARGUMENTS/discovery-report.md`
-- **Input 3:** `projects/$ARGUMENTS/architecture-proposal.md` (MUST be approved)
-- **Output:** `projects/$ARGUMENTS/gameplan.md`
+- **Input 1:** `<projects-path>/$ARGUMENTS/prd.md`
+- **Input 2:** `<projects-path>/$ARGUMENTS/discovery-report.md`
+- **Input 3:** `<projects-path>/$ARGUMENTS/architecture-proposal.md` (MUST be approved)
+- **Output:** `<projects-path>/$ARGUMENTS/gameplan.md`
 - **Output template:** `templates/gameplan.md`
 - **Stage spec:** `docs/stages/03-gameplan.md` (read this for full behavioral guidance)
 
 ## Pre-Flight Check (MANDATORY)
 
-Before doing anything else, read `projects/$ARGUMENTS/architecture-proposal.md` and scroll to the **Approval Checklist** section at the bottom.
+Before doing anything else, read `<projects-path>/$ARGUMENTS/architecture-proposal.md` and scroll to the **Approval Checklist** section at the bottom.
 
 - If **Status** is "Approved" or "Approved with Modifications" → proceed.
 - If **Status** is "Pending" or "Rejected" or the checklist is missing → **STOP** and tell the user:
 
-> "The architecture proposal has not been approved yet. Please review and approve it before running Stage 3. To approve: edit `projects/$ARGUMENTS/architecture-proposal.md`, find the Approval Checklist at the bottom, and set Status to 'Approved'."
+> "The architecture proposal has not been approved yet. Please review and approve it before running Stage 3. To approve: edit `<projects-path>/$ARGUMENTS/architecture-proposal.md`, find the Approval Checklist at the bottom, and set Status to 'Approved'."
 
 This gate is non-negotiable.
 
@@ -39,11 +39,11 @@ This gate is non-negotiable.
 
 After passing the pre-flight check, read these files:
 
-1. The pipeline config at `pipeline.md` — get the primary repository path and other repo locations
+1. The pipeline config at `pipeline.md` — get the primary repository path, the **projects path** (from Work Directory → Projects), and other repo locations
 2. The repo config at `PIPELINE.md` in the primary repository (path from `pipeline.md`) — understand platforms, framework, and which optional concerns apply (multi-tenant, feature flags, exports, backwards compat)
-3. The PRD at `projects/$ARGUMENTS/prd.md`
-4. The Discovery Report at `projects/$ARGUMENTS/discovery-report.md`
-5. The APPROVED Architecture Proposal at `projects/$ARGUMENTS/architecture-proposal.md`
+3. The PRD at `<projects-path>/$ARGUMENTS/prd.md`
+4. The Discovery Report at `<projects-path>/$ARGUMENTS/discovery-report.md`
+5. The APPROVED Architecture Proposal at `<projects-path>/$ARGUMENTS/architecture-proposal.md`
 6. The stage spec at `docs/stages/03-gameplan.md`
 7. The output template at `templates/gameplan.md`
 
@@ -124,7 +124,7 @@ If any check fails, fix it before writing the output.
 
 ### 8. Write the Engineering Gameplan
 
-Write to `projects/$ARGUMENTS/gameplan.md` using the template from `templates/gameplan.md`.
+Write to `<projects-path>/$ARGUMENTS/gameplan.md` using the template from `templates/gameplan.md`.
 
 Update the header to reference the approved architecture:
 - Set "Approved Architecture" to the path of the architecture proposal
@@ -146,4 +146,4 @@ Tell the user:
 1. The engineering gameplan has been written
 2. Summarize the milestone breakdown (number of milestones, names, estimated scope)
 3. List any open questions or risks that need human input
-4. **Remind them:** "This gameplan must be reviewed and approved before Stage 4 (Test Generation) can run. To approve: edit `projects/$ARGUMENTS/gameplan.md`, find the Approval Checklist near the bottom, and set Status to 'Approved'. Then run `/stage4-test-generation $ARGUMENTS`."
+4. **Remind them:** "This gameplan must be reviewed and approved before Stage 4 (Test Generation) can run. To approve: edit `<projects-path>/$ARGUMENTS/gameplan.md`, find the Approval Checklist near the bottom, and set Status to 'Approved'. Then run `/stage4-test-generation $ARGUMENTS`."

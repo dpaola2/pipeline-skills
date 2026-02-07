@@ -323,6 +323,34 @@ Added support for running the pipeline against multiple products (repos), with s
 
 ---
 
+### ROAD-14: Externalize Project Work Directories
+
+**Status:** Done
+**Theme:** Portability
+
+Externalized project artifacts (`projects/`) and inbox (`inbox/`) from the pipeline repo into configurable per-product directories. The pipeline repo is now purely the engine (skills, templates, docs). Each product's `pipeline.md` config points to where its project work lives.
+
+**What was built:**
+- **Work Directory section** in `pipeline.md` — two new fields: Projects path and Inbox path
+- **All 9 skills updated** — read projects/inbox paths from `pipeline.md` Work Directory instead of assuming local `projects/` and `inbox/`
+- **External project directories** — each product has its own git repo for project artifacts:
+  - OrangeQC: `~/projects/orangeqc/pipeline-projects/`
+  - Show Notes: `~/projects/show-notes/pipeline-projects/`
+- **`/setup-repo` skill updated** — generates Work Directory section in new pipeline configs, asks user for projects path
+- **Migration** — 6 OrangeQC projects and 1 Show Notes project moved to external directories
+
+**Why:** Two problems solved:
+1. Personal project artifacts (Show Notes) no longer mix with work artifacts (OrangeQC) in the same repo
+2. OrangeQC Level 3 projects (multi-repo: Rails + iOS + Android) need cross-repo project artifacts that don't belong inside any single target repo
+
+**Design decisions:**
+- One config field per product in `pipeline.md` — follows the existing pattern of `cp pipelines/<product>.md pipeline.md` to switch everything
+- External directories are git repos (user choice) — enables version control and backup of project artifacts independently
+- Inbox is a subdirectory of the projects path (convention: `<projects-path>/inbox/`)
+- Pipeline repo `.gitignore` blocks accidental `projects/` or `inbox/` creation
+
+---
+
 ### ROAD-13: Configurable Base Branch (per project)
 
 **Status:** Planned
@@ -355,3 +383,4 @@ Allow each project to specify a custom base branch instead of always branching f
 | ROAD-11 | Ludicrous Speed Mode | Orchestration | Planned |
 | ROAD-12 | Multi-Product Support + Setup Repo | Portability | **Done** |
 | ROAD-13 | Configurable Base Branch | Pipeline lifecycle | Planned |
+| ROAD-14 | Externalize Project Work Dirs | Portability | **Done** |

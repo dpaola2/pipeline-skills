@@ -44,9 +44,10 @@ This pipeline automates **Gameplanning → Building → pre-QA validation**. Fra
 Configuration has three layers:
 
 ### `pipeline.md` (this repo, root — the active pointer)
-The **active** pipeline config. Skills read this file to find repo paths. Contains:
+The **active** pipeline config. Skills read this file to find repo paths and work directory. Contains:
 - **Target repository paths** (primary repo, API docs, mobile repos)
 - **Project tracker** (Linear, GitHub Issues, or none)
+- **Work directory** (projects path, inbox path — where project artifacts live externally)
 
 This is always the file skills read. To switch products, copy the right config from `pipelines/`.
 
@@ -89,10 +90,10 @@ The PRD header specifies the level. Skills adapt their output accordingly.
 
 ### Project Directory Convention
 
-Each pipeline project lives in `projects/<slug>/` where `<slug>` is a kebab-case name:
+Project artifacts live **outside this repo**, in a configurable directory per product. The path is set in `pipeline.md` Work Directory → Projects. Each project is a subdirectory named with a kebab-case slug:
 
 ```
-projects/deficient-line-items-report/
+<projects-path>/deficient-line-items-report/
   prd.md                        # Input: the structured PRD
   discovery-report.md            # Output of Stage 1
   architecture-proposal.md       # Output of Stage 2 (requires human approval)
@@ -101,6 +102,12 @@ projects/deficient-line-items-report/
   progress.md                    # Output of Stage 5 (milestone tracking)
   qa-plan.md                     # Output of Stage 7
 ```
+
+The inbox (raw input notes for Stage 0) also lives externally, at `pipeline.md` Work Directory → Inbox.
+
+Current work directories:
+- **OrangeQC:** `~/projects/orangeqc/pipeline-projects/`
+- **Show Notes:** `~/projects/show-notes/pipeline-projects/`
 
 ### Running the Pipeline
 
@@ -135,10 +142,10 @@ The pipeline runs manually, one stage at a time:
 ### Human Checkpoints
 
 **After Stage 2 (Architecture Review):**
-Edit `projects/<slug>/architecture-proposal.md`, find the Approval Checklist at the bottom, set Status to "Approved" (or "Approved with Modifications"), and fill in the reviewer checklist. Stage 3 will refuse to run until this is done.
+Edit `<projects-path>/<slug>/architecture-proposal.md`, find the Approval Checklist at the bottom, set Status to "Approved" (or "Approved with Modifications"), and fill in the reviewer checklist. Stage 3 will refuse to run until this is done.
 
 **After Stage 3 (Gameplan Review):**
-Review `projects/<slug>/gameplan.md` and confirm the milestones, acceptance criteria, and sequencing are correct before any future stages run.
+Review `<projects-path>/<slug>/gameplan.md` and confirm the milestones, acceptance criteria, and sequencing are correct before any future stages run.
 
 ---
 

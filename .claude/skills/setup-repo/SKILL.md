@@ -140,6 +140,7 @@ Questions to ask:
    - Backwards Compatibility (old clients that can't be force-updated)
    - Feature Flags (feature flag system for gradual rollout)
 3. "What project tracker do you use for this product?" (options: Linear, GitHub Issues, None)
+4. "Where should project work (PRDs, gameplans, etc.) live for this product?" Default suggestion: `<repo-parent>/pipeline-projects/` (e.g., for `~/projects/show-notes/`, suggest `~/projects/show-notes/pipeline-projects/`)
 
 ### Step 4: Detect Post-Flight Checks
 
@@ -237,7 +238,20 @@ Write `pipelines/<product-name>.md` in this repo:
 |---------|-------|
 | **Tool** | [From Step 3: Linear, GitHub Issues, or None] |
 | **Workspace** | [Product name or workspace name] |
+
+---
+
+## Work Directory
+
+(REQUIRED — where do project artifacts and inbox files live?)
+
+| Setting | Path |
+|---------|------|
+| **Projects** | `[projects-path]` |
+| **Inbox** | `[projects-path]/inbox/` |
 ```
+
+For the Work Directory paths, suggest `<repo-parent-directory>/pipeline-projects/` as the default (e.g., for `~/projects/show-notes/`, suggest `~/projects/show-notes/pipeline-projects/`). Ask the user to confirm or provide a different path.
 
 If the user mentioned additional repos (API docs, mobile, etc.), add rows to the Target Repositories table. For a single-repo project, only include the Primary row.
 
@@ -261,7 +275,7 @@ If they say no, skip. Tell them how to activate later:
 
 - **Do not modify any source code** in the target repository. Only create `PIPELINE.md`.
 - **Do not run tests** in the target repository. Only read files and run git commands.
-- **Do not create project directories** (`projects/<slug>/`). This skill sets up the repo, not the project.
+- **Do not create project directories** (`<projects-path>/<slug>/`). This skill sets up the repo, not the project.
 - **Do not commit anything** in the target repository. `PIPELINE.md` is created but the user commits it.
 - **Do not guess framework details.** If detection is ambiguous, ask the user via `AskUserQuestion`.
 - **Do not include OPTIONAL sections that the user didn't confirm.** Fewer sections is better for simple projects.
@@ -278,5 +292,5 @@ Tell the user:
 
 3. **Next steps:**
    - Review and commit `PIPELINE.md` in the target repo
-   - Create a project: drop notes in `inbox/` and run `/stage0-prd`
-   - Or create `projects/<slug>/prd.md` manually and run `/stage1-discovery <slug>`
+   - Create a project: drop notes in the inbox directory (from `pipeline.md` Work Directory) and run `/stage0-prd`
+   - Or create `<projects-path>/<slug>/prd.md` manually and run `/stage1-discovery <slug>`

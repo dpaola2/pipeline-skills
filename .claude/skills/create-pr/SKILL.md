@@ -19,20 +19,20 @@ This skill runs post-flight checks (if configured in `PIPELINE.md`), reads proje
 
 ## Inputs
 
-- `projects/$ARGUMENTS/progress.md` — milestone table, commit SHAs, test counts, files summary
-- `projects/$ARGUMENTS/qa-plan.md` — manual test scenario count, known limitations
-- `projects/$ARGUMENTS/gameplan.md` — project overview, milestone descriptions
-- `projects/$ARGUMENTS/prd.md` — project name and level (from header)
+- `<projects-path>/$ARGUMENTS/progress.md` — milestone table, commit SHAs, test counts, files summary
+- `<projects-path>/$ARGUMENTS/qa-plan.md` — manual test scenario count, known limitations
+- `<projects-path>/$ARGUMENTS/gameplan.md` — project overview, milestone descriptions
+- `<projects-path>/$ARGUMENTS/prd.md` — project name and level (from header)
 
 ## Pre-Flight Checks (MANDATORY)
 
 Run ALL of these checks before doing anything else. If any check fails, **STOP** and report the issue to the user.
 
-First, read `pipeline.md` to determine the primary repository path, then read `PIPELINE.md` in that repo to determine the branch prefix and PR base branch.
+First, read `pipeline.md` to determine the primary repository path and the **projects path** (from Work Directory → Projects), then read `PIPELINE.md` in that repo to determine the branch prefix and PR base branch.
 
 ### Check 1: All Milestones Complete
 
-Read `projects/$ARGUMENTS/progress.md` and check the **Milestone Status** table.
+Read `<projects-path>/$ARGUMENTS/progress.md` and check the **Milestone Status** table.
 
 - If ALL milestones are marked **Complete** → proceed.
 - If ANY milestone is still **Pending** or **In Progress** → **STOP**:
@@ -41,7 +41,7 @@ Read `projects/$ARGUMENTS/progress.md` and check the **Milestone Status** table.
 
 ### Check 2: QA Plan Exists
 
-Verify `projects/$ARGUMENTS/qa-plan.md` exists.
+Verify `<projects-path>/$ARGUMENTS/qa-plan.md` exists.
 
 - If it exists → proceed.
 - If missing → **STOP**:
@@ -140,20 +140,20 @@ Build a post-flight summary to include in the PR body later:
 
 Read these files and extract the data needed for the PR summary:
 
-1. **`projects/$ARGUMENTS/progress.md`** — extract:
+1. **`<projects-path>/$ARGUMENTS/progress.md`** — extract:
    - Milestone status table (milestone names, descriptions, commit SHAs)
    - "Project Complete" section (total commits, test count, files created/modified)
 
-2. **`projects/$ARGUMENTS/qa-plan.md`** — extract:
+2. **`<projects-path>/$ARGUMENTS/qa-plan.md`** — extract:
    - Count of manual test scenarios (QA-NNN entries in Section 4)
    - Key feature areas covered (section headings under Section 4)
    - Known limitations count and list (Section 6)
 
-3. **`projects/$ARGUMENTS/gameplan.md`** — extract:
+3. **`<projects-path>/$ARGUMENTS/gameplan.md`** — extract:
    - Project overview (first paragraph under "Project Overview" or "Overview")
    - This becomes the PR summary description
 
-4. **`projects/$ARGUMENTS/prd.md`** — extract:
+4. **`<projects-path>/$ARGUMENTS/prd.md`** — extract:
    - Feature name from the document title
    - Project level from the header table
 
@@ -205,7 +205,7 @@ Assemble the PR body using this structure:
 
 **[N]** manual test scenarios covering [list key feature areas from qa-plan.md Section 4 headings].
 
-Full QA plan: `projects/[slug]/qa-plan.md` in the agent-pipeline repo.
+Full QA plan: `<projects-path>/[slug]/qa-plan.md`
 
 ### Known Limitations
 
@@ -253,4 +253,4 @@ Use a HEREDOC for the body to preserve formatting.
 Tell the user:
 1. The PR URL
 2. Summary stats: milestones, test count, files changed
-3. **Remind them:** "Share the QA plan (`projects/$ARGUMENTS/qa-plan.md`) with the tester when QA begins."
+3. **Remind them:** "Share the QA plan (`<projects-path>/$ARGUMENTS/qa-plan.md`) with the tester when QA begins."

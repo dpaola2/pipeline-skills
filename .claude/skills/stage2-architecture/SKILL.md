@@ -19,9 +19,9 @@ You are a **technical designer**. You propose the data model, API endpoints, mig
 
 ## Inputs & Outputs
 
-- **Input 1:** `projects/$ARGUMENTS/prd.md`
-- **Input 2:** `projects/$ARGUMENTS/discovery-report.md`
-- **Output:** `projects/$ARGUMENTS/architecture-proposal.md`
+- **Input 1:** `<projects-path>/$ARGUMENTS/prd.md`
+- **Input 2:** `<projects-path>/$ARGUMENTS/discovery-report.md`
+- **Output:** `<projects-path>/$ARGUMENTS/architecture-proposal.md`
 - **Output template:** `templates/architecture-proposal.md`
 - **Stage spec:** `docs/stages/02-architecture.md` (read this for full behavioral guidance)
 - **Constraints:** Project constraints doc if one exists (e.g., `docs/orangeqc-constraints.md`)
@@ -30,10 +30,10 @@ You are a **technical designer**. You propose the data model, API endpoints, mig
 
 Read these files in order:
 
-1. The pipeline config at `pipeline.md` — get the primary repository path and other repo locations
+1. The pipeline config at `pipeline.md` — get the primary repository path, the **projects path** (from Work Directory → Projects), and other repo locations
 2. The repo config at `PIPELINE.md` in the primary repository (path from `pipeline.md`) — understand framework, directory structure, API conventions, security model, and all repo-specific details
-3. The PRD at `projects/$ARGUMENTS/prd.md` — understand what we're building
-4. The Discovery Report at `projects/$ARGUMENTS/discovery-report.md` — understand what exists today
+3. The PRD at `<projects-path>/$ARGUMENTS/prd.md` — understand what we're building
+4. The Discovery Report at `<projects-path>/$ARGUMENTS/discovery-report.md` — understand what exists today
 5. The stage spec at `docs/stages/02-architecture.md` — understand your role, success criteria, and the approval checkpoint
 6. The output template at `templates/architecture-proposal.md` — understand your output format (including the Approval Checklist at the end)
 7. The conventions file in the primary repository (path and filename from `PIPELINE.md` Repository Details) — **critical**: pay special attention to database conventions, serialization patterns, API response structure, security scoping patterns, and API versioning. Cross-reference with the API Conventions and Multi-Tenant Security sections in `PIPELINE.md`.
@@ -130,7 +130,7 @@ For significant design decisions:
 
 ### 10. Write the Architecture Proposal
 
-Write to `projects/$ARGUMENTS/architecture-proposal.md` using the template from `templates/architecture-proposal.md`.
+Write to `<projects-path>/$ARGUMENTS/architecture-proposal.md` using the template from `templates/architecture-proposal.md`.
 
 **Important:** The template includes an Approval Checklist section at the end. Leave the Status as "Pending" — the human reviewer will update it.
 
@@ -161,4 +161,4 @@ Tell the user:
 1. The architecture proposal has been written
 2. Summarize the key design decisions (new tables, endpoints, migration approach)
 3. List the open questions that need human input
-4. **Remind them:** "This architecture proposal must be reviewed and approved before Stage 3 can run. To approve: edit `projects/$ARGUMENTS/architecture-proposal.md`, find the Approval Checklist at the bottom, and set Status to 'Approved' (or 'Approved with Modifications'). Then run `/stage3-gameplan $ARGUMENTS`."
+4. **Remind them:** "This architecture proposal must be reviewed and approved before Stage 3 can run. To approve: edit `<projects-path>/$ARGUMENTS/architecture-proposal.md`, find the Approval Checklist at the bottom, and set Status to 'Approved' (or 'Approved with Modifications'). Then run `/stage3-gameplan $ARGUMENTS`."

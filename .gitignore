@@ -1,3 +1,4 @@
-# Inbox files are ephemeral working material — not committed
-inbox/*
-!inbox/.gitkeep
+# Project work is externalized — see pipeline.md Work Directory
+# These directories should not exist in the pipeline repo
+projects/
+inbox/

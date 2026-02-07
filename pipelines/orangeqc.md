@@ -30,3 +30,14 @@
 |---------|-------|
 | **Tool** | Linear |
 | **Workspace** | OrangeQC |
+
+---
+
+## Work Directory
+
+(REQUIRED — where do project artifacts and inbox files live?)
+
+| Setting | Path |
+|---------|------|
+| **Projects** | `~/projects/orangeqc/pipeline-projects/` |
+| **Inbox** | `~/projects/orangeqc/pipeline-projects/inbox/` |

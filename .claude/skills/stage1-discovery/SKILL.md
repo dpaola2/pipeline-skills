@@ -19,8 +19,8 @@ You are a **codebase explorer**. Your job is to understand how things work TODAY
 
 ## Inputs & Outputs
 
-- **Input:** `projects/$ARGUMENTS/prd.md`
-- **Output:** `projects/$ARGUMENTS/discovery-report.md`
+- **Input:** `<projects-path>/$ARGUMENTS/prd.md`
+- **Output:** `<projects-path>/$ARGUMENTS/discovery-report.md`
 - **Output template:** `templates/discovery-report.md`
 - **Stage spec:** `docs/stages/01-discovery.md` (read this for full behavioral guidance)
 
@@ -28,9 +28,9 @@ You are a **codebase explorer**. Your job is to understand how things work TODAY
 
 Read these files in order:
 
-1. The pipeline config at `pipeline.md` — get the primary repository path and other repo locations
+1. The pipeline config at `pipeline.md` — get the primary repository path, the **projects path** (from Work Directory → Projects), and other repo locations
 2. The repo config at `PIPELINE.md` in the primary repository (path from `pipeline.md`) — understand branch conventions, framework, directory structure, test commands, and all repo-specific details
-3. The PRD at `projects/$ARGUMENTS/prd.md` — understand what we're building
+3. The PRD at `<projects-path>/$ARGUMENTS/prd.md` — understand what we're building
 4. The stage spec at `docs/stages/01-discovery.md` — understand your role and success criteria
 5. The output template at `templates/discovery-report.md` — understand your output format
 6. The conventions file in the primary repository (path and filename from `PIPELINE.md` Repository Details) — understand codebase conventions
@@ -102,7 +102,7 @@ List ambiguities the PRD doesn't resolve and that code exploration didn't clarif
 
 ### 8. Write the Discovery Report
 
-Write the report to `projects/$ARGUMENTS/discovery-report.md` using the template structure from `templates/discovery-report.md`.
+Write the report to `<projects-path>/$ARGUMENTS/discovery-report.md` using the template structure from `templates/discovery-report.md`.
 
 ## What NOT To Do
 

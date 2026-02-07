@@ -17,20 +17,25 @@ You **generate a structured PRD** from raw input notes (feature descriptions, Sl
 
 ## Inputs
 
-- `inbox/` directory — contains one or more raw input files
+- Inbox directory (path from `pipeline.md` Work Directory → Inbox) — contains one or more raw input files
 - `templates/prd-intake.md` — the target PRD structure
-- `pipeline.md` — target repository paths
+- `pipeline.md` — target repository paths and work directory paths
 - `PIPELINE.md` in primary repo — framework, platforms, directory structure
 
 ## Step-by-Step Procedure
 
-### Step 1: List Inbox and Get User Input
+### Step 1: Read Pipeline Config and List Inbox
 
-List all files in the `inbox/` directory, excluding `.gitkeep`.
+First, read `pipeline.md` to extract:
+- The **primary repository path** (from Target Repositories)
+- The **projects path** (from Work Directory → Projects)
+- The **inbox path** (from Work Directory → Inbox)
+
+List all files in the **inbox path** directory, excluding `.gitkeep`.
 
 If no files are found, **STOP**:
 
-> "No files found in `inbox/`. Drop your raw notes, feature descriptions, or Slack exports there first, then re-run `/stage0-prd`."
+> "No files found in the inbox at `<inbox-path>`. Drop your raw notes, feature descriptions, or Slack exports there first, then re-run `/stage0-prd`."
 
 If files are found, present them to the user using `AskUserQuestion`. Ask two things:
 
@@ -41,10 +46,10 @@ If only one file exists, suggest it as the default but still confirm with the us
 
 ### Step 2: Validate
 
-Check whether `projects/<slug>/` already exists:
+Check whether `<projects-path>/<slug>/` already exists:
 
 - If it exists **and** contains a `prd.md` → **STOP**:
-  > "Project `<slug>` already exists with a PRD at `projects/<slug>/prd.md`. Choose a different slug or delete the existing project directory first."
+  > "Project `<slug>` already exists with a PRD at `<projects-path>/<slug>/prd.md`. Choose a different slug or delete the existing project directory first."
 - If it exists but has no `prd.md` → proceed (the directory may have been created manually).
 - If it doesn't exist → proceed (you'll create it in Step 5).
 
@@ -54,9 +59,10 @@ Read the selected inbox file.
 
 Read these files to understand the target format and project context:
 
-1. **`pipeline.md`** — target repository paths and project tracker
-2. **`PIPELINE.md`** from the primary repository (path from `pipeline.md`) — framework, platforms, directory structure, API conventions, security model
-3. **`templates/prd-intake.md`** — the PRD template structure
+1. **`PIPELINE.md`** from the primary repository (path from `pipeline.md`) — framework, platforms, directory structure, API conventions, security model
+2. **`templates/prd-intake.md`** — the PRD template structure
+
+(You already read `pipeline.md` in Step 1.)
 
 ### Step 4: Generate PRD
 
@@ -141,10 +147,10 @@ Use these markers consistently:
 
 1. Create the project directory if it doesn't exist:
    ```bash
-   mkdir -p projects/<slug>
+   mkdir -p <projects-path>/<slug>
    ```
 
-2. Write the generated PRD to `projects/<slug>/prd.md`
+2. Write the generated PRD to `<projects-path>/<slug>/prd.md`
 
 3. Do **NOT** move or delete the inbox file — the user manages their own inbox.
 
@@ -152,7 +158,7 @@ Use these markers consistently:
 
 Tell the user:
 
-1. The PRD has been generated at `projects/<slug>/prd.md`
+1. The PRD has been generated at `<projects-path>/<slug>/prd.md`
 2. **Review is required** — this is a draft, not a final PRD
 3. Search for these markers and resolve them:
    - `[CONFIRM]` — verify suggested values (especially Level and Platforms)

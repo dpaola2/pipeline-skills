@@ -4,8 +4,8 @@
 > **Date:** [Date]
 > **Branch:** `pipeline/[slug]`
 > **PR:** [Link or TBD]
-> **Gameplan:** `projects/[slug]/gameplan.md`
-> **Progress:** `projects/[slug]/progress.md`
+> **Gameplan:** `<projects-path>/[slug]/gameplan.md`
+> **Progress:** `<projects-path>/[slug]/progress.md`
 
 ---
 

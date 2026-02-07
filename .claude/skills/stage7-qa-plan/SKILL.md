@@ -19,18 +19,18 @@ You are a **QA planner**. You read all project artifacts — PRD, gameplan, test
 
 ## Inputs & Outputs
 
-- **Input 1:** `projects/$ARGUMENTS/prd.md` — original requirements, edge cases
-- **Input 2:** `projects/$ARGUMENTS/gameplan.md` — acceptance criteria, milestone breakdown, testing plan
-- **Input 3:** `projects/$ARGUMENTS/architecture-proposal.md` — data model, security considerations
-- **Input 4:** `projects/$ARGUMENTS/test-coverage-matrix.md` — automated vs manual testing needs
-- **Input 5:** `projects/$ARGUMENTS/progress.md` — spec gaps from each milestone, test results, implementation notes
-- **Output:** `projects/$ARGUMENTS/qa-plan.md`
+- **Input 1:** `<projects-path>/$ARGUMENTS/prd.md` — original requirements, edge cases
+- **Input 2:** `<projects-path>/$ARGUMENTS/gameplan.md` — acceptance criteria, milestone breakdown, testing plan
+- **Input 3:** `<projects-path>/$ARGUMENTS/architecture-proposal.md` — data model, security considerations
+- **Input 4:** `<projects-path>/$ARGUMENTS/test-coverage-matrix.md` — automated vs manual testing needs
+- **Input 5:** `<projects-path>/$ARGUMENTS/progress.md` — spec gaps from each milestone, test results, implementation notes
+- **Output:** `<projects-path>/$ARGUMENTS/qa-plan.md`
 - **Output template:** `templates/qa-plan.md`
 - **Stage spec:** `docs/stages/07-validation.md` (read this for full behavioral guidance)
 
 ## Pre-Flight Check (MANDATORY)
 
-Read `projects/$ARGUMENTS/progress.md` and check the **Milestone Status** table.
+Read `<projects-path>/$ARGUMENTS/progress.md` and check the **Milestone Status** table.
 
 - If ALL milestones are marked **Complete** → proceed.
 - If ANY milestone is still **Pending** or **In Progress** → **STOP**:
@@ -41,13 +41,13 @@ Read `projects/$ARGUMENTS/progress.md` and check the **Milestone Status** table.
 
 After passing the pre-flight check, read ALL of these files:
 
-1. The pipeline config at `pipeline.md` — get the primary repository path and other repo locations
+1. The pipeline config at `pipeline.md` — get the primary repository path, the **projects path** (from Work Directory → Projects), and other repo locations
 2. The repo config at `PIPELINE.md` in the primary repository (path from `pipeline.md`) — understand framework, platform details, and repo-specific config
-3. The PRD at `projects/$ARGUMENTS/prd.md` — requirements, edge cases, user scenarios
-4. The gameplan at `projects/$ARGUMENTS/gameplan.md` — acceptance criteria, testing plan, non-functional requirements
-5. The architecture proposal at `projects/$ARGUMENTS/architecture-proposal.md` — data model, security scoping, performance considerations
-6. The test-coverage-matrix at `projects/$ARGUMENTS/test-coverage-matrix.md` — **especially** the "Criteria Not Directly Testable" section
-7. The progress file at `projects/$ARGUMENTS/progress.md` — **especially** the "Spec Gaps" and "Notes" sections from each milestone
+3. The PRD at `<projects-path>/$ARGUMENTS/prd.md` — requirements, edge cases, user scenarios
+4. The gameplan at `<projects-path>/$ARGUMENTS/gameplan.md` — acceptance criteria, testing plan, non-functional requirements
+5. The architecture proposal at `<projects-path>/$ARGUMENTS/architecture-proposal.md` — data model, security scoping, performance considerations
+6. The test-coverage-matrix at `<projects-path>/$ARGUMENTS/test-coverage-matrix.md` — **especially** the "Criteria Not Directly Testable" section
+7. The progress file at `<projects-path>/$ARGUMENTS/progress.md` — **especially** the "Spec Gaps" and "Notes" sections from each milestone
 8. The stage spec at `docs/stages/07-validation.md`
 9. The output template at `templates/qa-plan.md`
 
@@ -102,7 +102,7 @@ From the architecture proposal and progress file:
 
 ### 6. Write the QA Plan
 
-Write to `projects/$ARGUMENTS/qa-plan.md` using the template from `templates/qa-plan.md`.
+Write to `<projects-path>/$ARGUMENTS/qa-plan.md` using the template from `templates/qa-plan.md`.
 
 For the **Manual Testing Checklist** section, organize tests by feature area (matching the gameplan's milestones). For each test:
 - Write a clear scenario description
@@ -133,7 +133,7 @@ Before finalizing, verify:
 ## When You're Done
 
 Tell the user:
-1. The QA plan has been written to `projects/$ARGUMENTS/qa-plan.md`
+1. The QA plan has been written to `<projects-path>/$ARGUMENTS/qa-plan.md`
 2. Summarize: how many manual test scenarios, key focus areas, known limitations count
 3. Mention whether test data setup instructions are included or manual setup is needed
 4. **Remind them:** "The QA plan is ready for handoff. Next steps: push the implementation branch, create a PR against `staging`, and share this QA plan with the tester."

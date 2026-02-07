@@ -33,14 +33,14 @@ If the second argument is missing, **STOP** and tell the user:
 
 ## Inputs & Outputs
 
-- **Input 1:** `projects/PROJECT_SLUG/gameplan.md` (MUST be approved) — milestone goals, acceptance criteria, platform tasks
-- **Input 2:** `projects/PROJECT_SLUG/architecture-proposal.md` — data model, service design, controller design, view architecture
-- **Input 3:** `projects/PROJECT_SLUG/test-coverage-matrix.md` — maps acceptance criteria to test file locations
-- **Input 4:** `projects/PROJECT_SLUG/discovery-report.md` — existing codebase context
-- **Input 5:** `projects/PROJECT_SLUG/prd.md` — requirement details and edge cases
+- **Input 1:** `<projects-path>/PROJECT_SLUG/gameplan.md` (MUST be approved) — milestone goals, acceptance criteria, platform tasks
+- **Input 2:** `<projects-path>/PROJECT_SLUG/architecture-proposal.md` — data model, service design, controller design, view architecture
+- **Input 3:** `<projects-path>/PROJECT_SLUG/test-coverage-matrix.md` — maps acceptance criteria to test file locations
+- **Input 4:** `<projects-path>/PROJECT_SLUG/discovery-report.md` — existing codebase context
+- **Input 5:** `<projects-path>/PROJECT_SLUG/prd.md` — requirement details and edge cases
 - **Input 6:** Test files in the primary repository's test directory (path from pipeline.md) — the failing tests you must make pass
 - **Output 1:** Implementation code in the primary repository (path from pipeline.md), committed to the project branch
-- **Output 2:** `projects/PROJECT_SLUG/progress.md` — updated with milestone completion data (in the agent-pipeline repo)
+- **Output 2:** `<projects-path>/PROJECT_SLUG/progress.md` — updated with milestone completion data (in the agent-pipeline repo)
 - **Stage spec:** `docs/stages/05-implementation.md` (read for full behavioral guidance)
 
 ## Pre-Flight Checks (MANDATORY)
@@ -49,7 +49,7 @@ Run ALL of these checks before writing any code. If any check fails, **STOP** an
 
 ### Check 1: Gameplan Approved
 
-Read `projects/PROJECT_SLUG/gameplan.md` and find the **Approval Checklist** section near the bottom.
+Read `<projects-path>/PROJECT_SLUG/gameplan.md` and find the **Approval Checklist** section near the bottom.
 
 - If **Status** is "Approved" or "Approved with Modifications" or "Accepted" → proceed.
 - If **Status** is "Pending" or "Rejected" or the checklist is missing → **STOP**:
@@ -106,7 +106,7 @@ If prior milestone tests FAIL, they haven't been implemented yet. **STOP**:
 
 ### Check 6: Read Progress File
 
-Read `projects/PROJECT_SLUG/progress.md` if it exists. This file tracks milestone completion across invocations.
+Read `<projects-path>/PROJECT_SLUG/progress.md` if it exists. This file tracks milestone completion across invocations.
 
 - Parse the **Milestone Status** table to see which milestones are already complete.
 - If the requested MILESTONE is already marked **Complete**, warn the user:
@@ -119,11 +119,11 @@ Read `projects/PROJECT_SLUG/progress.md` if it exists. This file tracks mileston
 
 After passing all pre-flight checks, read these files:
 
-1. The pipeline config at `pipeline.md` — get the primary repository path and other repo locations
+1. The pipeline config at `pipeline.md` — get the primary repository path, the **projects path** (from Work Directory → Projects), and other repo locations
 2. The repo config at `PIPELINE.md` in the primary repository (path from `pipeline.md`) — understand branch conventions, framework, directory structure, test commands, implementation order, and all repo-specific details
-3. The gameplan at `projects/PROJECT_SLUG/gameplan.md` — find the **MILESTONE section** specifically. Read the goals, acceptance criteria, and platform tasks.
-4. The architecture proposal at `projects/PROJECT_SLUG/architecture-proposal.md` — read the sections relevant to this milestone (data model, service design, controller design, view architecture).
-5. The test-coverage-matrix at `projects/PROJECT_SLUG/test-coverage-matrix.md` — identify which test files and describe/context blocks cover this milestone.
+3. The gameplan at `<projects-path>/PROJECT_SLUG/gameplan.md` — find the **MILESTONE section** specifically. Read the goals, acceptance criteria, and platform tasks.
+4. The architecture proposal at `<projects-path>/PROJECT_SLUG/architecture-proposal.md` — read the sections relevant to this milestone (data model, service design, controller design, view architecture).
+5. The test-coverage-matrix at `<projects-path>/PROJECT_SLUG/test-coverage-matrix.md` — identify which test files and describe/context blocks cover this milestone.
 6. The stage spec at `docs/stages/05-implementation.md` — understand your role and success criteria.
 7. The conventions file in the primary repository (path from `PIPELINE.md` Repository Details) — **critical**: conventions for the framework's models, controllers, services, views, routes, migrations, and JavaScript.
 
@@ -347,9 +347,9 @@ If you have no new insights for this milestone, skip this step.
 
 ### 11. Update Progress File
 
-After committing to the primary repository, update the progress file in the **agent-pipeline repo** (NOT the primary repository).
+After committing to the primary repository, update the progress file in the **projects directory** (from `pipeline.md` Work Directory — NOT the primary repository).
 
-**File:** `projects/PROJECT_SLUG/progress.md`
+**File:** `<projects-path>/PROJECT_SLUG/progress.md`
 
 If the file doesn't exist yet, create it with the full structure. If it already exists, update the **Milestone Status** table and add/replace the milestone entry section.
 
@@ -408,7 +408,7 @@ Any implementation notes, gotchas, or lessons learned
 - Include the actual commit SHA from the commit you just made
 - List ALL acceptance criteria from the gameplan with checked/unchecked status
 - Record any spec gaps or implementation notes
-- Do NOT commit this file to the primary repository — it lives in the agent-pipeline repo only
+- Do NOT commit this file to the primary repository — it lives in the projects directory (from `pipeline.md` Work Directory), not the primary repo
 
 ## When the Spec Has Gaps
 
@@ -473,7 +473,7 @@ Tell the user:
    - [ ] Not satisfied (and why)
 5. **Spec gaps discovered:** Any issues found in the architecture or gameplan
 6. **AGENTS.md updates:** List any insights added to the target repo's AGENTS.md, or "None" if no new insights
-7. **Progress file:** Confirm that `projects/PROJECT_SLUG/progress.md` was updated with the milestone entry
+7. **Progress file:** Confirm that `<projects-path>/PROJECT_SLUG/progress.md` was updated with the milestone entry
 8. **Next step:** "The next milestone is M_NEXT_. Run `/stage5-implementation PROJECT_SLUG M_NEXT_` when ready."
 
 If this was the **last milestone**, instead say:

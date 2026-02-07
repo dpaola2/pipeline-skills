@@ -1,10 +1,7 @@
-# Pipeline Configuration
+# Pipeline Configuration — Show Notes
 
-> **Active product:** OrangeQC
-> **Available configs:** See `pipelines/` directory. To switch: `cp pipelines/<product>.md pipeline.md`
->
-> Maps this pipeline instance to target repositories.
-> Skills read this file first to find repo paths, then read each repo's `PIPELINE.md` for framework details, directory structure, test commands, and conventions.
+> Maps this pipeline instance to target repositories for the Show Notes project.
+> To activate: `cp pipelines/show-notes.md pipeline.md`
 
 ---
 
@@ -14,14 +11,7 @@
 
 | Repository | Path | Purpose |
 |-----------|------|---------|
-| Primary | `~/projects/orangeqc/orangeqc/` | Rails web app + API backend |
-| API docs | `~/projects/orangeqc/apiv4/` | Endpoint documentation |
-| iOS | `~/projects/orangeqc/orangeqc-ios/` | iOS mobile app |
-| Android | `~/projects/orangeqc/orangeqc-android/` | Android mobile app |
-
-> Each repository listed here should have a `PIPELINE.md` at its root with repo-specific config (branch conventions, framework, directory structure, test commands, guardrails, and any optional sections like API conventions or multi-tenant security).
->
-> The primary repository's `PIPELINE.md` is the one skills read most — it has the framework details, directory structure, and implementation order that drive Stages 1-7.
+| Primary | `~/projects/show-notes/` | Rails web app |
 
 ---
 
@@ -31,5 +21,16 @@
 
 | Setting | Value |
 |---------|-------|
-| **Tool** | Linear |
-| **Workspace** | OrangeQC |
+| **Tool** | GitHub Issues |
+| **Repository** | show-notes |
+
+---
+
+## Work Directory
+
+(REQUIRED — where do project artifacts and inbox files live?)
+
+| Setting | Path |
+|---------|------|
+| **Projects** | `~/projects/show-notes/pipeline-projects/` |
+| **Inbox** | `~/projects/show-notes/pipeline-projects/inbox/` |
