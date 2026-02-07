@@ -258,13 +258,14 @@
 
 ## 7. Estimates
 
-| Milestone | Rails | iOS | Android | Notes |
-|-----------|-------|-----|---------|-------|
-| M0: Discovery | Done | Done | Done | Pipeline Stages 1-2 |
-| M1: [Name] | [X days] | [X days] | [X days] | |
-| M2: [Name] | [X days] | [X days] | [X days] | |
-| M3: [Name] | [X days] | [X days] | [X days] | |
-| **Total** | **[X days]** | **[X days]** | **[X days]** | |
+| Milestone | Size | Notes |
+|-----------|------|-------|
+| M0: Discovery | Done | Pipeline Stages 0-2 |
+| M1: [Name] | S / M / L / XL | |
+| M2: [Name] | S / M / L / XL | |
+| M3: [Name] | S / M / L / XL | |
+
+**Size guide:** S = 1-3 files, no migrations, no new patterns. M = 5-10 files, simple migration, follows existing conventions. L = 10-20 files, complex migrations, new patterns. XL = 20+ files, should probably be split.
 
 ---
 
@@ -282,7 +283,7 @@
 - [ ] Every PRD requirement ID is mapped to a milestone (traceability matrix complete)
 - [ ] Non-functional requirements checklist is fully addressed
 - [ ] Dependencies form a valid DAG (no circular dependencies)
-- [ ] Estimates are realistic
+- [ ] Milestone sizes are appropriate (no XL milestones that should be split)
 - [ ] Release plan is appropriate
 
 #### Optional Notes

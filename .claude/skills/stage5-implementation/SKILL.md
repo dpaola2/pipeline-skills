@@ -322,28 +322,43 @@ Pipeline: deficient-line-items-report | Stage: implementation | Milestone: M1
 
 3. Do NOT push unless the user asks you to.
 
-### 10. Update AGENTS.md (if applicable)
+### 10. Knowledge Extraction
 
-Review what you learned during this milestone. If you discovered **codebase patterns, conventions, or gotchas** that aren't already documented in the target repo's `AGENTS.md`, add them.
+After committing, review what you learned during this milestone. Route insights to the right durable location so future projects, sessions, and agents benefit.
 
-**What to document:**
-- Patterns you discovered by reading existing code (e.g., "Reports::BaseController provides `require_read_reports_permission` and `set_default_date_range`")
-- Gotchas you hit during implementation (e.g., "PostgreSQL `ROUND(double_precision, integer)` doesn't exist — cast to `::numeric` first")
+**Step A: Repo-scoped insights → target repo conventions file**
+
+The conventions file name comes from `PIPELINE.md` Repository Details → Conventions file (e.g., `AGENTS.md`, `CLAUDE.md`). These insights help anyone working in this specific repo.
+
+**What qualifies as repo-scoped:**
+- Codebase patterns discovered by reading existing code (e.g., "Reports::BaseController provides `require_read_reports_permission` and `set_default_date_range`")
+- Gotchas hit during implementation (e.g., "PostgreSQL `ROUND(double_precision, integer)` doesn't exist — cast to `::numeric` first")
 - Conventions not yet captured (e.g., "No `sort_link` helper — use inline `link_to` with sort params")
-- Scoping chains, module interfaces, or helper patterns that future developers would need to know
+- Module interfaces, scoping chains, validation quirks, or framework-specific behavior
+- Testing patterns (e.g., "DigestMailer spec tests multipart HTML+text bodies separately")
 
-**What NOT to document:**
-- Project-specific details (those go in `progress.md`)
-- Pipeline process notes (those go in MEMORY.md)
-- Anything already in AGENTS.md
+**The test:** "Would this help someone working on a *different* project in the *same* repo?" → repo-scoped.
 
 **How:**
-1. Read the current `AGENTS.md` in the target repo
+1. Read the current conventions file in the target repo
 2. Check whether your insights are already covered
 3. If not, add them to the appropriate section (or create a new subsection if needed)
-4. Stage and amend the milestone commit: `git add AGENTS.md && git commit --amend --no-edit`
+4. Keep additions concise — one line per insight, grouped by topic
+5. Stage and amend the milestone commit: `git add <conventions-file> && git commit --amend --no-edit`
 
-If you have no new insights for this milestone, skip this step.
+**Step B: Pipeline-scoped insights → progress.md Notes section**
+
+Some insights are about the pipeline process itself — not about this codebase. Capture these in the milestone's Notes section in `progress.md` (Step 11). They'll be reviewed and may be added to pipeline docs or memory.
+
+**What qualifies as pipeline-scoped:**
+- Stage 4 test antipatterns discovered (e.g., "cumulative matchers fail in suite runs")
+- Skill procedure issues (e.g., "skill should check X before Y")
+- Template gaps or improvements
+- Cross-project patterns (e.g., "view-only projects should skip system specs")
+
+**The test:** "Would this help someone running the pipeline against a *different* repo?" → pipeline-scoped.
+
+If you have no new insights for this milestone, skip this step and note "No new conventions discovered" in progress.md.
 
 ### 11. Update Progress File
 
@@ -447,7 +462,7 @@ Only files in directories listed in PIPELINE.md Directory Structure that this mi
 - View/partial/template files
 - JavaScript controller files
 - Routes file modifications
-- The conventions file (e.g., `AGENTS.md`) — codebase insights discovered during implementation (Step 10)
+- The conventions file (e.g., `AGENTS.md`, `CLAUDE.md`) — codebase insights discovered during implementation (Step 10)
 
 ### Files You May NOT Create or Modify
 
@@ -472,7 +487,7 @@ Tell the user:
    - [x] Satisfied (test passes)
    - [ ] Not satisfied (and why)
 5. **Spec gaps discovered:** Any issues found in the architecture or gameplan
-6. **AGENTS.md updates:** List any insights added to the target repo's AGENTS.md, or "None" if no new insights
+6. **Conventions file updates:** List any insights added to the target repo's conventions file (e.g., `AGENTS.md`, `CLAUDE.md`), or "None" if no new insights
 7. **Progress file:** Confirm that `<projects-path>/PROJECT_SLUG/progress.md` was updated with the milestone entry
 8. **Next step:** "The next milestone is M_NEXT_. Run `/stage5-implementation PROJECT_SLUG M_NEXT_` when ready."
 

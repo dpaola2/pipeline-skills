@@ -61,8 +61,8 @@ Organize by **feature area**, not by platform:
 
 Guidelines:
 - Each milestone should be independently shippable (even behind a feature flag)
-- Each milestone should be roughly 1-3 days of agent implementation time
-- If too large, split by sub-feature. If too small, combine with related work.
+- Size each milestone using t-shirt sizes: **S** (1-3 files, no new patterns), **M** (5-10 files, follows existing conventions), **L** (10-20 files, new patterns), **XL** (20+ files, should probably be split)
+- If a milestone is L or XL, consider splitting it into smaller milestones
 - Progress from data/core → UI → integration
 
 ### 2. Generate Acceptance Criteria Per Milestone
@@ -110,19 +110,7 @@ Complete every section of the non-functional checklist in the template:
 - Feature flag strategy
 - Done criteria for each phase
 
-### 7. Completeness Check
-
-Before writing the output, verify:
-- [ ] Every PRD requirement ID appears in at least one milestone's acceptance criteria
-- [ ] Every architecture element (table, endpoint, migration) appears in at least one milestone's tasks
-- [ ] No milestone has undefined acceptance criteria
-- [ ] Dependencies form a valid sequence (no cycles)
-- [ ] Non-functional checklist is complete (every item checked or marked N/A with reason)
-- [ ] A QA Test Data milestone exists that covers all scenarios requiring manual QA
-
-If any check fails, fix it before writing the output.
-
-### 8. Write the Engineering Gameplan
+### 7. Write the Engineering Gameplan
 
 Write to `<projects-path>/$ARGUMENTS/gameplan.md` using the template from `templates/gameplan.md`.
 
@@ -130,6 +118,64 @@ Update the header to reference the approved architecture:
 - Set "Approved Architecture" to the path of the architecture proposal
 
 **Important:** Include the Approval Checklist section from the template (with Status: Pending). This is the gate Stage 4 checks before generating tests.
+
+### 8. Coherence Verification (MANDATORY)
+
+After writing the gameplan, re-read it alongside the PRD and architecture proposal and run every check below. **Fix any failures before presenting the gameplan to the user.** These checks prevent errors that propagate through Stage 4 (tests), Stage 5 (implementation), and Stage 7 (QA plan).
+
+#### Check 1: Traceability Completeness
+
+For every requirement ID in the **PRD Traceability Matrix** (Section at the bottom of the gameplan), verify that at least one milestone has a matching acceptance criterion checkbox that references that ID.
+
+- **Pass:** Every row in the traceability matrix has a corresponding `- [ ] ID:` checkbox in a milestone
+- **Fail:** Requirement ID appears in the traceability matrix but has no acceptance criterion → add the missing criterion to the correct milestone
+
+#### Check 2: Reverse Traceability
+
+For every acceptance criterion that references a PRD requirement ID (e.g., `IMP-004`, `SUB-001`), verify that the ID exists in the PRD.
+
+- **Pass:** Every referenced ID exists in the PRD's requirements sections
+- **Fail:** Acceptance criterion references a non-existent ID → fix the ID or remove the criterion
+
+#### Check 3: Architecture Element Coverage
+
+Read the architecture proposal's "Files to Create" and "Files to Modify" lists (or equivalent sections). Verify every file appears in at least one milestone's platform tasks.
+
+- **Pass:** Every file from the architecture proposal is referenced in a milestone
+- **Fail:** Architecture proposes a file that no milestone creates/modifies → add it to the appropriate milestone
+
+#### Check 4: PRD Edge Cases
+
+Read PRD Section 8 (Edge Cases & Business Rules). For each edge case row, verify one of:
+- An acceptance criterion explicitly addresses it, OR
+- The edge case is handled by existing system behavior (note this in the gameplan if not obvious)
+
+- **Pass:** Every PRD edge case is traceable to a criterion or documented as already-handled
+- **Fail:** Edge case has no coverage → add an acceptance criterion or a note explaining why it's already covered
+
+#### Check 5: Dependency DAG
+
+Verify that milestone dependencies form a valid directed acyclic graph:
+- No milestone depends on itself
+- No circular dependency chains (e.g., M2 → M3 → M2)
+- Every dependency references a milestone that exists in the gameplan
+
+#### Check 6: Milestone Self-Consistency
+
+Every milestone (except M0) must have ALL of:
+- A `**What:**` description
+- A `**Size:**` designation (S/M/L/XL)
+- At least one acceptance criterion (`- [ ]` checkbox)
+- At least one platform task
+- A `**Dependencies:**` line
+
+#### Check 7: Cross-Milestone File Consistency
+
+No two milestones should both claim to **create** the same file. A file created in M1 can be **modified** in M3, but it should not appear as a creation task in both.
+
+---
+
+If all 7 checks pass, the gameplan is ready for human review. If any check fails, fix the gameplan and re-run that check before proceeding.
 
 ## What NOT To Do
 

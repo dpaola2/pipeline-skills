@@ -4,6 +4,36 @@
 
 ---
 
+## Item Index
+
+| ID | Title | Theme | Status |
+|----|-------|-------|--------|
+| ROAD-01 | Stage 0 — PRD Generation | Pipeline intake | **Done** |
+| ROAD-02 | Post-Stage Notifications | Orchestration | Planned |
+| ROAD-03 | Per-Milestone Gameplans | Pipeline architecture | Planned |
+| ROAD-04 | Post-Flight Checks | Quality assurance | **Done** |
+| ROAD-05 | Externalize Platform Config (two-file) | Portability | **Done** |
+| ROAD-06 | Project Document Linking | Developer experience | Planned |
+| ROAD-07 | ADR Integration | Knowledge capture | Planned |
+| ROAD-08 | Linear Automation | Orchestration | Planned |
+| ROAD-09 | Stage 6 — Code Review | Quality assurance | Planned |
+| ROAD-10 | Post-QA Iteration / Re-entry | Pipeline lifecycle | Planned |
+| ROAD-11 | Ludicrous Speed Mode | Orchestration | Planned |
+| ROAD-12 | Multi-Product Support + Setup Repo | Portability | **Done** |
+| ROAD-13 | Configurable Base Branch | Pipeline lifecycle | Planned |
+| ROAD-14 | Externalize Project Work Dirs | Portability | **Done** |
+| ROAD-15 | Continuous Knowledge Extraction | Knowledge capture | **Done** (v1) |
+| ROAD-16 | T-Shirt Size Estimates | Developer experience | **Done** |
+| ROAD-17 | CI Failure Detection + Auto-Fix | Quality assurance | Planned |
+| ROAD-18 | Gameplan Coherence Checklist | Quality assurance | **Done** |
+| ROAD-19 | DORA Metrics (Before/After) | Measurement | Planned |
+| ROAD-20 | Code Complexity Analysis (Before/After) | Measurement | Planned |
+| ROAD-21 | Pipeline Dashboard (Factorio Theme) | Visibility | Planned |
+| ROAD-22 | Pipeline Status MCP Server | Visibility | Planned |
+| ROAD-23 | Stage 4 Test Quality Heuristics | Quality assurance | **Done** |
+
+---
+
 ## Pipeline Capabilities
 
 ### ROAD-01: Stage 0 — PRD Generation Skill
@@ -353,7 +383,7 @@ Externalized project artifacts (`projects/`) and inbox (`inbox/`) from the pipel
 
 ### ROAD-15: Continuous Knowledge Extraction
 
-**Status:** Planned
+**Status:** Done (v1)
 **Theme:** Knowledge capture
 
 Systematically extract insights from every pipeline stage and route them to the right durable location — so that future projects, future agents, and future developers benefit from what the pipeline has already learned.
@@ -504,7 +534,7 @@ Allow each project to specify a custom base branch instead of always branching f
 
 ### ROAD-16: T-Shirt Size Estimates (Replace Time-Based Estimates)
 
-**Status:** Planned
+**Status:** Done
 **Theme:** Developer experience
 
 Replace time-based estimates in the gameplan template (Section 7: Estimates) with t-shirt sizes (S / M / L / XL).
@@ -532,24 +562,431 @@ Replace time-based estimates in the gameplan template (Section 7: Estimates) wit
 
 ---
 
-## Item Index
+### ROAD-18: Gameplan Coherence Checklist (Stage 3 Self-Review)
 
-| ID | Title | Theme | Status |
-|----|-------|-------|--------|
-| ROAD-01 | Stage 0 — PRD Generation | Pipeline intake | **Done** |
-| ROAD-02 | Post-Stage Notifications | Orchestration | Planned |
-| ROAD-03 | Per-Milestone Gameplans | Pipeline architecture | Planned |
-| ROAD-04 | Post-Flight Checks | Quality assurance | **Done** |
-| ROAD-05 | Externalize Platform Config (two-file) | Portability | **Done** |
-| ROAD-06 | Project Document Linking | Developer experience | Planned |
-| ROAD-07 | ADR Integration | Knowledge capture | Planned |
-| ROAD-08 | Linear Automation | Orchestration | Planned |
-| ROAD-09 | Stage 6 — Code Review | Quality assurance | Planned |
-| ROAD-10 | Post-QA Iteration / Re-entry | Pipeline lifecycle | Planned |
-| ROAD-11 | Ludicrous Speed Mode | Orchestration | Planned |
-| ROAD-12 | Multi-Product Support + Setup Repo | Portability | **Done** |
-| ROAD-13 | Configurable Base Branch | Pipeline lifecycle | Planned |
-| ROAD-14 | Externalize Project Work Dirs | Portability | **Done** |
-| ROAD-15 | Continuous Knowledge Extraction | Knowledge capture | Planned |
-| ROAD-16 | T-Shirt Size Estimates | Developer experience | Planned |
-| ROAD-17 | CI Failure Detection + Auto-Fix | Quality assurance | Planned |
+**Status:** Done
+**Theme:** Quality assurance
+
+Add an automated coherence check to the end of Stage 3 (Gameplan) that verifies internal consistency before presenting the gameplan for human review. Currently, the operator has to manually verify traceability, consistency, and completeness — which is exactly the kind of mechanical validation an agent should do.
+
+**Why:** The first opml-import gameplan had two issues caught only by manual review: (1) SUB-002 appeared in the traceability matrix but had no acceptance criterion in any milestone, and (2) IMP-006's acceptance criterion didn't address the re-import count ambiguity from the PRD edge cases table. Both are systematic verification failures that a checklist would catch every time.
+
+**What to check:**
+
+| Check | What It Verifies |
+|-------|-----------------|
+| **Traceability completeness** | Every PRD requirement ID in the traceability matrix has at least one matching acceptance criterion (checkbox) in a milestone |
+| **Reverse traceability** | Every acceptance criterion that references a PRD requirement ID uses a valid ID that exists in the PRD |
+| **Architecture element coverage** | Every file listed in the architecture proposal's "Files to Create" and "Files to Modify" sections appears in at least one milestone's task list |
+| **Acceptance vs. PRD edge cases** | Every edge case in PRD Section 8 is either covered by an acceptance criterion or explicitly noted as handled by existing system behavior |
+| **Dependency DAG validity** | No circular dependencies; every dependency references a milestone that exists |
+| **Milestone self-consistency** | Every milestone has: description, size, at least one acceptance criterion, at least one platform task, and a dependencies line |
+| **Cross-milestone consistency** | No two milestones claim to create the same file; modified files are only modified after the milestone that creates them |
+
+**How to implement:**
+
+Option A: Add a verification step to the Stage 3 skill — after writing the gameplan, re-read it and the PRD/architecture, run the checks, fix any issues found, then present the final version.
+
+Option B: A separate `/verify-gameplan <slug>` skill that can be run independently. Useful for re-checking after human modifications.
+
+**Recommendation:** Option A (integrated into Stage 3) with the checks also available as Option B for re-verification. The checks are fast (document parsing, no repo access needed) and should never be skipped.
+
+**Considerations:**
+- The checks are all document-level — no repo access needed, just cross-referencing markdown files
+- False positives are possible (e.g., an edge case that's genuinely handled by existing behavior and doesn't need an AC) — the check should flag, not auto-fix
+- This is complementary to the human review, not a replacement — humans catch semantic issues (wrong acceptance criteria, missing context), the checklist catches structural issues (missing mappings, orphaned references)
+
+**Related:** ROAD-15 (Knowledge Extraction — coherence failures are a type of pipeline lesson worth capturing)
+
+---
+
+## Measurement & Effectiveness
+
+### ROAD-19: DORA Metrics (Before/After Pipeline)
+
+**Status:** Planned
+**Theme:** Measurement
+
+Track the four DORA metrics before and after pipeline adoption to measure whether the pipeline actually improves development outcomes.
+
+**Why:** The pipeline is a significant investment in process infrastructure. Without baseline measurements, "it feels faster" is the best we can claim. DORA metrics are the industry-standard framework for measuring software delivery performance — they answer whether the pipeline delivers real improvement or just shifts where time is spent.
+
+**The four metrics:**
+
+| Metric | What It Measures | How to Capture |
+|--------|-----------------|----------------|
+| **Deployment Frequency** | How often code reaches production | Count of production deploys per week/month (Heroku deploy log, Kamal deploy log) |
+| **Lead Time for Changes** | Time from first commit to production deploy | Git timestamp of first branch commit → deploy timestamp |
+| **Change Failure Rate** | Percentage of deploys that cause a failure (rollback, hotfix, incident) | Manual tagging or post-deploy incident tracking |
+| **Mean Time to Recovery** | Time from failure detection to resolution | Incident timestamps (detection → fix deployed) |
+
+**Before/after comparison:**
+
+The "before" baseline is the pre-pipeline development process. For OrangeQC, this is the Stepwyz agency workflow (~7 hrs/week Rails). For Show Notes, this is Dave's solo development.
+
+- **Before data:** Mine git history, deploy logs, and incident records for the 3-6 months before pipeline adoption
+- **After data:** Track the same metrics for pipeline-produced projects going forward
+- **Control for confounders:** Pipeline projects may be systematically different from pre-pipeline projects (e.g., the pipeline handles well-scoped Level 2 work; pre-pipeline work included messy Level 3 projects). Compare apples to apples where possible.
+
+**Proxy metrics available now (no new tooling):**
+
+| Proxy | Source | Measures |
+|-------|--------|----------|
+| PRD-to-PR lead time | Git branch creation → PR creation timestamps | End-to-end pipeline throughput |
+| PR-to-merge lead time | PR creation → merge timestamp | Review + QA cycle time |
+| CI pass rate on first push | GitHub Actions | Code quality at PR time |
+| QA rejection rate | Linear issue transitions or manual tracking | Change failure proxy |
+| Lines changed per project | `git diff --stat` | Scope normalization |
+
+**Implementation approach:**
+
+1. **v1 (manual):** Create a spreadsheet or markdown table in the pipeline repo that tracks these metrics per project. Fill in manually after each project completes. Low effort, immediate value.
+2. **v2 (semi-automated):** A `/metrics <slug>` skill that pulls git timestamps, PR data (`gh` CLI), and CI results to auto-populate most fields. Human fills in failure/recovery data.
+3. **v3 (automated):** Integrate with deploy hooks and incident tracking for fully automated capture.
+
+**Considerations:**
+- Start with v1 — the discipline of tracking is more valuable than the automation
+- Small sample size is a real limitation. OrangeQC has 3 pipeline projects so far. Statistical significance requires patience.
+- DORA metrics measure the delivery *system*, not just the pipeline. Improvements may come from better PRDs, faster reviews, or CI improvements — not just the agent doing the coding
+- Lead Time is the most directly measurable and the most likely to show dramatic improvement (agent implements in minutes vs. agency implements over days/weeks)
+
+**Related:** ROAD-08 (Linear Automation — milestone transitions provide timing data), ROAD-17 (CI Auto-Fix — affects change failure rate)
+
+---
+
+### ROAD-20: Code Complexity Analysis (Before/After Pipeline)
+
+**Status:** Planned
+**Theme:** Measurement
+
+Measure code complexity of pipeline-generated code vs. hand-written code in the same codebase, answering: "Is the agent writing maintainable code or accumulating tech debt?"
+
+**Why:** The pipeline optimizes for correctness (tests pass, acceptance criteria met) and convention adherence (AGENTS.md, PIPELINE.md). But neither of those guarantees the code is *simple*. An agent can produce correct, convention-following code that's still overly complex — too many branches, too-long methods, excessive coupling. Complexity metrics provide an objective before/after comparison that catches quality dimensions the pipeline doesn't currently measure.
+
+**Metrics to track:**
+
+| Metric | Tool (Ruby) | What It Catches |
+|--------|-------------|-----------------|
+| **Cyclomatic complexity** | RuboCop Metrics, Flog | Too many conditional branches per method |
+| **ABC score** (Assignment, Branch, Condition) | RuboCop Metrics | Overall method complexity |
+| **Method length** | RuboCop Metrics | Methods doing too much |
+| **Class length** | RuboCop Metrics | God objects |
+| **Flay score** (duplication) | Flay | Copy-paste code |
+| **Reek smells** | Reek | Feature envy, data clump, long parameter list |
+| **Churn × complexity** | Churn + Flog | Files that are both complex and frequently changed (highest maintenance cost) |
+
+**Before/after comparisons (two dimensions):**
+
+1. **Pipeline code vs. codebase average:** Compare complexity scores of files touched by a pipeline project to the repo-wide average. Are we raising or lowering the bar?
+2. **Pipeline code vs. hand-written code for similar features:** Compare a pipeline-built report (e.g., deficient-line-items) to a hand-built report in the same codebase. Same domain, same patterns — is the agent's output simpler or more complex?
+3. **Over time:** Track whether pipeline-generated code complexity trends up or down as the pipeline matures (skills improve, conventions file grows, knowledge extraction kicks in).
+
+**Implementation approach:**
+
+1. **v1 (snapshot):** Run `rubocop --only Metrics` and `flog` against pipeline-touched files and compare to repo averages. Manual, per-project.
+2. **v2 (per-project report):** A `/complexity-report <slug>` skill that identifies files changed on the pipeline branch, runs complexity tools, and produces a comparison report (pipeline files vs. repo baseline).
+3. **v3 (integrated into create-pr):** Add complexity delta to the PR body — "This PR's average Flog score: 12.3 (repo average: 15.7)" — so reviewers see it at a glance.
+
+**Show Notes considerations:**
+- Show Notes uses RuboCop (already configured) — `rubocop --only Metrics` works out of the box
+- For gems not in the Gemfile (Flog, Flay, Reek), run standalone against the source files
+- Smaller codebase means the "repo average" baseline stabilizes faster
+
+**OrangeQC considerations:**
+- Larger, older codebase — the repo average may be skewed by legacy code
+- More interesting comparison: pipeline code vs. *recent* hand-written code (last 6 months), not historical average
+- StandardRB is already enforced (ROAD-04 post-flight) — complexity metrics go beyond style
+
+**Considerations:**
+- Complexity metrics are *indicators*, not judgments. A complex method might be justified by the domain. The goal is visibility, not enforcement.
+- v3 (PR body integration) is the highest-leverage long-term — it makes complexity visible at the exact moment a reviewer is deciding whether to merge
+- Could feed into ROAD-15 (Knowledge Extraction) — if a pattern consistently produces high-complexity code, that's a pipeline lesson worth capturing
+- Track per-milestone too, not just per-project — some milestones (data model) should be simple; others (complex business logic) may justify higher complexity
+
+**Related:** ROAD-09 (Code Review — reviewer should consider complexity), ROAD-15 (Knowledge Extraction — complexity patterns are learnable), ROAD-04 (Post-Flight Checks — complexity could become a check)
+
+---
+
+## Visibility & Monitoring
+
+### ROAD-21: Pipeline Dashboard (Factorio Theme)
+
+**Status:** Planned
+**Theme:** Visibility
+**Depends on:** ROAD-19 (DORA Metrics), ROAD-20 (Code Complexity Analysis) — for the metrics panels
+
+A web dashboard that visualizes pipeline state across all products and projects. Factorio-themed — projects are items moving through an assembly line, stages are machines that process them, milestones are intermediate products on conveyor belts.
+
+**Why:** The pipeline's state is currently spread across markdown files in multiple directories — `progress.md` per project, `gameplan.md` for milestones, git branches for implementation state. There's no single view that answers "what's the status of everything?" You have to know which product is active, find the right `pipeline-projects/` directory, read the right files. A dashboard makes the pipeline's state visible at a glance — which projects are in flight, which stage each is at, what's blocked, what's complete.
+
+**What it shows:**
+
+| Panel | Data Source | What You See |
+|-------|------------|-------------|
+| **Assembly Line** (main view) | `progress.md` per project | Each project as an item on a conveyor belt, positioned at its current stage (0-7). Completed stages glow green. Active stage pulses. Blocked stages show a red inserter arm. |
+| **Project Detail** (click to expand) | `progress.md`, `gameplan.md` | Milestone breakdown with completion status, commit SHAs, test results, acceptance criteria checklist |
+| **Product Switcher** | `pipelines/` directory | Toggle between OrangeQC, Show Notes, etc. Each product has its own assembly line |
+| **Metrics Panel** | ROAD-19 + ROAD-20 data | DORA metrics (lead time, deployment frequency), complexity scores, test counts — displayed as Factorio-style production statistics |
+| **Stage Machine Status** | Derived from project state | Each stage (0-7) shown as a Factorio assembler. Tooltip shows: projects currently in this stage, average time spent, throughput |
+
+**Factorio visual language:**
+
+| Pipeline Concept | Factorio Analogue |
+|-----------------|-------------------|
+| Project | Item on a belt |
+| Stage | Assembling machine |
+| Milestone | Intermediate product |
+| Human checkpoint (Stage 2, 3) | Inserter waiting for manual input (blinking) |
+| Blocked project | Red belt segment |
+| Complete project (PR merged) | Item reaching the end of the line → into a chest |
+| Metrics | Production statistics screen |
+| Product (OrangeQC, Show Notes) | Separate factory floor / tab |
+
+**Architecture options:**
+
+| Option | How It Works | Pros | Cons |
+|--------|-------------|------|------|
+| **A: Static site in this repo** | Build step reads `progress.md` files from configured `pipeline-projects/` paths, generates a static HTML dashboard. Serve locally or deploy. | Simple, no runtime dependencies, all data is local files | Requires rebuild on changes, paths are machine-specific |
+| **B: Separate repo with file watcher** | Standalone web app that watches `pipeline-projects/` directories via `fswatch` or polling. Live-updates when `progress.md` changes. | Real-time updates, clean separation | Another repo to maintain, needs to know directory paths |
+| **C: In this repo with local server** | A small Ruby/Node server in `dashboard/` that reads project files on request. `bin/dashboard` starts it on localhost. | Single repo, live data, easy to run | Adds runtime code to a repo that's currently docs + skills only |
+| **D: GitHub Pages + CI** | CI job reads progress files, generates static dashboard, deploys to GitHub Pages. | Shareable URL, no local server | Pipeline-projects are external/gitignored — CI can't see them. Would need a data push step. |
+
+**Recommendation:** Option C for v1 — a small local server in this repo. The dashboard is a development tool, not a production service. Running `bin/dashboard` to see pipeline state on `localhost:3000` fits the workflow. The Factorio theme is a static asset concern (CSS, SVG sprites) that doesn't need a build pipeline.
+
+For v2, if the team grows or Dave wants to check status from his phone, Option D with a data-push step (each stage completion pushes a JSON snapshot) gives a shareable URL.
+
+**Data model:**
+
+The dashboard doesn't need its own database. It reads the existing project artifacts:
+
+```
+For each product (from pipelines/*.md):
+  Read pipeline config → get projects path
+  For each project directory in projects path:
+    Read progress.md → current milestone status, commits, test results
+    Read gameplan.md → milestone definitions, acceptance criteria
+    Read prd.md → project metadata (level, title, platforms)
+    Derive current stage from:
+      - Has prd.md but no discovery-report.md → Stage 0
+      - Has discovery-report.md but no architecture-proposal.md → Stage 1
+      - Has architecture-proposal.md (unapproved) → Stage 2 (awaiting review)
+      - Has architecture-proposal.md (approved) but no gameplan.md → Stage 2 (complete)
+      - Has gameplan.md (unapproved) → Stage 3 (awaiting review)
+      - Has gameplan.md (approved) but no test-coverage-matrix.md → Stage 3 (complete)
+      - Has test-coverage-matrix.md but no progress.md → Stage 4
+      - Has progress.md with pending milestones → Stage 5
+      - All milestones complete, no qa-plan.md → Stage 5 (complete)
+      - Has qa-plan.md → Stage 7
+```
+
+**Metrics integration (requires ROAD-19 + ROAD-20):**
+
+The metrics panels are the reason for the dependency. Without ROAD-19/20, the dashboard can still show project state (which stage, which milestones, test results) but can't show DORA metrics or complexity analysis. The dashboard should be designed with placeholder panels for metrics from day one, so ROAD-19/20 data slots in when available.
+
+Possible phased approach:
+- **v1 (no metrics dependency):** Assembly line view + project details. Shows stage progression, milestone status, test results. Factorio theme. No metrics panels.
+- **v2 (after ROAD-19):** Add DORA metrics panel — lead time sparklines, deployment frequency chart, production statistics overlay.
+- **v3 (after ROAD-20):** Add complexity panel — per-project complexity scores, trend lines, comparison to codebase baseline.
+
+**Tech stack options:**
+
+| Stack | Why | Tradeoff |
+|-------|-----|----------|
+| **Plain HTML + vanilla JS + Tailwind** | Zero dependencies, matches pipeline philosophy | More manual DOM work for the Factorio animations |
+| **Ruby (Sinatra/Roda) + ERB** | Dave knows Ruby, pipeline is Ruby-adjacent | Adds a Gemfile to a repo that doesn't have one |
+| **Node (Express) + vanilla JS** | Lightweight server, good for file watching + WebSocket live updates | Adds Node to a repo that doesn't use it |
+| **Python (Flask)** | Simple, good markdown parsing | Mismatched with the Ruby ecosystem |
+
+**Considerations:**
+- The Factorio theme is the fun part but shouldn't block shipping. v1 could be a clean, functional dashboard with Factorio-inspired colors (dark background, orange/green/red accents) and upgrade to full sprite-based visuals later.
+- File watching for live updates is a nice-to-have. Refresh-on-load is fine for v1.
+- The dashboard should work for any number of products — the multi-product support (ROAD-12) means the data model is already product-aware.
+- Pipeline configs (`pipeline.md`, `pipelines/*.md`) are gitignored. The dashboard needs to read them from the local filesystem, which means it only works locally (or needs a config push mechanism for remote hosting).
+- Consider whether the dashboard could also serve as the "notification center" from ROAD-02 — showing recent stage completions, pending reviews, etc.
+
+**Related:** ROAD-02 (Notifications — dashboard could display them), ROAD-08 (Linear Automation — could pull Linear issue status into the dashboard), ROAD-19 (DORA Metrics — feeds the metrics panel), ROAD-20 (Code Complexity — feeds the complexity panel)
+
+### ROAD-22: Pipeline Status MCP Server
+
+**Status:** Planned
+**Theme:** Visibility
+**Priority:** High — enables agent-to-agent coordination without external services
+
+An MCP server that exposes pipeline project status as tools. Any agent in the ecosystem (CEO agent, review agent, planning agent) can connect to it and query project state — no filesystem access required, no Linear, no dashboard.
+
+**Why:** The pipeline's artifact directory is already the source of truth for project state. The presence of `architecture-proposal.md`, the approval stamp inside it, the milestone statuses in `progress.md` — that *is* the project status. But only the pipeline operator knows how to find and interpret these files. Other agents have no access path. An MCP server turns the artifact directory into a queryable API using the native agent communication protocol.
+
+**The core insight:** The pipeline already produces structured artifacts in a predictable directory layout. Stage derivation is deterministic from file existence + content. This isn't a new data model — it's an access layer over the one we already have.
+
+**Directory schema (the "API contract"):**
+
+The MCP server codifies this existing convention:
+
+```
+<projects-path>/<slug>/
+  prd.md                      # exists → past Stage 0
+  discovery-report.md          # exists → past Stage 1
+  architecture-proposal.md     # exists → past Stage 2 (approval status inside)
+  gameplan.md                  # exists → past Stage 3 (approval status inside)
+  test-coverage-matrix.md      # exists → past Stage 4
+  progress.md                  # exists → Stage 5+ (milestone table inside)
+  qa-plan.md                   # exists → past Stage 7
+```
+
+Stage derivation rules:
+
+| Files Present | Approval State | Current Stage |
+|--------------|----------------|---------------|
+| `prd.md` only | — | Stage 0 (PRD complete) |
+| + `discovery-report.md` | — | Stage 1 (Discovery complete) |
+| + `architecture-proposal.md` | Unapproved | Stage 2 (awaiting architecture review) |
+| + `architecture-proposal.md` | Approved | Stage 2 (complete, ready for Stage 3) |
+| + `gameplan.md` | Unapproved | Stage 3 (awaiting gameplan review) |
+| + `gameplan.md` | Approved | Stage 3 (complete, ready for Stage 4) |
+| + `test-coverage-matrix.md` | — | Stage 4 (tests generated) |
+| + `progress.md` | Pending milestones | Stage 5 (implementation in progress) |
+| + `progress.md` | All milestones complete | Stage 5 (complete, ready for Stage 7) |
+| + `qa-plan.md` | — | Stage 7 (QA plan complete, ready for PR) |
+
+Approval detection: scan for `Status` field in the approval checklist — "Approved" or "Approved with Modifications" means approved.
+
+Milestone status: parse the milestone status table in `progress.md` — each row has milestone ID, description, and status (**Complete** / Pending / In Progress).
+
+**MCP tools:**
+
+| Tool | Input | Output |
+|------|-------|--------|
+| `list_products` | — | Available products from `pipelines/*.md` with name and projects path |
+| `list_projects` | `product?` | All projects for the active (or specified) product: slug, current stage, blocking status, milestone summary |
+| `get_project_status` | `slug`, `product?` | Full status: current stage, milestone breakdown, test results, branch name, next action, what's blocking |
+| `get_project_artifact` | `slug`, `artifact`, `product?` | Raw content of a specific artifact (prd, gameplan, architecture-proposal, progress, qa-plan, discovery-report, test-coverage-matrix) |
+
+Example `get_project_status("opml-import")` response:
+
+```json
+{
+  "project": "opml-import",
+  "product": "show-notes",
+  "level": 2,
+  "current_stage": {
+    "number": 5,
+    "label": "Implementation",
+    "detail": "4 of 5 milestones complete"
+  },
+  "milestones": [
+    { "id": "M1", "title": "OPML Parsing & Import Service", "status": "complete", "commit": "8e871ab" },
+    { "id": "M2", "title": "Import Controller & Views", "status": "complete", "commit": "0a439b0" },
+    { "id": "M3", "title": "Entry Points & Integration", "status": "complete", "commit": "53e3d9d" },
+    { "id": "M4", "title": "QA Test Data", "status": "complete", "commit": "7e685eb" },
+    { "id": "M5", "title": "Edge Cases & Polish", "status": "pending" }
+  ],
+  "branch": "pipeline/opml-import",
+  "next_action": "Implement M5 (Edge Cases & Polish)",
+  "blocking": null,
+  "test_results": { "passing": 311, "failing": 1, "note": "1 pre-existing queue isolation gap" }
+}
+```
+
+Example `list_projects()` response (summary view):
+
+```json
+[
+  {
+    "slug": "opml-import",
+    "product": "show-notes",
+    "stage": "Implementation (M4/M5)",
+    "status": "in_progress"
+  },
+  {
+    "slug": "email-notifications",
+    "product": "show-notes",
+    "stage": "Complete (ready for PR)",
+    "status": "complete"
+  },
+  {
+    "slug": "deficient-line-items-report",
+    "product": "orangeqc",
+    "stage": "QA Plan complete",
+    "status": "complete"
+  }
+]
+```
+
+**Implementation:**
+
+The server is lightweight — file reads + markdown parsing + stage derivation logic. No database, no external dependencies.
+
+```
+pipeline/
+  mcp-server/
+    server.js (or server.rb)     # MCP protocol handler
+    status.js                    # Stage derivation + artifact parsing
+    config.js                    # Reads pipelines/*.md for product configs
+```
+
+**How it finds data:**
+1. Read all `pipelines/*.md` files → extract product names and project paths
+2. For each product, scan its projects path for subdirectories
+3. For each project directory, check which artifacts exist and parse their content
+4. Apply the stage derivation rules above
+
+**How agents connect:**
+- Add the MCP server to the agent's MCP config (Claude Code's `settings.json`, or whatever the agent framework uses)
+- The server runs locally — same machine as the pipeline operator
+- No auth needed for v1 (local-only, same trust boundary as filesystem access)
+
+**Parsing considerations:**
+- `progress.md` milestone table is the trickiest parse — markdown table with bold markers for status
+- `architecture-proposal.md` and `gameplan.md` approval status is a checklist item near the bottom
+- `prd.md` header has the project level
+- `gameplan.md` has milestone definitions (title, description, acceptance criteria count)
+- All parsing is regex/line-based — no full markdown AST needed
+
+**What this replaces / deprioritizes:**
+- **ROAD-08 (Linear Automation)** — if the MCP server is the primary status surface, Linear integration becomes optional ("nice to have" for teams that use Linear) rather than the coordination backbone. The artifact directory is the source of truth, not Linear.
+- **ROAD-21 (Dashboard)** — the dashboard becomes a *client* of the same data the MCP server reads. Could even consume the MCP tools directly. The MCP server is the data layer; the dashboard is one possible presentation layer.
+
+**What this doesn't replace:**
+- **ROAD-02 (Notifications)** — the MCP server is pull-based (agent asks "what's the status?"). Notifications are push-based (pipeline tells you "stage 2 just finished"). Both are useful.
+- **ROAD-15 (Knowledge Extraction)** — different concern entirely (learning from the work vs. reporting on the work).
+
+**Open questions:**
+- **Multi-machine access:** v1 is local-only. If the CEO agent runs on a different machine, it can't connect. Options: (a) run the MCP server on a shared host, (b) expose via SSH tunnel, (c) add a REST API alongside MCP. Defer until the need arises.
+- **Write tools:** Should the MCP server also expose tools for *updating* project state (e.g., approving an architecture proposal, adding a note)? Or should writes always go through the pipeline skills? Start read-only, extend later.
+- **Staleness:** The MCP server reads files on demand — always fresh. But if an agent caches a response, it could go stale during an active implementation session. Document that responses are point-in-time snapshots.
+- **Which product is "active"?** `list_projects` without a product argument could read `pipeline.md` (the active pointer) or scan all products. Scanning all products is more useful for a CEO agent that wants the full picture.
+
+**Related:** ROAD-08 (Linear — deprioritized by this), ROAD-21 (Dashboard — becomes a client of this data), ROAD-02 (Notifications — complementary push model)
+
+---
+
+### ROAD-23: Stage 4 Test Quality Heuristics
+
+**Status:** Done
+**Theme:** Quality assurance
+
+Add a set of test quality heuristics to the Stage 4 (Test Generation) skill to prevent recurring antipatterns that cause false failures or Stage 5 friction.
+
+**Why:** Across 5 pipeline projects, Stage 4 has produced tests with recurring issues that only surface during Stage 5 implementation or during full-suite runs. These aren't logic errors — they're test *design* issues that a checklist of known antipatterns would prevent every time.
+
+**Antipatterns observed:**
+
+| Antipattern | Example | Fix |
+|-------------|---------|-----|
+| **Cumulative matchers** | `have_been_enqueued` checks all jobs enqueued in the describe block, not just the current example. Passes in isolation, fails in full suite. | Use block-form: `expect { action }.to have_enqueued_job.with(args)` |
+| **Mixed route helper names** | Tests use both `new_import_path` (singular) and `imports_path` (plural) inconsistently — depends on whether routes use `resource` vs. `resources` | Verify route helper names by reading `config/routes.rb` or running `rails routes` before writing tests |
+| **Testing implementation details** | Test asserts a specific SQL query structure or internal method call that Stage 5 may implement differently | Test observable behavior (return values, side effects, database state), not internal implementation |
+| **Hardcoded values that drift** | Test asserts a specific flash message string that Stage 5 implements slightly differently | Use `include("key phrase")` instead of exact string matching where the exact wording isn't part of the acceptance criteria |
+| **Missing test isolation** | Test relies on state from a prior example (e.g., database records created in a previous `it` block) | Each example should set up its own state via `let` and `before` |
+| **Stubbing non-existent interfaces** | Test stubs a method with a specific signature that Stage 5 implements with a different signature | Stub at the boundary (e.g., HTTP responses, file reads), not at internal method level |
+
+**How to implement:**
+
+Add a "Test Quality Heuristics" section to the Stage 4 skill, referenced during test writing (Step 4). The heuristics are a checklist the agent reviews before finalizing each test file.
+
+**Considerations:**
+- These are guidelines, not hard rules — some tests legitimately need exact string matching or specific method stubs
+- The list should grow as new antipatterns are discovered in future projects
+- Pairs well with ROAD-15 (Knowledge Extraction) — test antipatterns discovered during Stage 5 should flow back into this list
+
+**Related:** ROAD-15 (Knowledge Extraction — antipatterns are learnable), ROAD-18 (Gameplan Coherence — quality gates at different stages)

@@ -135,7 +135,23 @@ Work through milestones in order (M1, M2, ...). For each milestone, write the te
 - **Keep setup minimal.** Only create the test data needed for each specific test.
 - **Don't create shared helpers, shared contexts, or support modules** unless the existing codebase already uses them for similar patterns.
 
-### 5. Handle Platform Level
+### 5. Apply Test Quality Heuristics
+
+Before finalizing each test file, review it against these heuristics. These are common antipatterns observed across pipeline projects that cause false failures or Stage 5 friction.
+
+| Heuristic | Rule |
+|-----------|------|
+| **Use block-form job matchers** | Use `expect { action }.to have_enqueued_job(X).with(args)` instead of `have_been_enqueued`. The cumulative form (`have_been_enqueued`) checks all jobs enqueued across the entire describe block, causing false failures when run with other examples. |
+| **Verify route helper names** | Before using route helpers (e.g., `new_import_path` vs. `imports_path`), check `config/routes.rb` to determine whether the route uses `resource` (singular) or `resources` (plural). Singular and plural resources produce different helper names. |
+| **Test behavior, not implementation** | Assert on observable outcomes (return values, database state, response body, enqueued jobs) — not on internal method calls, SQL structure, or private method behavior. Stage 5 may implement the same behavior differently than expected. |
+| **Use flexible string matching** | For flash messages, error text, and UI copy, use `include("key phrase")` instead of exact string matching — unless the exact wording is part of an acceptance criterion. This prevents false failures when Stage 5 uses slightly different phrasing. |
+| **Isolate each example** | Each `it` block must set up its own state via `let` and `before`. Never rely on database records or side effects from a prior example. Use `let!` when records must exist before the example runs. |
+| **Stub at boundaries, not internals** | Stub external HTTP calls, file I/O, and third-party APIs. Don't stub internal service methods with assumed signatures — Stage 5 may implement them with different parameter names or return types. |
+| **Don't assert on count after create** | Instead of `expect { action }.to change(Model, :count).by(1)`, prefer asserting on the created record's attributes. Count-based assertions are fragile when callbacks or associated records also create rows. |
+
+If any test file violates these heuristics, fix it before proceeding.
+
+### 6. Handle Platform Level
 
 Check the PRD header for the project level:
 
@@ -143,7 +159,7 @@ Check the PRD header for the project level:
 - **Level 2** (web only): Rails tests only. Mark iOS/Android as N/A in the coverage matrix.
 - **Level 3** (all platforms): Also write iOS and Android tests per the stage spec. (repo paths from pipeline.md Target Repositories)
 
-### 6. Write the Coverage Matrix
+### 7. Write the Coverage Matrix
 
 Write to `<projects-path>/$ARGUMENTS/test-coverage-matrix.md`:
 
@@ -160,7 +176,7 @@ Write to `<projects-path>/$ARGUMENTS/test-coverage-matrix.md`:
 
 **Every acceptance criterion from every milestone must appear in this matrix.** If a criterion can't be tested (rare), document why.
 
-### 7. Verify Tests Parse Correctly
+### 8. Verify Tests Parse Correctly
 
 Run a syntax check on every file you created:
 
