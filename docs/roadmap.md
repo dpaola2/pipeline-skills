@@ -92,27 +92,21 @@ projects/<slug>/
 
 ### ROAD-04: Post-Flight Checks (Pre-PR Quality Gate)
 
-**Status:** Planned
+**Status:** Done
 **Theme:** Quality assurance
 
-Add a final stage (or sub-stage of implementation) that runs linters, security scanners, and auto-fixers before opening a PR.
+Integrated post-flight checks into the `/create-pr` skill, driven by each target repo's `PIPELINE.md` configuration.
 
-**Why:** Currently the pipeline doesn't run Brakeman (security) or StandardRB (style) before creating a PR. These tools catch real issues and their fixes are mechanical — perfect for automation.
+**What was built:**
+- **`PIPELINE.md` Post-Flight Checks section** (OPTIONAL) — each target repo declares its own checks in a table with columns: Check name, Command, Auto-fix?, Blocking?
+- **`/create-pr` skill Step 1** — reads the Post-Flight Checks table from `PIPELINE.md` and runs checks in three phases:
+  - Phase A: Auto-fix checks (e.g., StandardRB `--fix`) — commit fixes, re-run to confirm clean
+  - Phase B: Report-only checks (e.g., Brakeman, ripsecrets) — block if blocking, record if non-blocking
+  - Phase C: Record results for the PR body
+- **PR body includes post-flight results** — table showing which checks ran and their outcomes
+- **OrangeQC's `PIPELINE.md`** configured with: StandardRB (auto-fix, blocking), Brakeman (report-only, blocking), ripsecrets (report-only, blocking)
 
-**Checks to include:**
-- **StandardRB** — Ruby style linting and auto-fix
-- **Brakeman** — Rails security scanner (SQL injection, XSS, mass assignment, etc.)
-- **Bundle audit** — dependency vulnerability check
-- Any other project-specific linters defined in the repo
-
-**Considerations:**
-- Could be a standalone stage (Stage 6.5?) or the final step of the `/create-pr` skill
-- Auto-fix what can be auto-fixed (StandardRB), flag what can't (Brakeman warnings)
-- Results should be included in the PR description or as a checklist
-- This is partially OrangeQC-specific (StandardRB, Brakeman) but the pattern is universal — every project has its own linters
-- The repo's AGENTS.md could declare which post-flight checks to run
-
-**Related:** OrangeQC's StandardRB pre-commit hook already catches style issues at commit time, but running it proactively (and fixing issues) before the PR is cleaner.
+**Design decision:** Checks live in the target repo's `PIPELINE.md`, not hardcoded in the pipeline. A Django project would list `flake8` and `bandit`; a Node project would list `eslint` and `npm audit`. The pipeline just reads and executes whatever the repo declares. If `PIPELINE.md` has no Post-Flight Checks section, the step is skipped entirely.
 
 ---
 
@@ -308,7 +302,7 @@ Add a "ludicrous speed" mode that auto-approves human checkpoints when there are
 | ROAD-01 | Stage 0 — PRD Generation | Pipeline intake | Planned |
 | ROAD-02 | Post-Stage Notifications | Orchestration | Planned |
 | ROAD-03 | Per-Milestone Gameplans | Pipeline architecture | Planned |
-| ROAD-04 | Post-Flight Checks | Quality assurance | Planned |
+| ROAD-04 | Post-Flight Checks | Quality assurance | **Done** |
 | ROAD-05 | Externalize Platform Config (two-file) | Portability | **Done** |
 | ROAD-06 | Project Document Linking | Developer experience | Planned |
 | ROAD-07 | ADR Integration | Knowledge capture | Planned |
