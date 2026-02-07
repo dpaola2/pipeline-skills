@@ -75,6 +75,8 @@ Skills read `pipeline.md` first to find repo paths, then read `PIPELINE.md` from
 
 Sections marked REQUIRED apply to every project. Sections marked OPTIONAL can be omitted if they don't apply (e.g., a personal project with no API, no multi-tenancy, no mobile).
 
+**Why project artifacts live outside the pipeline repo:** Project artifacts (PRDs, gameplans, progress files) are *pipeline-scoped*, not *repo-scoped*. An OrangeQC Level 3 project may touch Rails, iOS, and Android repos simultaneously — its artifacts can't live inside any single target repo. Placing them in a per-product directory (e.g., `~/projects/orangeqc/pipeline-projects/`) lets project work span multiple repos while keeping products isolated from each other.
+
 ---
 
 ## Pipeline Skills (Running the Pipeline)
