@@ -2,7 +2,7 @@
 
 ## What This Project Is
 
-This is the design and implementation of an agent-orchestrated development pipeline for OrangeQC. The pipeline takes a PRD (Product Requirements Document) as input and produces implementation code across three platforms (Rails web/API, iOS, Android) that is ready for QA.
+This is the design and implementation of an agent-orchestrated development pipeline. The pipeline takes a PRD (Product Requirements Document) as input and produces implementation code that is ready for QA. Originally built for OrangeQC (Rails web/API, iOS, Android), the pipeline now supports multiple products via the `pipelines/` directory.
 
 **Read these files to get oriented:**
 1. `pipeline.md` - Maps this pipeline to target repositories (repo paths, project tracker)
@@ -10,7 +10,7 @@ This is the design and implementation of an agent-orchestrated development pipel
 3. `docs/current-process.md` - The OrangeQC development process this automates
 4. `docs/orangeqc-constraints.md` - Platform, team, and guardrail constraints
 5. `docs/gap-analysis.md` - What's missing and what to build
-6. `docs/roadmap.md` - Future improvements (ROAD-01 through ROAD-11)
+6. `docs/roadmap.md` - Future improvements (ROAD-01 through ROAD-13)
 
 ---
 
@@ -39,14 +39,23 @@ This pipeline automates **Gameplanning → Building → pre-QA validation**. Fra
 
 ---
 
-## Pipeline Configuration (Two-File Architecture)
+## Pipeline Configuration
 
-Configuration is split between two files:
+Configuration has three layers:
 
-### `pipeline.md` (this repo)
-Maps the pipeline to target repositories. Contains:
+### `pipeline.md` (this repo, root — the active pointer)
+The **active** pipeline config. Skills read this file to find repo paths. Contains:
 - **Target repository paths** (primary repo, API docs, mobile repos)
 - **Project tracker** (Linear, GitHub Issues, or none)
+
+This is always the file skills read. To switch products, copy the right config from `pipelines/`.
+
+### `pipelines/` (this repo — the product library)
+Named pipeline configs per product. Each file has the same format as `pipeline.md`:
+- `pipelines/orangeqc.md` — OrangeQC (Rails + API + iOS + Android)
+- `pipelines/show-notes.md` — Show Notes (Rails web app)
+
+**To switch products:** `cp pipelines/<product>.md pipeline.md`
 
 ### `PIPELINE.md` (each target repo)
 Describes how the target repo works. Contains:
@@ -59,10 +68,9 @@ Describes how the target repo works. Contains:
 
 Skills read `pipeline.md` first to find repo paths, then read `PIPELINE.md` from the primary repo for all framework-specific details.
 
-**To use this pipeline on a different project:**
-1. Edit `pipeline.md` with your repo paths
-2. Create a `PIPELINE.md` in your target repo describing how it works
-3. Skills and templates adapt automatically — no skill changes needed
+**To add a new product to the pipeline:**
+1. Run `/setup-repo <repo-path> [product-name]` — auto-detects framework, generates `PIPELINE.md` + pipeline config
+2. Or manually: create `PIPELINE.md` in the target repo, create `pipelines/<product>.md`, copy to `pipeline.md`
 
 Sections marked REQUIRED apply to every project. Sections marked OPTIONAL can be omitted if they don't apply (e.g., a personal project with no API, no multi-tenancy, no mobile).
 
@@ -119,6 +127,9 @@ The pipeline runs manually, one stage at a time:
 /stage7-qa-plan <project-slug>                    → produces qa-plan.md (checks all milestones complete)
 
 /create-pr <project-slug>                         → pushes branch, creates PR against default branch with generated summary
+
+/setup-repo <repo-path> [product-name]            → explores repo, generates PIPELINE.md + pipeline config,
+                                                    optionally activates the product
 ```
 
 ### Human Checkpoints

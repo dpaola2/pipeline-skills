@@ -301,6 +301,43 @@ Add a "ludicrous speed" mode that auto-approves human checkpoints when there are
 
 ---
 
+### ROAD-12: Multi-Product Support + Setup Repo Skill
+
+**Status:** Done
+**Theme:** Portability
+
+Added support for running the pipeline against multiple products (repos), with separate pipeline configs per product and a `/setup-repo` skill for automated repo onboarding.
+
+**What was built:**
+- **`pipelines/` directory** — named pipeline configs per product (e.g., `pipelines/orangeqc.md`, `pipelines/show-notes.md`)
+- **Active pointer pattern** — `pipeline.md` at repo root is always the active config; switch products by copying from `pipelines/`
+- **`/setup-repo` skill** — explores a new repo, detects framework/tests/CI/structure, auto-generates `PIPELINE.md` in the target repo and a pipeline config in `pipelines/`, optionally activates it
+- **Show Notes onboarded** — first non-OrangeQC product added to the pipeline (Rails 8.1 web app)
+
+**Design decisions:**
+- Active pointer over per-command product argument — matches session-based workflow, zero existing skill changes (all 8 skills still read `pipeline.md`)
+- Product configs stored in `pipelines/` as reference copies; `pipeline.md` is the canonical active file
+- `setup-repo` uses detect → confirm → generate pattern to avoid silent misconfigurations
+- OPTIONAL sections in PIPELINE.md are omitted for simpler projects (no API, no multi-tenancy, etc.)
+- To switch products: `cp pipelines/<product>.md pipeline.md`
+
+---
+
+### ROAD-13: Configurable Base Branch (per project)
+
+**Status:** Planned
+**Theme:** Pipeline lifecycle
+
+Allow each project to specify a custom base branch instead of always branching from the default branch declared in `PIPELINE.md`. Currently Stage 4 creates `pipeline/<slug>` from `origin/<default-branch>`. This would allow branching from another project's branch or a feature branch.
+
+**Why:** Enables dependent projects (Project B needs Project A's unreleased changes) and post-QA follow-up projects. The `/setup-repo` skill already derives the default branch from git and sets it as `PR base branch` in `PIPELINE.md`, but per-project overrides aren't supported yet.
+
+**How:** A `base_branch` field in the project's `prd.md` header or a project-level config file. Stage 4 reads it when creating the branch. If not specified, falls back to `PIPELINE.md`'s `PR base branch`.
+
+**Related:** ROAD-10 (Post-QA Iteration / Re-entry)
+
+---
+
 ## Item Index
 
 | ID | Title | Theme | Status |
@@ -316,3 +353,5 @@ Add a "ludicrous speed" mode that auto-approves human checkpoints when there are
 | ROAD-09 | Stage 6 — Code Review | Quality assurance | Planned |
 | ROAD-10 | Post-QA Iteration / Re-entry | Pipeline lifecycle | Planned |
 | ROAD-11 | Ludicrous Speed Mode | Orchestration | Planned |
+| ROAD-12 | Multi-Product Support + Setup Repo | Portability | **Done** |
+| ROAD-13 | Configurable Base Branch | Pipeline lifecycle | Planned |

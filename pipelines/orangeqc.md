@@ -1,10 +1,7 @@
-# Pipeline Configuration
+# Pipeline Configuration — OrangeQC
 
-> **Active product:** OrangeQC
-> **Available configs:** See `pipelines/` directory. To switch: `cp pipelines/<product>.md pipeline.md`
->
-> Maps this pipeline instance to target repositories.
-> Skills read this file first to find repo paths, then read each repo's `PIPELINE.md` for framework details, directory structure, test commands, and conventions.
+> Maps this pipeline instance to target repositories for the OrangeQC product.
+> To activate: `cp pipelines/orangeqc.md pipeline.md`
 
 ---
 
