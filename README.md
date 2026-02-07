@@ -155,6 +155,8 @@ cp pipelines/my-product.md pipeline.md
 │   └── qa-plan.md                     # Stage 7 output
 │
 └── docs/                              # Architecture and design specs
+    ├── design-priorities.md           # Core principles governing pipeline evolution
+    ├── software-laws.md               # Fundamental software laws applied to the pipeline
     ├── pipeline-architecture.md       # Full pipeline design (7 stages + checkpoints)
     ├── current-process.md             # The development process this automates
     ├── orangeqc-constraints.md        # OrangeQC-specific platform constraints
@@ -231,6 +233,8 @@ Each stage runs as a manual Claude Code session. Automated orchestration (stage 
 | `docs/current-process.md` | The development process this pipeline automates |
 | `docs/stages/01-07` | Deep specs for each individual stage |
 | `templates/` | Input/output templates used by each stage |
+| `docs/design-priorities.md` | Core principles that govern how the pipeline evolves |
+| `docs/software-laws.md` | Fundamental software laws and how they apply to the pipeline |
 | `docs/roadmap.md` | Planned improvements |
 | `pipeline.md.example` | Config format reference |
 | `pipelines/README.md` | How to manage per-product configs |

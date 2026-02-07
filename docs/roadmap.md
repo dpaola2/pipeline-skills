@@ -351,6 +351,142 @@ Externalized project artifacts (`projects/`) and inbox (`inbox/`) from the pipel
 
 ---
 
+### ROAD-15: Continuous Knowledge Extraction
+
+**Status:** Planned
+**Theme:** Knowledge capture
+
+Systematically extract insights from every pipeline stage and route them to the right durable location — so that future projects, future agents, and future developers benefit from what the pipeline has already learned.
+
+**Why:** The pipeline generates valuable insights at every stage — codebase patterns discovered during Stage 1, architectural idioms during Stage 2, testing gotchas during Stage 4, implementation lessons during Stage 5, and review findings during Stage 6. Today these insights live only in project-scoped artifacts (discovery reports, progress files) or in Claude's auto-memory (session-scoped, single-instance). They don't flow back into the codebase conventions, the pipeline's shared knowledge, or the next project. Every new project starts from scratch, re-discovering things the pipeline already learned.
+
+**The core problem:** The pipeline has no systematic way to answer "what did we learn?" and "where should that knowledge live?"
+
+**Two orthogonal dimensions:** Knowledge capture has two independent axes that must be solved separately:
+1. **When** — which stages generate insights, and at what point during execution (inline, post-stage, post-project)
+2. **Where** — which durable location should store the insight (target repo conventions, pipeline docs, project artifacts)
+
+These are orthogonal because every combination is valid: Stage 1 can produce repo-scoped insights, Stage 5 can produce pipeline-scoped insights, and the extraction mechanism for *when* shouldn't be coupled to the routing logic for *where*. Getting this separation right means the system scales — adding a new stage or a new destination doesn't require redesigning the other axis.
+
+**Knowledge types and destinations:**
+
+| Insight Type | Example | Destination | Stage Source |
+|-------------|---------|-------------|-------------|
+| Codebase pattern | "`find_or_create_by!` + `previously_new_record?` for create detection" | Target repo conventions file (`CLAUDE.md` / `AGENTS.md`) | Stage 1 (Discovery), Stage 5 (Implementation) |
+| Testing pattern | "DigestMailer spec tests multipart HTML+text bodies separately" | Target repo conventions file | Stage 4 (Test Gen), Stage 5 (Implementation) |
+| Implementation gotcha | "PostgreSQL `ROUND(double_precision, int)` doesn't exist — cast to `::numeric`" | Target repo conventions file | Stage 5 (Implementation) |
+| Architecture pattern | "Internal notification mailers get their own class, separate from user-facing mailers" | Target repo conventions file | Stage 2 (Architecture) |
+| Pipeline lesson | "Seed tasks should use ActiveRecord directly, not FactoryBot" | Pipeline memory / docs | Stage 5 (Implementation) |
+| Cross-project pattern | "Level 1 projects with no existing test coverage: model specs + seed data, skip system specs" | Pipeline memory / docs | Stage 4 (Test Gen), Stage 5 (Implementation) |
+| Risk pattern | "Bullet gem N+1 threshold is 2+ queries — tests with 1 record won't trigger it" | Target repo conventions file | Stage 5 (Implementation) |
+| PRD pattern | "When PRD says 'hardcoded list', use a constant, not ENV var" | Pipeline templates / docs | Stage 2 (Architecture) |
+
+**Key design questions:**
+
+1. **When to extract:** Inline during each stage (agent writes insights as it works) vs. post-stage (a dedicated extraction pass after each stage completes) vs. post-project (a retrospective after all stages finish). Inline is most natural but risks cluttering stage execution. Post-project is simplest but knowledge gets lost if a project stalls mid-pipeline.
+
+2. **Where to route:** The destination depends on the insight type:
+   - **Repo-scoped** (patterns specific to this codebase) → target repo's conventions file
+   - **Pipeline-scoped** (lessons about how to run the pipeline) → pipeline docs or memory
+   - **Project-scoped** (only relevant to this project) → project artifacts (already happens naturally)
+
+   The agent needs heuristics or explicit rules for which bucket an insight falls into. A simple test: "Would this help someone working on a *different* project in the *same* repo?" → repo-scoped. "Would this help someone running the pipeline against a *different* repo?" → pipeline-scoped.
+
+3. **How to write without cluttering:** The target repo's conventions file shouldn't grow unbounded. Insights need to be organized by topic, deduplicated, and periodically curated. Appending to a flat list won't scale.
+
+4. **How to avoid stale knowledge:** Codebase patterns change. A pattern discovered in February may be obsolete by June. Knowledge entries should be falsifiable — tied to specific code so they can be validated or retired.
+
+**Proposed approach (strawman):**
+
+- **Each stage skill gets a "knowledge extraction" step** at the end — before writing the stage output, the agent reviews what it learned and categorizes insights by destination
+- **Repo-scoped insights** are appended to a staging area (e.g., `CLAUDE.md.suggestions` or a dedicated section at the bottom of the conventions file) that the human reviews and merges during checkpoint reviews
+- **Pipeline-scoped insights** are written to a `docs/lessons-learned.md` or similar file in the pipeline repo, organized by topic
+- **Deduplication** — before writing an insight, check if it (or something equivalent) already exists in the destination
+- **Progressive refinement** — early projects generate more insights (the conventions file is sparse); mature repos generate fewer (most patterns are already documented)
+
+**Relationship to other roadmap items:**
+- **ROAD-07 (ADR Integration)** is a *subset* of this — ADRs capture architectural decisions, which are one type of insight. ROAD-15 is the broader system that would include ADR-like extraction as one component.
+- **ROAD-09 (Code Review)** is a natural extraction point — the review stage sees the final code and can identify patterns worth codifying.
+- **ROAD-03 (Per-Milestone Gameplans)** would benefit — tighter feedback loops mean insights are fresher and more specific.
+
+**Considerations:**
+- Start with the highest-value, lowest-effort insertion point: Stage 5 (Implementation) generates the most concrete, actionable insights
+- Don't block the pipeline on knowledge extraction — it should be additive, not a gate
+- The human checkpoint reviews (Stage 2, Stage 3) are natural curation points for reviewing suggested knowledge additions
+- The conventions file in the target repo is the most impactful destination — it's read by every agent, every session, every project
+
+---
+
+### ROAD-17: CI Failure Detection and Auto-Fix
+
+**Status:** Planned
+**Theme:** Quality assurance
+
+Automatically detect CI failures on GitHub after a PR is created (or after any push to a pipeline branch), diagnose the failures from CI logs, fix them, and re-push until CI passes.
+
+**Why:** The pipeline currently ends at `/create-pr` — it pushes the branch, creates the PR, and hands off. But CI often catches things the local environment didn't: different Ruby/Node versions, database setup differences, stricter linting configs, missing test fixtures that only surface in parallel test runs, etc. Today, CI failures require the operator to manually check GitHub, read logs, diagnose the issue, switch to the repo, fix, commit, push, and wait again. This is exactly the kind of mechanical loop an agent should handle.
+
+**The problem space:**
+
+This is the pipeline's first **reactive feedback loop**. Every existing stage is forward-only: read inputs, produce outputs, advance. CI failure handling is different — an external system (GitHub Actions) produces a signal asynchronously, and the pipeline needs to:
+1. Wait for CI to complete
+2. Read the results
+3. If failed: diagnose from logs, fix in the local repo, commit, push
+4. Wait again
+5. Repeat until green or bail out
+
+This pattern doesn't fit cleanly into the existing stage numbering (Stages 1-7 are sequential production steps). It's closer to a **maintenance loop** that runs alongside or after the production pipeline.
+
+**Proposed approach:**
+
+A standalone skill (`/fix-ci <project-slug>`) that can be invoked:
+- Manually after `/create-pr` when the operator sees CI failed
+- Eventually automatically as part of `/create-pr` (opt-in, once the skill is proven)
+
+**Skill flow:**
+
+1. **Locate the run** — use `gh run list --branch pipeline/<slug>` to find the latest CI run
+2. **Wait if in progress** — poll `gh run watch` or check status until the run completes
+3. **Check result** — if all checks pass, report success and stop
+4. **Diagnose failures** — use `gh run view <id> --log-failed` to pull failure logs for each failed job
+5. **Categorize the failure:**
+   - **Test failure** — read the failing spec, understand the assertion, read the implementation, fix
+   - **Lint/style failure** — run the linter locally with auto-fix, commit
+   - **Build failure** — missing dependency, syntax error, incompatible version
+   - **Environment/infra failure** — CI config issue, service unavailable (not fixable by the agent)
+6. **Fix and push** — make the fix on the pipeline branch, commit with a clear message (e.g., "Fix CI: resolve RSpec failure in reports_controller_spec"), push
+7. **Wait for re-run** — CI triggers automatically on push; wait for the new run to complete
+8. **Repeat** — loop back to step 3, up to a configurable attempt limit (default: 3)
+9. **Bail out** — if the limit is reached or the failure is categorized as unfixable (infra issue, flaky test not caused by this branch), stop and report to the operator with a diagnosis
+
+**Guardrails:**
+
+| Guardrail | Why |
+|-----------|-----|
+| Attempt limit (default 3) | Prevent infinite fix-push-fail loops |
+| Diff review before push | Agent reviews its own fix to avoid introducing new issues |
+| No force-push | Same rule as everywhere — append commits only |
+| Scope check | Only fix failures caused by changes on this branch, not pre-existing CI failures. Compare against the base branch's CI status |
+| No CI config changes | Don't modify `.github/workflows/` or CI configuration to make tests pass — fix the code |
+
+**Scope check detail:** Before attempting a fix, the agent should verify the failing test/check also passes on the base branch. If the base branch has the same failure, it's pre-existing and the agent should skip it (report it, but don't try to fix someone else's broken CI).
+
+**Integration with `/create-pr`:**
+
+Two possible modes:
+1. **Manual** (v1) — `/create-pr` finishes, operator runs `/fix-ci <slug>` if CI fails
+2. **Integrated** (v2) — `/create-pr` includes an optional `--wait-for-ci` flag that runs the fix-ci loop before declaring the PR ready
+
+**Open questions:**
+
+- **How long to wait for CI?** OrangeQC's CI suite takes ~5 minutes. Waiting is fine. A repo with 30-minute CI would need a different strategy (background polling, notifications).
+- **What about flaky tests?** If a test fails intermittently and isn't related to this branch's changes, the agent shouldn't try to fix it. The scope check (compare against base branch) handles this, but flaky tests that pass on base and fail on the PR branch are harder to distinguish from real regressions.
+- **Test-only fixes vs. implementation fixes:** If the CI failure reveals a real bug in the implementation (not just a test issue), should the agent fix it? Probably yes for small fixes, but large implementation changes should go back through the pipeline (related to ROAD-10).
+
+**Related:** ROAD-04 (Post-Flight Checks — pre-push local checks), ROAD-09 (Code Review — catches issues before CI does), ROAD-10 (Post-QA Re-entry — if CI fix requires significant rework)
+
+---
+
 ### ROAD-13: Configurable Base Branch (per project)
 
 **Status:** Planned
@@ -363,6 +499,36 @@ Allow each project to specify a custom base branch instead of always branching f
 **How:** A `base_branch` field in the project's `prd.md` header or a project-level config file. Stage 4 reads it when creating the branch. If not specified, falls back to `PIPELINE.md`'s `PR base branch`.
 
 **Related:** ROAD-10 (Post-QA Iteration / Re-entry)
+
+---
+
+### ROAD-16: T-Shirt Size Estimates (Replace Time-Based Estimates)
+
+**Status:** Planned
+**Theme:** Developer experience
+
+Replace time-based estimates in the gameplan template (Section 7: Estimates) with t-shirt sizes (S / M / L / XL).
+
+**Why:** Time estimates are misleading for agent-driven work. The agent implements a milestone in minutes, but human review gates, context-switching, and iteration take hours or days. "< 1 day" conflates agent execution time with wall-clock project time. T-shirt sizes communicate relative complexity and risk without implying a timeline.
+
+**Proposed scale:**
+
+| Size | Meaning | Rough Scope |
+|------|---------|-------------|
+| **S** | Trivial — one concern, few files, no ambiguity | 1-3 files changed, no migrations, no new patterns |
+| **M** | Straightforward — clear pattern to follow, moderate scope | 5-10 files, simple migration, follows existing conventions |
+| **L** | Significant — multiple concerns, new patterns, or cross-cutting changes | 10-20 files, complex migrations, new architectural patterns |
+| **XL** | Large — should probably be split into multiple projects | 20+ files, multiple migrations, new infrastructure |
+
+**What changes:**
+- `templates/gameplan.md` Section 7 — replace days columns with a single Size column
+- Stage 3 skill — update instructions to use t-shirt sizes instead of day estimates
+- Existing gameplans are unaffected (they're project artifacts, not templates)
+
+**Considerations:**
+- T-shirt sizes apply to the *project* or *milestone*, not to individual tasks
+- Size should factor in risk and ambiguity, not just line count — a 3-file change with tricky edge cases is M, not S
+- Could also apply sizes at the project level in the PRD header (Level 1/2/3 already captures platform scope; t-shirt captures complexity)
 
 ---
 
@@ -384,3 +550,6 @@ Allow each project to specify a custom base branch instead of always branching f
 | ROAD-12 | Multi-Product Support + Setup Repo | Portability | **Done** |
 | ROAD-13 | Configurable Base Branch | Pipeline lifecycle | Planned |
 | ROAD-14 | Externalize Project Work Dirs | Portability | **Done** |
+| ROAD-15 | Continuous Knowledge Extraction | Knowledge capture | Planned |
+| ROAD-16 | T-Shirt Size Estimates | Developer experience | Planned |
+| ROAD-17 | CI Failure Detection + Auto-Fix | Quality assurance | Planned |
