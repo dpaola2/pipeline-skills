@@ -90,7 +90,8 @@ Complete every section of the non-functional checklist in the template:
 - **Data Model & API:** Reference the approved architecture (don't restate it — link to it)
 - **Security & Access Control:** Scoping, authorization, permissions from the architecture
 - **Performance:** Query patterns, indexing strategy, N+1 risks, caching needs
-- **Observability:** Logging plan, metrics, debug path
+- **Observability:** Logging plan, debug path, alerts
+- **Analytics & Instrumentation:** Success metrics from the PRD, specific events to track (with names, triggers, and properties), and what framework/approach to use. If the target repo has no analytics infrastructure, note that and skip the events table. Check `PIPELINE.md` and the discovery report for existing analytics patterns.
 - **Testing Plan:** What types of tests per platform, coverage expectations
 - **Feature Flags & Rollout:** Flag name, default state, rollout plan
 - **Mobile-Specific:** Mark N/A for Level 2 projects

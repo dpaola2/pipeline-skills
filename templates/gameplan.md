@@ -190,8 +190,29 @@
 - [ ] Logging plan (events, fields)
 - [ ] Logs are human-readable
 - [ ] Debug path exists without production access
-- [ ] Metrics/analytics (what to track)
 - [ ] Alerts needed? [Yes/No]
+
+### Analytics & Instrumentation
+
+#### Success Metrics
+> How will we know this feature is working? Reference PRD goals or define measurable outcomes.
+
+- [ ] [e.g., "50% of accounts with eligible data use the report within 30 days"]
+- [ ] [e.g., "Export usage averages >10 exports/week across all accounts"]
+- Or: N/A — no measurable success criteria for this feature
+
+#### Events to Track
+
+| Event Name | Trigger | Key Properties | Platform |
+|------------|---------|----------------|----------|
+| [e.g., `deficient_report.viewed`] | [User opens the report page] | [account_id, user_id, filter_count] | [Web] |
+| [e.g., `deficient_report.exported`] | [User clicks CSV or PDF export] | [format, row_count, filtered] | [Web] |
+
+_If the product has no event tracking infrastructure, note that here and skip the table._
+
+#### Instrumentation Approach
+- [ ] Framework: [e.g., "Ahoy events", "server-side logging", "Mixpanel", "custom analytics table", "none — no tracking infrastructure yet"]
+- [ ] Implementation location: [e.g., "Controller after_action callbacks", "Stimulus event handlers", "service layer"]
 
 ### Testing Plan
 
