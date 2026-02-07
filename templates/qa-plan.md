@@ -51,8 +51,8 @@
 ### Rake Task
 
 ```bash
-cd ~/projects/orangeqc/orangeqc
-bundle exec rake pipeline:seed_[slug]
+cd [primary repo path from pipeline.md]
+[run seed task per framework — e.g., bundle exec rake pipeline:seed_[slug]]
 ```
 
 [If no rake task exists: "No seed task was created for this project. Test data must be set up manually — see scenarios below."]

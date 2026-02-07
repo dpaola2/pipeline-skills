@@ -1,6 +1,6 @@
 ---
 name: stage5-implementation
-description: "Run pipeline Stage 5 (Implementation) for a project milestone. Writes Rails code to make Stage 4's failing tests pass."
+description: "Run pipeline Stage 5 (Implementation) for a project milestone. Writes code to make Stage 4's failing tests pass."
 disable-model-invocation: true
 argument-hint: "<project-slug> <milestone>"
 allowed-tools:
@@ -15,7 +15,7 @@ allowed-tools:
 
 # Stage 5: Implementation
 
-You are a **code builder**. You write the minimum viable Rails code to make Stage 4's failing tests pass for a single milestone. The tests already define the contract — your job is to satisfy it.
+You are a **code builder**. You write the minimum viable code to make Stage 4's failing tests pass for a single milestone. The tests already define the contract — your job is to satisfy it.
 
 **You implement one milestone per invocation.** The user specifies which milestone (e.g., `M1`, `M2`). Do not implement multiple milestones in a single run.
 
@@ -38,8 +38,8 @@ If the second argument is missing, **STOP** and tell the user:
 - **Input 3:** `projects/PROJECT_SLUG/test-coverage-matrix.md` — maps acceptance criteria to test file locations
 - **Input 4:** `projects/PROJECT_SLUG/discovery-report.md` — existing codebase context
 - **Input 5:** `projects/PROJECT_SLUG/prd.md` — requirement details and edge cases
-- **Input 6:** Test files in `~/projects/orangeqc/orangeqc/spec/` — the failing tests you must make pass
-- **Output 1:** Implementation code in `~/projects/orangeqc/orangeqc/` (the Rails repo), committed to the project branch
+- **Input 6:** Test files in the primary repository's test directory (path from pipeline.md) — the failing tests you must make pass
+- **Output 1:** Implementation code in the primary repository (path from pipeline.md), committed to the project branch
 - **Output 2:** `projects/PROJECT_SLUG/progress.md` — updated with milestone completion data (in the agent-pipeline repo)
 - **Stage spec:** `docs/stages/05-implementation.md` (read for full behavioral guidance)
 
@@ -64,10 +64,10 @@ Read the gameplan and verify that the requested MILESTONE exists in the mileston
 
 ### Check 3: Project Branch Exists
 
-In the Rails repo (`~/projects/orangeqc/orangeqc/`), verify the project branch `pipeline/PROJECT_SLUG` exists. This branch was created by Stage 4 and contains the failing tests.
+In the primary repository (path from pipeline.md), verify the project branch `pipeline/PROJECT_SLUG` exists. This branch was created by Stage 4 and contains the failing tests.
 
 ```bash
-cd ~/projects/orangeqc/orangeqc && git branch --list 'pipeline/PROJECT_SLUG'
+cd <primary-repo-path> && git branch --list 'pipeline/PROJECT_SLUG'
 ```
 
 If the branch does not exist, **STOP**:
@@ -77,12 +77,12 @@ If the branch does not exist, **STOP**:
 ### Check 4: Clean Working Tree
 
 ```bash
-cd ~/projects/orangeqc/orangeqc && git status --porcelain
+cd <primary-repo-path> && git status --porcelain
 ```
 
 If there are uncommitted changes, **STOP**:
 
-> "The Rails repo has uncommitted changes. Please commit or stash them before running Stage 5."
+> "The primary repository has uncommitted changes. Please commit or stash them before running Stage 5."
 
 ### Check 5: Prior Milestone Tests Pass (for M2+)
 
@@ -97,7 +97,7 @@ For example, if implementing M3:
 Run those tests:
 
 ```bash
-cd ~/projects/orangeqc/orangeqc && bundle exec rspec <prior-milestone-test-files> --format documentation 2>&1
+cd <primary-repo-path> && <test-command> <prior-milestone-test-files> --format documentation 2>&1
 ```
 
 If prior milestone tests FAIL, they haven't been implemented yet. **STOP**:
@@ -119,17 +119,18 @@ Read `projects/PROJECT_SLUG/progress.md` if it exists. This file tracks mileston
 
 After passing all pre-flight checks, read these files:
 
-1. The gameplan at `projects/PROJECT_SLUG/gameplan.md` — find the **MILESTONE section** specifically. Read the goals, acceptance criteria, and platform tasks.
-2. The architecture proposal at `projects/PROJECT_SLUG/architecture-proposal.md` — read the sections relevant to this milestone (data model, service design, controller design, view architecture).
-3. The test-coverage-matrix at `projects/PROJECT_SLUG/test-coverage-matrix.md` — identify which test files and describe/context blocks cover this milestone.
-4. The stage spec at `docs/stages/05-implementation.md` — understand your role and success criteria.
-5. The Rails AGENTS.md at `~/projects/orangeqc/orangeqc/AGENTS.md` — **critical**: conventions for models, controllers, services, views, routes, migrations, JavaScript.
+1. The pipeline config at `pipeline.md` — understand repo paths, branch conventions, framework details.
+2. The gameplan at `projects/PROJECT_SLUG/gameplan.md` — find the **MILESTONE section** specifically. Read the goals, acceptance criteria, and platform tasks.
+3. The architecture proposal at `projects/PROJECT_SLUG/architecture-proposal.md` — read the sections relevant to this milestone (data model, service design, controller design, view architecture).
+4. The test-coverage-matrix at `projects/PROJECT_SLUG/test-coverage-matrix.md` — identify which test files and describe/context blocks cover this milestone.
+5. The stage spec at `docs/stages/05-implementation.md` — understand your role and success criteria.
+6. The conventions file in the primary repository (path from pipeline.md) — **critical**: conventions for the framework's models, controllers, services, views, routes, migrations, and JavaScript.
 
 ## Step-by-Step Procedure
 
 ### 1. Check Out the Project Branch
 
-In the Rails repo (`~/projects/orangeqc/orangeqc/`):
+In the primary repository (path from pipeline.md):
 
 1. Fetch latest: `git fetch origin`
 2. Check out the project branch: `git checkout pipeline/PROJECT_SLUG`
@@ -152,50 +153,50 @@ For each test file:
 
 **Use Task agents for parallel exploration.** Launch multiple explore agents simultaneously to understand patterns the implementation should follow.
 
-Search the Rails repo at `~/projects/orangeqc/orangeqc/` for:
+Search the primary repository (path from pipeline.md) for:
 
 **If this milestone creates a migration:**
-- Find 2-3 existing migration examples in `db/migrate/` — study the style, naming, index creation patterns
-- Read `db/schema.rb` for related tables mentioned in the architecture
+- Find 2-3 existing migration examples in the migrations directory (from pipeline.md Directory Structure) — study the style, naming, index creation patterns
+- Read the schema file for related tables mentioned in the architecture
 
 **If this milestone creates a model:**
-- Find the most similar existing model in `app/models/` — study validations, associations, scopes, class methods
-- Check for concerns referenced in the architecture (e.g., `Analytics::Filters`)
+- Find the most similar existing model in the models directory (from pipeline.md Directory Structure) — study validations, associations, scopes, class methods
+- Check for concerns referenced in the architecture
 
 **If this milestone creates a service:**
-- Find existing services in `app/services/` that follow the same pattern referenced in the architecture
+- Find existing services in the services directory (from pipeline.md Directory Structure) that follow the same pattern referenced in the architecture
 - Study how they are initialized, what modules they include, how they are tested
 
 **If this milestone creates a controller:**
-- Find the most similar existing controller (e.g., another `Reports::` controller)
+- Find the most similar existing controller (e.g., one in the same namespace as the new controller)
 - Study inheritance, before_actions, action structure, instance variable naming
-- Look at the parent class referenced in the architecture (e.g., `Reports::BaseController`)
+- Look at the parent class referenced in the architecture
 
 **If this milestone creates views:**
-- Find the most similar existing views in `app/views/reports/` or similar
-- Study layout, partial structure, HTML/ERB patterns
-- Look at how Stimulus controllers are connected in the markup
+- Find the most similar existing views in the views directory (from pipeline.md Directory Structure)
+- Study layout, partial structure, template patterns
+- Look at how JavaScript controllers are connected in the markup
 
-**If this milestone creates Stimulus controllers:**
-- Find existing Stimulus controllers in `app/javascript/controllers/`
-- Study the naming convention, lifecycle methods, target/value/outlet patterns
+**If this milestone creates JavaScript controllers:**
+- Find existing JavaScript controllers in the JS controllers directory (from pipeline.md Directory Structure)
+- Study the naming convention, lifecycle methods, patterns
 
 **If this milestone modifies routes:**
-- Read `config/routes.rb` — find the relevant namespace block where new routes should go
+- Read the routes file (from pipeline.md Directory Structure) — find the relevant namespace block where new routes should go
 
 ### 4. Plan the Implementation Order
 
-Based on the tests and the gameplan's platform tasks, implement in this order within the milestone:
+Based on the tests and the gameplan's platform tasks, follow the Implementation Order from pipeline.md. This ensures dependencies are satisfied as you build.
 
 1. **Migration(s)** — schema changes first (if any)
 2. **Model(s)** — with validations, associations, scopes, class methods
 3. **Service(s)** — business logic and query objects
-4. **Route(s)** — register new paths in `config/routes.rb`
+4. **Route(s)** — register new paths in the routes file
 5. **Controller(s)** — actions, authorization, data loading
-6. **Views** — ERB templates and partials
-7. **Stimulus controller(s)** — JavaScript for interactive behavior
+6. **Views** — templates and partials
+7. **JavaScript controller(s)** — interactive behavior
 
-This order ensures dependencies are satisfied as you build.
+Refer to pipeline.md for the canonical ordering and any framework-specific adjustments.
 
 ### 5. Implement the Code
 
@@ -244,8 +245,10 @@ Write each file following these rules:
 After implementing all files for this milestone, run the relevant test files:
 
 ```bash
-cd ~/projects/orangeqc/orangeqc && bundle exec rspec <test-files-for-this-milestone> --format documentation 2>&1
+cd <primary-repo-path> && <test-command> <test-files-for-this-milestone> --format documentation 2>&1
 ```
+
+(The repo path and test command come from pipeline.md.)
 
 Identify the specific test files from the test-coverage-matrix.
 
@@ -267,8 +270,10 @@ Identify the specific test files from the test-coverage-matrix.
 After this milestone's tests pass, verify no prior milestone tests regressed. Run all feature test files:
 
 ```bash
-cd ~/projects/orangeqc/orangeqc && bundle exec rspec <all-feature-test-files> --format documentation 2>&1
+cd <primary-repo-path> && <test-command> <all-feature-test-files> --format documentation 2>&1
 ```
+
+(The repo path and test command come from pipeline.md.)
 
 Check the results:
 - **Prior milestone tests** should still pass. If any regressed, fix the regression.
@@ -284,7 +289,7 @@ Before committing, verify:
 - No commented-out code
 - No dead code (unused methods, unreachable branches)
 - All files follow existing code style
-- Security: all queries scoped to account/user
+- Security: all queries follow the scoping rules from pipeline.md (if Multi-Tenant Security section exists)
 - No files created outside the scope of this milestone
 
 ### 9. Commit
@@ -341,7 +346,7 @@ If you have no new insights for this milestone, skip this step.
 
 ### 11. Update Progress File
 
-After committing to the Rails repo, update the progress file in the **agent-pipeline repo** (NOT the Rails repo).
+After committing to the primary repository, update the progress file in the **agent-pipeline repo** (NOT the primary repository).
 
 **File:** `projects/PROJECT_SLUG/progress.md`
 
@@ -355,7 +360,7 @@ The progress file has this structure:
 | Field | Value |
 |-------|-------|
 | **Branch** | `pipeline/PROJECT_SLUG` |
-| **Rails repo** | `~/projects/orangeqc/orangeqc/` |
+| **Primary repo** | [path from pipeline.md] |
 | **Milestones** | M0–M_LAST_ |
 
 ## Milestone Status
@@ -402,7 +407,7 @@ Any implementation notes, gotchas, or lessons learned
 - Include the actual commit SHA from the commit you just made
 - List ALL acceptance criteria from the gameplan with checked/unchecked status
 - Record any spec gaps or implementation notes
-- Do NOT commit this file to the Rails repo — it lives in the agent-pipeline repo only
+- Do NOT commit this file to the primary repository — it lives in the agent-pipeline repo only
 
 ## When the Spec Has Gaps
 
@@ -426,37 +431,37 @@ If you discover that the architecture proposal or gameplan is incomplete, ambigu
 - **Do not implement multiple milestones.** One milestone per invocation.
 - **Do not commit or merge directly to the default branch.** All work stays on the project branch.
 
-## Working in the Rails Repo
+## Working in the Primary Repository
 
-The Rails repo is at `~/projects/orangeqc/orangeqc/`. The default branch is `staging` (NOT `main`).
+The primary repository path and default branch are specified in pipeline.md Repository Details.
 
 ### Files You MAY Create or Modify
 
-Only files specified in the gameplan's platform tasks for this milestone:
+Only files in directories listed in pipeline.md Directory Structure that this milestone's gameplan tasks reference:
 
-- `db/migrate/` — new migration files
-- `app/models/` — new model files
-- `app/services/` — new service files
-- `app/controllers/` — new controller files
-- `app/views/` — new view/partial files
-- `app/javascript/controllers/` — new Stimulus controllers
-- `config/routes.rb` — route modifications
-- `AGENTS.md` — codebase insights discovered during implementation (Step 10)
+- Migration files
+- Model files
+- Service files
+- Controller files
+- View/partial/template files
+- JavaScript controller files
+- Routes file modifications
+- The conventions file (e.g., `AGENTS.md`) — codebase insights discovered during implementation (Step 10)
 
 ### Files You May NOT Create or Modify
 
-- Anything in `spec/` — Stage 4 owns test files and factories
-- `Gemfile` — no new dependencies without explicit approval
-- `config/database.yml` or other infrastructure config
+- Anything in the test directory — Stage 4 owns test files and factories
+- Dependency manifest files (e.g., `Gemfile`, `package.json`) — no new dependencies without explicit approval
+- Database configuration or other infrastructure config
 - Deployment scripts or CI configuration
 - `.env` or any credentials files
-- The default branch (`staging`) — never commit directly to it
+- The default branch (from pipeline.md) — never commit directly to it
 
 ## When You're Done
 
 Tell the user:
 
-1. **Branch:** `pipeline/PROJECT_SLUG` in `~/projects/orangeqc/orangeqc/`
+1. **Branch:** `<branch-prefix>PROJECT_SLUG` in the primary repository
 2. **Files created/modified:** List every file with a brief description
 3. **Test results:**
    - This milestone's tests: X passing, Y failing
@@ -472,4 +477,4 @@ Tell the user:
 
 If this was the **last milestone**, instead say:
 
-> "All milestones are implemented. The project branch `pipeline/PROJECT_SLUG` is ready for review. Next step: push the branch and create a PR against `staging`."
+> "All milestones are implemented. The project branch `pipeline/PROJECT_SLUG` is ready for review. Next step: push the branch and create a PR against the default branch."

@@ -41,13 +41,14 @@ Read `projects/$ARGUMENTS/progress.md` and check the **Milestone Status** table.
 
 After passing the pre-flight check, read ALL of these files:
 
-1. The PRD at `projects/$ARGUMENTS/prd.md` — requirements, edge cases, user scenarios
-2. The gameplan at `projects/$ARGUMENTS/gameplan.md` — acceptance criteria, testing plan, non-functional requirements
-3. The architecture proposal at `projects/$ARGUMENTS/architecture-proposal.md` — data model, security scoping, performance considerations
-4. The test-coverage-matrix at `projects/$ARGUMENTS/test-coverage-matrix.md` — **especially** the "Criteria Not Directly Testable" section
-5. The progress file at `projects/$ARGUMENTS/progress.md` — **especially** the "Spec Gaps" and "Notes" sections from each milestone
-6. The stage spec at `docs/stages/07-validation.md`
-7. The output template at `templates/qa-plan.md`
+1. The pipeline config at `pipeline.md` — understand repo paths, framework, and platform details
+2. The PRD at `projects/$ARGUMENTS/prd.md` — requirements, edge cases, user scenarios
+3. The gameplan at `projects/$ARGUMENTS/gameplan.md` — acceptance criteria, testing plan, non-functional requirements
+4. The architecture proposal at `projects/$ARGUMENTS/architecture-proposal.md` — data model, security scoping, performance considerations
+5. The test-coverage-matrix at `projects/$ARGUMENTS/test-coverage-matrix.md` — **especially** the "Criteria Not Directly Testable" section
+6. The progress file at `projects/$ARGUMENTS/progress.md` — **especially** the "Spec Gaps" and "Notes" sections from each milestone
+7. The stage spec at `docs/stages/07-validation.md`
+8. The output template at `templates/qa-plan.md`
 
 ## Step-by-Step Procedure
 

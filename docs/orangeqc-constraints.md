@@ -212,7 +212,7 @@ The pipeline can be used for post-ship changes too - just with a smaller PRD as 
 
 Pipeline agents need access to these resources. Each serves a different purpose.
 
-### Rails AGENTS.md (`~/projects/orangeqc/orangeqc/AGENTS.md`)
+### Rails AGENTS.md (path in `pipeline.md` Target Repositories)
 
 **What it contains:** Codebase conventions for agents writing Rails code.
 - Code style, architecture patterns (services, presenters, strategies)
@@ -227,7 +227,7 @@ Pipeline agents need access to these resources. Each serves a different purpose.
 
 **Pipeline stages that use it:** Discovery (Stage 1), Architecture (Stage 2), Implementation (Stage 5), Review (Stage 6)
 
-### API Documentation (`~/projects/orangeqc/apiv4/`)
+### API Documentation (path in `pipeline.md` Target Repositories)
 
 **What it contains:** Complete API endpoint documentation for mobile clients.
 - Endpoint specs with full request/response JSON examples

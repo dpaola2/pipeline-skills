@@ -1,6 +1,6 @@
 ---
 name: stage2-architecture
-description: "Run pipeline Stage 2 (Architecture) for a project. Designs data model, API endpoints, migrations, and security scoping."
+description: "Run pipeline Stage 2 (Architecture) for a project. Designs data model, API endpoints, migrations, and security scoping based on pipeline.md configuration."
 disable-model-invocation: true
 argument-hint: "<project-slug>"
 allowed-tools:
@@ -24,23 +24,19 @@ You are a **technical designer**. You propose the data model, API endpoints, mig
 - **Output:** `projects/$ARGUMENTS/architecture-proposal.md`
 - **Output template:** `templates/architecture-proposal.md`
 - **Stage spec:** `docs/stages/02-architecture.md` (read this for full behavioral guidance)
-- **Constraints:** `docs/orangeqc-constraints.md` (read for OrangeQC-specific rules)
+- **Constraints:** Project constraints doc if one exists (e.g., `docs/orangeqc-constraints.md`)
 
 ## Before You Start
 
 Read these files in order:
 
-1. The PRD at `projects/$ARGUMENTS/prd.md` — understand what we're building
-2. The Discovery Report at `projects/$ARGUMENTS/discovery-report.md` — understand what exists today
-3. The stage spec at `docs/stages/02-architecture.md` — understand your role, success criteria, and the approval checkpoint
-4. The output template at `templates/architecture-proposal.md` — understand your output format (including the Approval Checklist at the end)
-5. The Rails AGENTS.md at `~/projects/orangeqc/orangeqc/AGENTS.md` — **critical**: pay special attention to:
-   - Database conventions (table tiers, UUIDv7 via `DistributedEntity`, naming)
-   - Serialization patterns (Blueprinter for new code)
-   - API response structure (resource-keyed envelopes, error format)
-   - Security scoping patterns (`current_account`, `accessible_to(user)`)
-   - API versioning (date-based for new endpoints)
-6. The OrangeQC constraints at `docs/orangeqc-constraints.md` — understand the reference materials section and key API conventions
+1. The pipeline config at `pipeline.md` — understand repo paths, framework, API conventions, security model, and all platform-specific details
+2. The PRD at `projects/$ARGUMENTS/prd.md` — understand what we're building
+3. The Discovery Report at `projects/$ARGUMENTS/discovery-report.md` — understand what exists today
+4. The stage spec at `docs/stages/02-architecture.md` — understand your role, success criteria, and the approval checkpoint
+5. The output template at `templates/architecture-proposal.md` — understand your output format (including the Approval Checklist at the end)
+6. The conventions file in the primary repository (path from `pipeline.md`) — **critical**: pay special attention to database conventions, serialization patterns, API response structure, security scoping patterns, and API versioning. Cross-reference with the API Conventions and Multi-Tenant Security sections in `pipeline.md`.
+7. If a project constraints file exists (e.g., `docs/orangeqc-constraints.md`), read it for additional platform-specific rules
 
 ## Step-by-Step Procedure
 
@@ -56,11 +52,11 @@ Build on what exists. Do not reinvent. Note:
 ### 2. Design Data Model Changes
 
 For new tables:
-- Full schema with UUIDv7 primary keys (use `DistributedEntity` concern per AGENTS.md)
+- Full schema following the primary key convention from `pipeline.md` API Conventions and the conventions file
 - All columns with types, constraints, defaults, nullability
 - Foreign keys with references
-- Indexes (including which need `disable_ddl_transaction!` for concurrent creation)
-- Follow OrangeQC table naming conventions from AGENTS.md
+- Indexes (following the migration conventions from the conventions file)
+- Follow table naming conventions from the conventions file
 
 For modified tables:
 - ALTER TABLE statements
@@ -87,12 +83,12 @@ For each endpoint:
 - HTTP method, path, purpose
 - Full example request JSON (with all fields, realistic values)
 - Full example response JSON (with all fields, realistic values)
-- Error response examples using OrangeQC's flat format: `{"error": "Type", "message": "..."}`
+- Error response examples following the error format from `pipeline.md` API Conventions
 - Authorization requirements
-- Scoping chain (how the query is scoped to `current_account`)
-- Serializer/Blueprint design following Blueprinter conventions
+- Scoping chain (following the security model from `pipeline.md` Multi-Tenant Security, if applicable)
+- Serializer design following the serialization framework from `pipeline.md` Framework & Stack
 
-**Important:** Use resource-keyed response envelopes (`{"tickets": [...]}` for collections, `{"ticket": {...}}` for single resources). This is NOT the Rails default.
+**Important:** Follow the response envelope convention from `pipeline.md` API Conventions.
 
 ### 5. Analyze Backwards Compatibility
 
@@ -104,8 +100,8 @@ Generate the compatibility matrix:
 
 ### 6. Design Security Model
 
-For every new data access path:
-- Query scoping chain (always scoped to `current_account`)
+For every new data access path (if `pipeline.md` has a Multi-Tenant Security section, follow those rules):
+- Query scoping chain (per the scoping rules in `pipeline.md`)
 - Authorization model (who can do what, which roles/permissions)
 - Permission requirements
 - New attack surface analysis
@@ -139,17 +135,13 @@ Write to `projects/$ARGUMENTS/architecture-proposal.md` using the template from 
 
 ## Referencing the Codebase
 
-The Rails repo is at `~/projects/orangeqc/orangeqc/`. When you need to:
-- Verify existing patterns: search the codebase
-- Check naming conventions: look at existing models, controllers, serializers
+The primary repository path is in `pipeline.md` Target Repositories. When you need to:
+- Verify existing patterns: search the codebase using the directories from `pipeline.md` Directory Structure
+- Check naming conventions: look at existing code in the relevant directories
 - Understand auth patterns: look at existing controllers
-- See serialization examples: look at `app/blueprints/`
+- See serialization examples: look at the serializer directory from `pipeline.md`
 
-The API docs are at `~/projects/orangeqc/apiv4/`. Reference these for:
-- Existing response shapes
-- Pagination patterns
-- Error format examples
-- Sync patterns
+If `pipeline.md` lists an API docs repository, reference it for existing response shapes, pagination patterns, error format examples, and sync patterns.
 
 **Do NOT modify any files in these repos.** Read only.
 
@@ -158,7 +150,7 @@ The API docs are at `~/projects/orangeqc/apiv4/`. Reference these for:
 - **Do not leave any section as "TBD."** Complete every section or flag it as an open question with options.
 - **Do not skip the backwards compatibility matrix.** Even for web-only features.
 - **Do not skip security scoping.** Every new data access path needs a scoping chain.
-- **Do not modify any files in the Rails repo or API docs repo.**
+- **Do not modify any files in the target repos.**
 - **Do not generate the gameplan.** That is Stage 3, and it requires approved architecture first.
 - **Do not invent new patterns** when existing codebase patterns will work. Follow what exists.
 

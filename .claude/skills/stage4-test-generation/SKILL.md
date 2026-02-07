@@ -1,6 +1,6 @@
 ---
 name: stage4-test-generation
-description: "Run pipeline Stage 4 (Test Generation) for a project. Writes failing TDD test suites in the Rails repo from the approved gameplan."
+description: "Run pipeline Stage 4 (Test Generation) for a project. Writes failing TDD test suites in the primary repo from the approved gameplan."
 disable-model-invocation: true
 argument-hint: "<project-slug>"
 allowed-tools:
@@ -25,7 +25,7 @@ You are a **test writer**. You write comprehensive, failing test suites BEFORE a
 - **Input 2:** `projects/$ARGUMENTS/architecture-proposal.md` — data model, query patterns, security design
 - **Input 3:** `projects/$ARGUMENTS/prd.md` — requirement IDs and edge cases (Section 10)
 - **Input 4:** `projects/$ARGUMENTS/discovery-report.md` — existing codebase context
-- **Output 1:** Test files in `~/projects/orangeqc/orangeqc/spec/` (the Rails repo)
+- **Output 1:** Test files in the primary repository's test directory (path from pipeline.md)
 - **Output 2:** `projects/$ARGUMENTS/test-coverage-matrix.md` — maps acceptance criteria to test locations
 - **Stage spec:** `docs/stages/04-test-generation.md` (read for full behavioral guidance)
 
@@ -44,47 +44,48 @@ This gate is non-negotiable.
 
 After passing the pre-flight check, read these files:
 
-1. The approved gameplan at `projects/$ARGUMENTS/gameplan.md` — your primary input (milestones, acceptance criteria, platform tasks)
-2. The architecture proposal at `projects/$ARGUMENTS/architecture-proposal.md` — data model, query patterns, serialization, security scoping
-3. The PRD at `projects/$ARGUMENTS/prd.md` — edge cases (Section 10), detailed requirement descriptions
-4. The stage spec at `docs/stages/04-test-generation.md` — your role and success criteria
-5. The Rails AGENTS.md at `~/projects/orangeqc/orangeqc/AGENTS.md` — **critical**: test conventions, directory structure, factory patterns, test framework configuration
+1. The pipeline config at `pipeline.md` — understand repo paths, branch conventions, framework details
+2. The approved gameplan at `projects/$ARGUMENTS/gameplan.md` — your primary input (milestones, acceptance criteria, platform tasks)
+3. The architecture proposal at `projects/$ARGUMENTS/architecture-proposal.md` — data model, query patterns, serialization, security scoping
+4. The PRD at `projects/$ARGUMENTS/prd.md` — edge cases (Section 10), detailed requirement descriptions
+5. The stage spec at `docs/stages/04-test-generation.md` — your role and success criteria
+6. The conventions file in the primary repository (path from pipeline.md) — **critical**: test conventions, directory structure, factory patterns, test framework configuration
 
 ## Step-by-Step Procedure
 
 ### 1. Explore Existing Test Patterns
 
-Search the Rails repo at `~/projects/orangeqc/orangeqc/` to understand how tests are currently written. **Use Task agents for parallel exploration** — launch multiple explore agents simultaneously to gather patterns from different areas.
+Search the primary repository (path from pipeline.md) to understand how tests are currently written. **Use Task agents for parallel exploration** — launch multiple explore agents simultaneously to gather patterns from different areas.
 
-**Model specs** — Find 2-3 examples in `spec/models/`:
+**Model specs** — Find 2-3 examples in the model specs directory (from pipeline.md Directory Structure):
 - How validations, associations, and scopes are tested
 - `let`/`before` setup patterns
 - Factory usage
 
-**Request/Controller specs** — Find 2-3 examples in `spec/requests/` or `spec/controllers/`:
+**Request/Controller specs** — Find 2-3 examples in the request/controller specs directory (from pipeline.md Directory Structure):
 - How authentication is set up in tests
 - How authorization is tested (permission checks, scoping)
 - How JSON responses are asserted
 - How error cases are tested
 
-**Service specs** — Find examples in `spec/services/`:
+**Service specs** — Find examples in the service specs directory (from pipeline.md Directory Structure):
 - How service objects are instantiated and tested
 - How complex queries are tested
 - Test data setup for analytics/reporting
 
-**System specs** — Find examples in `spec/system/` or `spec/features/`:
+**System specs** — Find examples in the system/feature specs directory (from pipeline.md Directory Structure):
 - Capybara driver configuration
 - How pages are visited, interacted with, and asserted
 - How JavaScript-dependent features are tested
 
-**Factories** — Read `spec/factories/`:
+**Factories** — Read the factories directory (from pipeline.md Directory Structure):
 - Existing factory definitions for models referenced in the architecture
 - Factory traits and sequences in use
 - What factories exist vs. what needs creating
 
-**Export specs** — Find examples testing PDF/CSV exports:
+**Export specs** — Find existing export test patterns:
 - How export output is verified
-- How `Exporter::Csvable` and `Exporter::PdfHelper` tests are structured
+- How export helper/module tests are structured
 
 ### 2. Plan Test Organization
 
@@ -139,7 +140,7 @@ Check the PRD header for the project level:
 
 - **Level 1** (small project): Rails tests only. Minimal scope.
 - **Level 2** (web only): Rails tests only. Mark iOS/Android as N/A in the coverage matrix.
-- **Level 3** (all platforms): Also write iOS and Android tests per the stage spec. (iOS repo: `~/projects/orangeqc/orangeqc-ios/`, Android repo: `~/projects/orangeqc/orangeqc-android/`)
+- **Level 3** (all platforms): Also write iOS and Android tests per the stage spec. (repo paths from pipeline.md Target Repositories)
 
 ### 6. Write the Coverage Matrix
 
@@ -182,18 +183,18 @@ Fix any syntax errors before finishing.
 - **Do not skip security/scoping tests.** Every data access path needs authorization and account-scoping tests.
 - **Do not modify `spec/spec_helper.rb`, `spec/rails_helper.rb`, or any support files.**
 
-## Working in the Rails Repo
+## Working in the Primary Repository
 
-The Rails repo is at `~/projects/orangeqc/orangeqc/`.
+The primary repository path is specified in pipeline.md Target Repositories.
 
 ### Branch Management
 
 **Before writing any files**, create a dedicated branch in the Rails repo:
 
-1. `cd ~/projects/orangeqc/orangeqc/`
+1. `cd <primary-repo-path>` (path from pipeline.md Target Repositories)
 2. Verify the working tree is clean (`git status`). If there are uncommitted changes, **STOP** and ask the user how to proceed.
 3. Fetch the latest from origin: `git fetch origin`
-4. Create and check out a new branch from `origin/staging`: `git checkout -b pipeline/$ARGUMENTS origin/staging`
+4. Create and check out a new branch: `git checkout -b <branch-prefix>$ARGUMENTS origin/<default-branch>` (branch prefix and default branch from pipeline.md Repository Details)
 
 If the branch `pipeline/$ARGUMENTS` already exists, **STOP** and ask the user whether to overwrite it or use a different name. Do not delete existing branches without explicit approval.
 
@@ -223,7 +224,7 @@ If the branch `pipeline/$ARGUMENTS` already exists, **STOP** and ask the user wh
 
 ### Commit the Test Files
 
-In the Rails repo (`~/projects/orangeqc/orangeqc/`), commit all new files on the `pipeline/$ARGUMENTS` branch:
+In the primary repository, commit all new files on the `pipeline/$ARGUMENTS` branch:
 
 1. `git add` each new file by name (do NOT use `git add .` or `git add -A`)
 2. Commit with message: `Add Stage 4 test suite for $ARGUMENTS`

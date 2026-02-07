@@ -1,6 +1,6 @@
 ---
 name: stage1-discovery
-description: "Run pipeline Stage 1 (Discovery) for a project. Explores the Rails codebase to understand current state before designing changes."
+description: "Run pipeline Stage 1 (Discovery) for a project. Explores the target codebase to understand current state before designing changes."
 disable-model-invocation: true
 argument-hint: "<project-slug>"
 allowed-tools:
@@ -28,10 +28,11 @@ You are a **codebase explorer**. Your job is to understand how things work TODAY
 
 Read these files in order:
 
-1. The PRD at `projects/$ARGUMENTS/prd.md` — understand what we're building
-2. The stage spec at `docs/stages/01-discovery.md` — understand your role and success criteria
-3. The output template at `templates/discovery-report.md` — understand your output format
-4. The Rails AGENTS.md at `~/projects/orangeqc/orangeqc/AGENTS.md` — understand codebase conventions
+1. The pipeline config at `pipeline.md` — understand repo paths, branch conventions, framework details
+2. The PRD at `projects/$ARGUMENTS/prd.md` — understand what we're building
+3. The stage spec at `docs/stages/01-discovery.md` — understand your role and success criteria
+4. The output template at `templates/discovery-report.md` — understand your output format
+5. The conventions file in the primary repository (path and filename from `pipeline.md` Target Repositories and Repository Details) — understand codebase conventions
 
 ## Step-by-Step Procedure
 
@@ -45,22 +46,11 @@ Extract:
 - Platform designation (check the PRD header — Level 1, 2, or 3)
 - Permissions and access control requirements
 
-### 2. Search the Rails Codebase
+### 2. Search the Primary Codebase
 
-The Rails repo is at `~/projects/orangeqc/orangeqc/`.
+The primary repository path is specified in `pipeline.md` Target Repositories.
 
-For each entity/keyword extracted from the PRD, search:
-
-- **Models:** `app/models/` — look for related models, associations, validations, scopes
-- **Controllers:** `app/controllers/` — look for related controllers, actions, authorization patterns
-- **Serializers/Blueprints:** `app/blueprints/`, `app/serializers/` — look for existing serialization patterns
-- **Views:** `app/views/` — look for related admin UI views
-- **Routes:** `config/routes.rb` — find related route definitions
-- **Tests:** `spec/` — find existing test coverage for related code
-- **Migrations:** `db/migrate/` — find schema change history for related tables
-- **Schema:** `db/schema.rb` — get current table definitions for related models
-- **Jobs:** `app/jobs/` — find related background jobs
-- **Services/Concerns:** `app/services/`, `app/models/concerns/` — find related business logic
+For each entity/keyword extracted from the PRD, search the directories listed in `pipeline.md` Directory Structure. For each directory purpose (Models, Controllers, Views, etc.), search the corresponding path for related code.
 
 For each finding, record:
 - File path with line numbers
@@ -69,7 +59,7 @@ For each finding, record:
 
 ### 3. Search the API Documentation
 
-The API docs are at `~/projects/orangeqc/apiv4/`.
+If `pipeline.md` Target Repositories lists an API docs repository, search it.
 
 Look for:
 - Existing endpoint documentation for related resources
@@ -82,8 +72,8 @@ Look for:
 Check the PRD header for the project level:
 
 - **Level 1** (small project): Focus on Rails. Lightweight discovery.
-- **Level 2** (web only): Focus on Rails. Mark iOS and Android sections as "N/A — Level 2 (web-only) project."
-- **Level 3** (all platforms): Search iOS repo (`~/projects/orangeqc/orangeqc-ios/`) and Android repo (`~/projects/orangeqc/orangeqc-android/`) in addition to Rails.
+- **Level 2** (web only): Focus on the primary platform. Mark other platform sections as "N/A — Level 2 (web-only) project."
+- **Level 3** (all platforms): Search all repositories listed in `pipeline.md` Target Repositories that have Active status in the Platforms table.
 
 ### 5. Document Cross-Platform Patterns
 
@@ -118,7 +108,7 @@ Write the report to `projects/$ARGUMENTS/discovery-report.md` using the template
 - **Do not suggest how to build the feature.** That is Stage 2 (Architecture). You document what exists.
 - **Do not give opinions on code quality** unless it represents a technical risk.
 - **Do not explore unrelated code.** Stay focused on entities and patterns relevant to the PRD.
-- **Do not modify any files in the Rails repo or API docs repo.** Read only.
+- **Do not modify any files in the target repos.** Read only.
 - **Do not skip the schema lookup.** The current table definitions from `db/schema.rb` are critical for the Architecture stage.
 
 ## When You're Done

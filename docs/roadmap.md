@@ -269,6 +269,35 @@ Build the Stage 6 skill for automated code review against the target repo's AGEN
 
 ---
 
+## Orchestration Modes
+
+### ROAD-11: Ludicrous Speed Mode
+
+**Status:** Planned
+**Theme:** Orchestration
+
+Add a "ludicrous speed" mode that auto-approves human checkpoints when there are no open questions and automatically kicks off the next stage.
+
+**Why:** The pipeline currently pauses at every human checkpoint (Stage 2 architecture review, Stage 3 gameplan review) and waits for the operator to manually approve and invoke the next stage. For projects where the pipeline operator has high confidence in the output — small projects, well-understood domains, or second-pass iterations — this friction adds time without adding value.
+
+**How it would work:**
+- A flag in the project config or invocation (e.g., `--ludicrous` or a `pipeline.md` setting) enables auto-advance mode
+- After each stage completes, the pipeline checks: are there any open questions flagged as "blocking"?
+- If **no blocking open questions**: auto-approve the checkpoint and immediately invoke the next stage
+- If **blocking open questions exist**: stop and wait for human input (same as today)
+- The operator can still review artifacts after the fact — auto-approve doesn't mean no review, it means review happens in parallel with (or after) the next stage
+
+**Considerations:**
+- This is fundamentally about trust calibration. Early projects should run with manual gates. Once the pipeline has proven itself, ludicrous mode lets experienced operators move faster.
+- Open questions are the circuit breaker. If the architecture stage has questions about the data model, it should stop regardless of mode. The quality of open question detection becomes critical.
+- Should log every auto-approval decision so the operator can audit what was skipped
+- Could be per-checkpoint (auto-approve architecture but manually review gameplan, or vice versa) rather than all-or-nothing
+- Pairs well with ROAD-02 (notifications) — even in ludicrous mode, the operator should get notified of what's happening
+
+**Related:** ROAD-02 (Post-Stage Notifications), ROAD-08 (Linear Automation)
+
+---
+
 ## Item Index
 
 | ID | Title | Theme | Status |
@@ -277,9 +306,10 @@ Build the Stage 6 skill for automated code review against the target repo's AGEN
 | ROAD-02 | Post-Stage Notifications | Orchestration | Planned |
 | ROAD-03 | Per-Milestone Gameplans | Pipeline architecture | Planned |
 | ROAD-04 | Post-Flight Checks | Quality assurance | Planned |
-| ROAD-05 | Externalize Platform Config | Portability | Planned |
+| ROAD-05 | Externalize Platform Config | Portability | **Done** |
 | ROAD-06 | Project Document Linking | Developer experience | Planned |
 | ROAD-07 | ADR Integration | Knowledge capture | Planned |
 | ROAD-08 | Linear Automation | Orchestration | Planned |
 | ROAD-09 | Stage 6 — Code Review | Quality assurance | Planned |
 | ROAD-10 | Post-QA Iteration / Re-entry | Pipeline lifecycle | Planned |
+| ROAD-11 | Ludicrous Speed Mode | Orchestration | Planned |

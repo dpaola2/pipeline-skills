@@ -43,7 +43,7 @@ The pipeline shifts the constraint from execution to clarity. Everything in this
 
 **Rails Status:** Exists and is comprehensive. Covers code style, security scoping, testing conventions, database conventions (including table tiers and production snapshot), serialization patterns, API versioning, and frontend conventions. Ready for pipeline use.
 
-**API Documentation Status:** Exists at `~/projects/orangeqc/apiv4/`. Contains full endpoint specs with request/response JSON, authentication mechanism, error format, pagination patterns, and sync patterns. Ready for pipeline use.
+**API Documentation Status:** Exists (path in `pipeline.md` Target Repositories). Contains full endpoint specs with request/response JSON, authentication mechanism, error format, pagination patterns, and sync patterns. Ready for pipeline use.
 
 **What's needed per repo:**
 - [x] **Rails:** AGENTS.md — comprehensive, covers all pipeline-critical conventions
@@ -191,7 +191,7 @@ This means:
 
 1. ~~Test infrastructure for Rails~~ — Done. RSpec in CI.
 2. ~~AGENTS.md for Rails repo~~ — Done. Comprehensive.
-3. ~~API documentation~~ — Done. Full endpoint docs at `~/projects/orangeqc/apiv4/`.
+3. ~~API documentation~~ — Done. Full endpoint docs (path in `pipeline.md` Target Repositories).
 4. ~~Convert one real PRD to structured markdown format~~ — Done. `projects/deficient-line-items-report/prd.md`.
 5. ~~Prototype Stages 1-3 against the real PRD~~ — Done. Discovery, Architecture, Gameplan all produced and approved.
 

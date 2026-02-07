@@ -14,7 +14,7 @@
 
 ```sql
 CREATE TABLE [table_name] (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),  -- UUIDv7
+  id [primary key type per pipeline.md API Conventions],
   [column_name] [type] [constraints],
   [foreign_key]_id uuid NOT NULL REFERENCES [parent_table](id),
   created_at timestamptz NOT NULL DEFAULT NOW(),
@@ -45,7 +45,7 @@ class [Model] < ApplicationRecord
   validates :[field], presence: true
   # [other validations]
 
-  scope :for_account, ->(account) { where([scoping_logic]) }
+  scope :[scoping_scope_name], [per pipeline.md Multi-Tenant Security, if applicable]
 end
 ```
 
@@ -83,7 +83,7 @@ end
 
 **Authorization:** [Who can call this, what permissions needed]
 
-**Scoping:** `current_account.[collection].find(params[:id])`
+**Scoping:** [per pipeline.md Multi-Tenant Security, if applicable]
 
 **Request:**
 ```json
@@ -110,18 +110,12 @@ end
 
 **Error Response (422):**
 ```json
-{
-  "error": "Unprocessable Entity",
-  "message": "[Human-readable error message]"
-}
+[Error format per pipeline.md API Conventions]
 ```
 
 **Error Response (401):**
 ```json
-{
-  "error": "Unauthorized",
-  "message": "[Human-readable error message]"
-}
+[Error format per pipeline.md API Conventions]
 ```
 
 ---
@@ -138,21 +132,12 @@ end
 |----------|--------|----------------------|
 | [Existing endpoint] | [What changes] | Yes / No |
 
-### Serializers / Blueprints
+### Serializers
 
-```ruby
-# app/blueprints/[model]_blueprint.rb
-class [Model]Blueprint < Blueprinter::Base
-  identifier :id
-
-  fields :[field1], :[field2], :[field3]
-
-  field :created_at do |obj|
-    obj.created_at.iso8601
-  end
-
-  association :[child], blueprint: [Child]Blueprint
-end
+```
+[Serializer code following the serialization framework from pipeline.md Framework & Stack
+and patterns from the conventions file in the primary repository.
+Include fields, associations, and custom formatting.]
 ```
 
 ---
@@ -195,8 +180,8 @@ end
 
 | Resource | Scoping Chain |
 |----------|--------------|
-| [Resource] | `current_account.[collection].find(...)` |
-| [Nested resource] | `current_account.[parent_collection].find(...)[child_collection]` |
+| [Resource] | [Scoping chain per pipeline.md Multi-Tenant Security] |
+| [Nested resource] | [Scoping chain per pipeline.md Multi-Tenant Security] |
 
 ### Authorization
 

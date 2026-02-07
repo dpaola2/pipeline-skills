@@ -39,11 +39,12 @@ This gate is non-negotiable.
 
 After passing the pre-flight check, read these files:
 
-1. The PRD at `projects/$ARGUMENTS/prd.md`
-2. The Discovery Report at `projects/$ARGUMENTS/discovery-report.md`
-3. The APPROVED Architecture Proposal at `projects/$ARGUMENTS/architecture-proposal.md`
-4. The stage spec at `docs/stages/03-gameplan.md`
-5. The output template at `templates/gameplan.md`
+1. The pipeline config at `pipeline.md` — understand platforms, framework, and which optional concerns apply (multi-tenant, feature flags, exports, backwards compat)
+2. The PRD at `projects/$ARGUMENTS/prd.md`
+3. The Discovery Report at `projects/$ARGUMENTS/discovery-report.md`
+4. The APPROVED Architecture Proposal at `projects/$ARGUMENTS/architecture-proposal.md`
+5. The stage spec at `docs/stages/03-gameplan.md`
+6. The output template at `templates/gameplan.md`
 
 ## Step-by-Step Procedure
 

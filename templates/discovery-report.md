@@ -26,12 +26,12 @@
 
 ---
 
-## 2. Current State: Rails
+## 2. Current State: Primary Platform
 
 ### Related Models
 | Model | File | Key Associations | Notes |
 |-------|------|------------------|-------|
-| [Model] | `app/models/model.rb` | `belongs_to :X, has_many :Y` | [Relevant notes] |
+| [Model] | [models directory from pipeline.md]/model.[ext] | [associations] | [Relevant notes] |
 
 ### Current Schema (Related Tables)
 
@@ -45,12 +45,12 @@ CREATE TABLE [table_name] (
 ### Related Controllers
 | Controller | File | Actions | Auth Pattern |
 |-----------|------|---------|--------------|
-| [Controller] | `app/controllers/...` | index, show, create | [How auth works] |
+| [Controller] | [controllers directory from pipeline.md]/... | index, show, create | [How auth works] |
 
-### Related Serializers / Blueprints
+### Related Serializers
 | Serializer | File | Fields Exposed |
 |-----------|------|----------------|
-| [Serializer] | `app/blueprints/...` | [List of fields] |
+| [Serializer] | [serializers directory from pipeline.md]/... | [List of fields] |
 
 ### Related API Endpoints (Current)
 | Method | Path | Purpose | Response Shape |
@@ -69,13 +69,13 @@ CREATE TABLE [table_name] (
 ### Related Tests
 | Test File | Coverage | Type |
 |-----------|----------|------|
-| `spec/models/...` | [What's tested] | Model spec |
-| `spec/requests/...` | [What's tested] | Request spec |
+| [model test directory]/... | [What's tested] | Model/unit test |
+| [request test directory]/... | [What's tested] | Request/integration test |
 
 ### Related Background Jobs
 | Job | File | Purpose |
 |-----|------|---------|
-| [Job] | `app/jobs/...` | [Purpose] |
+| [Job] | [jobs directory from pipeline.md]/... | [Purpose] |
 
 ---
 
