@@ -102,6 +102,23 @@ Stages 1-2 are safe to run on any PRD — they only produce documents. The archi
 
 ---
 
+## Design Priorities
+
+Six principles govern how the pipeline evolves, ordered by importance — when two conflict, the higher one wins. These are derived from fundamental software laws ([full analysis](docs/software-laws.md)).
+
+1. **Correctness over speed.** Human checkpoints exist because agents optimize for measurable signals (tests pass, CI green), and those signals are imperfect proxies for correctness. Don't remove a quality gate to go faster.
+2. **Evolve from working systems.** Every new capability should be an incremental evolution of something that already works. Validate on one project before making it the default.
+3. **Respect existing constraints.** When the pipeline modifies existing code, the default is to adapt to every validation, callback, and guard clause it encounters — not remove them.
+4. **Contracts, not coupling.** Stages communicate through structured artifacts (templates). Produce strict output, tolerate variation in input. If an upstream stage adds a section, downstream stages shouldn't break.
+5. **Optimize the bottleneck.** Wall-clock time is dominated by human review, not agent execution. Making artifacts easier to review may deliver more speedup than making agents faster.
+6. **The pipeline must improve itself.** Knowledge extracted during each project should flow back into repo conventions and pipeline docs, so future projects start smarter.
+
+Templates are the program — improving a template improves every project that uses it. Agents never touch production. PRD quality is the bottleneck for output quality.
+
+**Full details:** [`docs/design-priorities.md`](docs/design-priorities.md)
+
+---
+
 ## Configuration
 
 The pipeline uses a three-layer configuration:
@@ -204,16 +221,6 @@ These checkpoints exist because errors amplify downstream. A wrong data model de
 
 ---
 
-## Key Principles
-
-1. **PRD quality is the bottleneck.** The pipeline is only as good as the input. Garbage in, garbage out.
-2. **Human checkpoints are non-negotiable.** Agents propose, humans dispose. Architecture and gameplan reviews happen before code generation.
-3. **Agents never touch production.** No deploy credentials, no production remotes, no production database access.
-4. **Templates are the program.** The markdown templates define what agents produce. Improving templates improves output.
-5. **Multi-platform alignment before implementation.** Data model and API payloads are shared contracts agreed upon before any platform writes code.
-
----
-
 ## Status
 
 **Phase: Operational**
@@ -233,8 +240,6 @@ Each stage runs as a manual Claude Code session. Automated orchestration (stage 
 | `docs/current-process.md` | The development process this pipeline automates |
 | `docs/stages/01-07` | Deep specs for each individual stage |
 | `templates/` | Input/output templates used by each stage |
-| `docs/design-priorities.md` | Core principles that govern how the pipeline evolves |
-| `docs/software-laws.md` | Fundamental software laws and how they apply to the pipeline |
 | `docs/roadmap.md` | Planned improvements |
 | `pipeline.md.example` | Config format reference |
 | `pipelines/README.md` | How to manage per-product configs |
