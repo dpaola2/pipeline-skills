@@ -120,19 +120,18 @@ Add a final stage (or sub-stage of implementation) that runs linters, security s
 
 ### ROAD-05: Externalize Platform-Specific Configuration
 
-**Status:** Planned
+**Status:** Done
 **Theme:** Portability
 
-Ensure OrangeQC-specific knowledge lives in the OrangeQC repos (via AGENTS.md, conventions files, etc.) — not baked into the pipeline repo's skills or templates.
+Created `pipeline.md` at the repo root as the single source of truth for all platform-specific configuration. Updated all 7 skills, 4 templates, and 2 docs to reference `pipeline.md` instead of hardcoding OrangeQC-specific values. Zero hardcoded `~/projects/orangeqc/` paths remain in skills or templates.
 
-**Why:** The pipeline should be portable. If someone forks this repo to use with a different Rails app, OrangeQC-specific assumptions (error format, API versioning, permission model, etc.) shouldn't be hardcoded in the pipeline skills.
+**What was built:**
+- `pipeline.md` with REQUIRED sections (repos, branch config, framework, directory structure, implementation order, guardrails) and OPTIONAL sections (API conventions, multi-tenant security, backwards compatibility, feature flags, project tracker)
+- All skills read `pipeline.md` as item #1 in their "Before You Start" reading list
+- Templates use generic placeholders that reference `pipeline.md` sections
+- Three-layer architecture: `pipeline.md` (where things are) + AGENTS.md (how to write code) + constraints doc (why things are the way they are)
 
-**What to audit:**
-- Skills in `.claude/skills/` — do they reference OrangeQC-specific patterns directly, or do they read them from the target repo's AGENTS.md?
-- Templates in `templates/` — are they generic enough, or do they assume OrangeQC conventions?
-- Stage prompts — do they assume specific directory structures, test frameworks, or tooling?
-
-**Goal:** Pipeline skills should be parameterized by the target repo's AGENTS.md, not by hardcoded knowledge about OrangeQC.
+**To use on a different project:** Edit `pipeline.md` with your repo paths, framework, and directory structure. Delete optional sections that don't apply. Skills and templates adapt automatically.
 
 ---
 

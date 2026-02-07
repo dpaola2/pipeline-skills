@@ -5,10 +5,12 @@
 This is the design and implementation of an agent-orchestrated development pipeline for OrangeQC. The pipeline takes a PRD (Product Requirements Document) as input and produces implementation code across three platforms (Rails web/API, iOS, Android) that is ready for QA.
 
 **Read these files to get oriented:**
-1. `docs/pipeline-architecture.md` - The full pipeline design
-2. `docs/current-process.md` - The OrangeQC development process this automates
-3. `docs/orangeqc-constraints.md` - Platform, team, and guardrail constraints
-4. `docs/gap-analysis.md` - What's missing and what to build
+1. `pipeline.md` - Platform-specific configuration (repo paths, branch conventions, framework, directory structure). **This is the single file to edit when using the pipeline on a different project.**
+2. `docs/pipeline-architecture.md` - The full pipeline design
+3. `docs/current-process.md` - The OrangeQC development process this automates
+4. `docs/orangeqc-constraints.md` - Platform, team, and guardrail constraints
+5. `docs/gap-analysis.md` - What's missing and what to build
+6. `docs/roadmap.md` - Future improvements (ROAD-01 through ROAD-11)
 
 ---
 
@@ -34,6 +36,21 @@ This pipeline automates **Gameplanning → Building → pre-QA validation**. Fra
 3. **Export/reporting** - Customers rely on PDF/Excel/CSV exports. Breaking export formats breaks customer workflows.
 4. **Security scoping** - All DB queries must be scoped to account/user (multi-tenant). No cross-tenant data leakage.
 5. **Agentic guardrails** - Agents NEVER have a path to production. No Heroku remotes in dev environments. No production deploy credentials accessible to agents.
+
+---
+
+## Pipeline Configuration (`pipeline.md`)
+
+All platform-specific settings live in `pipeline.md` at the repo root. Skills read this file first to determine:
+- **Target repository paths** (primary repo, API docs, mobile repos)
+- **Branch conventions** (default branch, branch prefix, PR base)
+- **Framework & stack** (language, test framework, serialization, database)
+- **Directory structure** (where models, controllers, tests, etc. live)
+- **Optional concerns** (API conventions, multi-tenant security, backwards compatibility, feature flags)
+
+**To use this pipeline on a different project:** Edit `pipeline.md` with your repo's details. Skills and templates are generic — they read `pipeline.md` and the target repo's conventions file (AGENTS.md) to adapt. No skill or template changes needed.
+
+Sections marked REQUIRED apply to every project. Sections marked OPTIONAL can be omitted if they don't apply (e.g., a personal project with no API, no multi-tenancy, no mobile).
 
 ---
 
@@ -77,14 +94,14 @@ The pipeline runs manually, one stage at a time:
 /stage3-gameplan <project-slug>                   → produces gameplan.md (checks for approval first)
                                                     REQUIRED: review and approve gameplan
 
-/stage4-test-generation <project-slug>            → produces failing tests in Rails repo + test-coverage-matrix.md
+/stage4-test-generation <project-slug>            → produces failing tests in target repo + test-coverage-matrix.md
 
 /stage5-implementation <project-slug> <milestone> → implements one milestone, updates progress.md
                                                     (run once per milestone: M1, M2, ...)
 
 /stage7-qa-plan <project-slug>                    → produces qa-plan.md (checks all milestones complete)
 
-/create-pr <project-slug>                         → pushes branch, creates PR against staging with generated summary
+/create-pr <project-slug>                         → pushes branch, creates PR against default branch with generated summary
 ```
 
 ### Human Checkpoints
