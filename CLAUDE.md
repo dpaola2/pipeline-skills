@@ -99,6 +99,9 @@ projects/deficient-line-items-report/
 The pipeline runs manually, one stage at a time:
 
 ```
+/stage0-prd                                       → lists inbox files, asks for selection + slug,
+                                                    produces prd.md (REVIEW BEFORE CONTINUING)
+
 /stage1-discovery <project-slug>                  → produces discovery-report.md
                                                     (optional: review discovery report)
 

@@ -8,20 +8,26 @@
 
 ### ROAD-01: Stage 0 — PRD Generation Skill
 
-**Status:** Planned
+**Status:** Done
 **Theme:** Pipeline intake
 
-Create a Stage 0 skill that takes arbitrary content (Google Doc, Slack thread, conversation notes, feature request) and produces a structured PRD suitable for pipeline intake.
+Built a Stage 0 skill (`/stage0-prd`) that generates structured PRDs from raw input notes.
 
-**Why:** Currently PRDs are manually converted to the `templates/prd-intake.md` format. This is a friction point — especially for smaller projects where the shaping phase is lightweight. An agent that can take messy input and produce a clean PRD removes a bottleneck at the very start of the pipeline.
+**What was built:**
+- **Inbox pattern** — user drops raw notes (feature descriptions, Slack threads, meeting notes, Google Doc exports) into `inbox/` directory
+- **Interactive file selection** — skill lists inbox contents, asks user to pick a file and provide a project slug
+- **Full PRD generation** — produces a complete PRD conforming to `templates/prd-intake.md` with all 13 sections
+- **Placeholder markers** — `[CONFIRM]`, `[NEEDS INPUT]`, `[NEEDS REVIEW]`, `[INFERRED]`, `[DEFINE]` flag areas needing human attention
+- **Level suggestion** — suggests Level 1/2/3 based on scope, marked `[CONFIRM]` for human verification
+- **Project directory creation** — creates `projects/<slug>/` and writes `prd.md`
+- **Draft status** — PRD starts as "Draft — Review Required", human promotes to "Ready for Engineering"
 
-**Considerations:**
-- Input could be a URL, pasted text, file path, or combination
-- Output must conform to the existing PRD template structure
-- Should prompt the human to confirm/edit the generated PRD before it enters the pipeline (this is still a human judgment phase — the agent assists, not replaces)
-- Level classification (1/2/3) should be suggested but human-confirmed
-
-**Related:** `docs/gap-analysis.md` § 1.3, `templates/prd-intake.md`
+**Design decisions:**
+- Inbox files are gitignored (ephemeral working material)
+- Skill never deletes inbox files — user manages their own inbox
+- Every template section is included, even if raw input is sparse (placeholders instead of omissions)
+- Requirements are extracted from raw input and assigned IDs; edge cases are inferred and marked `[INFERRED]`
+- No auto-advance to Stage 1 — human reviews the draft PRD first
 
 ---
 
@@ -299,7 +305,7 @@ Add a "ludicrous speed" mode that auto-approves human checkpoints when there are
 
 | ID | Title | Theme | Status |
 |----|-------|-------|--------|
-| ROAD-01 | Stage 0 — PRD Generation | Pipeline intake | Planned |
+| ROAD-01 | Stage 0 — PRD Generation | Pipeline intake | **Done** |
 | ROAD-02 | Post-Stage Notifications | Orchestration | Planned |
 | ROAD-03 | Per-Milestone Gameplans | Pipeline architecture | Planned |
 | ROAD-04 | Post-Flight Checks | Quality assurance | **Done** |
