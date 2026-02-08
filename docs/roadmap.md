@@ -32,6 +32,7 @@
 | ROAD-22 | Pipeline Status MCP Server | Visibility | Planned |
 | ROAD-23 | Stage 4 Test Quality Heuristics | Quality assurance | **Done** |
 | ROAD-24 | Merge PIPELINE.md into Conventions Files | Portability | Planned |
+| ROAD-25 | Multi-Runtime Support (Claude Code + Codex) | Portability | Planned |
 
 ---
 
@@ -1119,3 +1120,150 @@ After all changes:
 - Future products onboarded via `/setup-repo` only need one file created, not two
 
 **Related:** ROAD-05 (superseded), ROAD-12 (Multi-Product — setup-repo changes), ROAD-15 (Knowledge Extraction — conventions file is now the single target for repo-scoped knowledge)
+
+---
+
+### ROAD-25: Multi-Runtime Support (Claude Code + Codex)
+
+**Status:** Planned
+**Theme:** Portability
+
+Make the pipeline executable by both Claude Code and OpenAI Codex CLI, so skills aren't locked to a single agent runtime. The pipeline's value is in its staged process, templates, and project artifacts — not in which LLM executes the prompts.
+
+**Why:** The pipeline is currently coupled to Claude Code through three layers: skill metadata (YAML front matter), tool names (`Read`, `Write`, `Edit`, `Bash`, `Glob`, `Grep`, `Task`, `AskUserQuestion`), and discovery convention (`.claude/skills/*/SKILL.md`). If Claude Code becomes unavailable, degrades, or a better runtime emerges, every skill needs manual rewriting. More practically: Codex may outperform Claude Code on certain tasks (or vice versa), and the pipeline should let the operator choose the best tool per stage or per project.
+
+**The two runtimes:**
+
+| Capability | Claude Code | Codex CLI |
+|-----------|------------|-----------|
+| **Conventions file** | `CLAUDE.md` | `AGENTS.md` |
+| **Custom skills/commands** | Yes — `.claude/skills/*/SKILL.md` with YAML front matter | No — built-in slash commands only |
+| **Tool model** | Named tools (`Read`, `Write`, `Edit`, `Bash`, `Glob`, `Grep`, `Task`) | Shell-first — file ops via shell commands, no granular tool abstraction |
+| **Non-interactive execution** | No dedicated mode (runs in TUI) | `codex exec` — headless, JSON output, scriptable |
+| **Sub-agents** | `Task` tool spawns specialized sub-agents | Agents SDK + MCP server (`codex mcp-server` exposes `codex` and `codex-reply` tools) |
+| **Tool whitelisting** | `allowed-tools` in YAML front matter | Sandbox modes (`read-only`, `workspace-write`, `danger-full-access`) + approval policies |
+| **User interaction** | `AskUserQuestion` tool | Interactive TUI prompts (no programmatic equivalent in exec mode) |
+| **MCP support** | Client (connects to MCP servers) | Both client and server (`codex mcp-server`) |
+| **Approval modes** | Permission-based (per tool type) | Policy-based (`untrusted`, `on-failure`, `on-request`, `never`) |
+
+**The coupling points in current skills:**
+
+| Layer | Claude Code-Specific | What Needs Abstracting |
+|-------|---------------------|----------------------|
+| **Metadata** | YAML front matter (`name`, `allowed-tools`, `disable-model-invocation`, `argument-hint`) | Skill registration and capability declaration |
+| **Tool calls** | `Read file.rb` → structured tool | `cat file.rb` or equivalent shell command |
+| **File editing** | `Edit` tool with old_string/new_string | `sed`, `patch`, or write-full-file |
+| **Search** | `Glob` and `Grep` tools | `find` and `grep`/`rg` commands |
+| **Sub-agents** | `Task` tool with agent types | Agents SDK hand-offs or sequential prompts |
+| **User prompts** | `AskUserQuestion` with structured options | TUI interaction or pre-configured answers |
+| **Arguments** | `$ARGUMENTS` variable injection | CLI arguments to `codex exec` |
+| **Discovery** | `.claude/skills/*/SKILL.md` auto-scan | No equivalent — must be invoked explicitly |
+
+**Architecture options:**
+
+| Option | How It Works | Tradeoffs |
+|--------|-------------|-----------|
+| **A: Canonical format + transpilers** | Skills authored in a runtime-neutral markdown format. A build step generates `.claude/skills/` for Claude Code and `codex exec` wrapper scripts for Codex. | Single source of truth. But adds a build step, and the "neutral" format is a new invention that neither runtime natively understands. |
+| **B: Dual-format skills** | Maintain two versions of each skill — one in `.claude/skills/` and one in a `codex/skills/` directory. Share the prompt body via includes or symlinks. | No build step. But double maintenance burden, divergence risk. |
+| **C: Prompt body + runtime adapters** | Factor each skill into two parts: (1) the prompt body (pure markdown instructions, runtime-agnostic) and (2) a thin runtime adapter that wraps it with metadata and tool mappings. The adapter is ~10 lines per runtime. | Clean separation. Prompt body is the "program"; adapter is the "runtime". Minimal overhead per new runtime. |
+| **D: MCP-based orchestration** | Skip the skill system entirely. Build a pipeline orchestrator that drives any runtime via MCP. Claude Code and Codex both support MCP. The orchestrator calls `codex mcp-server` or Claude Code's tools through a unified interface. | Most portable long-term. But significant architectural change — replaces the manual slash-command workflow with programmatic orchestration. Overlaps with ROAD-11 (Ludicrous Speed). |
+
+**Recommendation:** Option C for v1, with Option D as the long-term direction.
+
+Option C is the smallest change that delivers multi-runtime support. Today, each `SKILL.md` file is ~90% runtime-agnostic prompt body and ~10% Claude Code metadata + tool references. Factoring out the prompt body means:
+
+```
+.claude/skills/stage5-implementation/
+  SKILL.md              # Claude Code adapter (YAML front matter + tool-specific wrappers)
+
+skills/
+  stage5-implementation/
+    prompt.md            # Runtime-agnostic prompt body (the actual instructions)
+    claude-code.yaml     # Claude Code metadata (allowed-tools, argument-hint)
+    codex.yaml           # Codex metadata (sandbox mode, approval policy)
+```
+
+The Claude Code adapter (`SKILL.md`) includes the prompt body and wraps tool references. The Codex adapter is a shell script or `codex exec` invocation that loads the same prompt body.
+
+**Tool mapping (Claude Code → Codex):**
+
+| Claude Code Tool | Codex Equivalent | Notes |
+|-----------------|-----------------|-------|
+| `Read` | `cat` / shell | Codex reads files via shell commands |
+| `Write` | Write to file via shell | `cat > file <<'EOF'` or editor commands |
+| `Edit` | `sed`, `patch`, or full-file rewrite | Less precise than Claude Code's Edit tool |
+| `Bash` | Direct shell execution | Native — Codex is shell-first |
+| `Glob` | `find` / `fd` | Shell equivalent |
+| `Grep` | `grep` / `rg` | Shell equivalent |
+| `Task` | Agents SDK hand-off or sequential `codex exec` calls | Different orchestration model |
+| `AskUserQuestion` | Not available in `codex exec` | Must pre-configure or skip interactive prompts |
+
+**The `AskUserQuestion` problem:**
+
+Several pipeline stages use interactive prompts (Stage 0 asks which inbox file to use, Stage 5 confirms before committing). Codex's `exec` mode is non-interactive. Options:
+1. **Pre-configure answers** — pass decisions as CLI arguments or a config file
+2. **Skip prompts in auto mode** — use sensible defaults (pairs with ROAD-11 Ludicrous Speed)
+3. **Interactive stages stay Claude Code-only** — Codex handles non-interactive stages (4, 5, 7, create-pr)
+
+Option 3 is pragmatic for v1: most pipeline value is in Stages 4, 5, and 7, which are non-interactive.
+
+**The sub-agent problem:**
+
+Stage 5 uses the `Task` tool heavily to explore codebases in parallel. Codex's equivalent is the Agents SDK with MCP hand-offs — architecturally different. For v1, Codex skills could skip sub-agents and run exploration sequentially (slower but functional). For v2, the MCP orchestration approach (Option D) handles this natively.
+
+**Implementation phases:**
+
+| Phase | What Ships | Effort |
+|-------|-----------|--------|
+| **v1: Factor prompt bodies** | Extract runtime-agnostic prompt bodies from all 9 skills into `skills/`. Claude Code `SKILL.md` files become thin wrappers that include the prompt body. No Codex support yet, but the separation is done. | S — mechanical refactor |
+| **v2: Codex adapters for non-interactive stages** | Add `codex exec` wrapper scripts for Stages 4, 5, 7, and create-pr. Tool references in prompt bodies use a `{{read}}` / `{{write}}` / `{{bash}}` syntax that adapters expand. | M — need to test Codex execution, tune prompts |
+| **v3: Interactive stage support** | Add Codex support for Stages 0-3 via pre-configuration or TUI mode. Handle `AskUserQuestion` equivalents. | M — design decisions about interaction model |
+| **v4: MCP orchestration** | Build a pipeline orchestrator that drives either runtime via MCP. Replaces manual slash commands with programmatic stage chaining. Subsumes ROAD-11. | L — new architectural layer |
+
+**What changes per phase:**
+
+v1 file structure:
+```
+skills/                              # NEW — runtime-agnostic prompt bodies
+  stage0-prd/prompt.md
+  stage1-discovery/prompt.md
+  stage2-architecture/prompt.md
+  stage3-gameplan/prompt.md
+  stage4-test-generation/prompt.md
+  stage5-implementation/prompt.md
+  stage7-qa-plan/prompt.md
+  create-pr/prompt.md
+  setup-repo/prompt.md
+
+.claude/skills/                      # EXISTING — Claude Code adapters (thin wrappers)
+  stage0-prd/SKILL.md               # YAML front matter + `{% include skills/stage0-prd/prompt.md %}`
+  ...
+```
+
+v2 adds:
+```
+codex/                               # NEW — Codex adapters
+  stage4-test-generation.sh          # `codex exec` with prompt body + tool mappings
+  stage5-implementation.sh
+  stage7-qa-plan.sh
+  create-pr.sh
+```
+
+**Conventions file convergence:**
+
+Claude Code reads `CLAUDE.md`. Codex reads `AGENTS.md`. Both serve the same purpose. ROAD-24 already proposes merging `PIPELINE.md` into the conventions file. Multi-runtime support adds another dimension: the conventions file name varies by runtime. Options:
+1. **Maintain both** — `CLAUDE.md` and `AGENTS.md` as symlinks to the same file
+2. **Pick one** — standardize on `AGENTS.md` (both runtimes read it)
+3. **Runtime reads both** — Claude Code already reads `CLAUDE.md`; Codex already reads `AGENTS.md`; just ensure content is equivalent
+
+Option 3 is simplest for v1. Show Notes already has `CLAUDE.md`. If Codex is added, an `AGENTS.md` can be a symlink or a copy.
+
+**Considerations:**
+- v1 (factor prompt bodies) is valuable even if Codex support never ships — it makes skills easier to read, test, and maintain
+- The pipeline's real moat is the staged process, templates, and artifact schema — not the runtime. Making this explicit via separation is good architecture regardless.
+- Codex's `exec` mode + `--full-auto` flag is better suited for unattended pipeline execution than Claude Code's TUI. This could flip the "primary" runtime for CI/automation use cases.
+- Codex can run as an MCP server, which means the pipeline MCP server (ROAD-22) could orchestrate Codex as a worker — pipeline status MCP server reads state, pipeline orchestrator MCP server drives execution.
+- Different models may be better at different stages. Claude Opus might be better at architecture (Stage 2), while GPT-5 Codex might be faster at implementation (Stage 5). Multi-runtime enables mixing.
+- The `allowed-tools` whitelisting in Claude Code skills is a security feature (prevents planning stages from modifying code). Codex's equivalent is sandbox modes. The adapter layer needs to preserve these constraints.
+
+**Related:** ROAD-11 (Ludicrous Speed — MCP orchestration subsumes this), ROAD-22 (Pipeline Status MCP — could orchestrate Codex workers), ROAD-24 (Merge PIPELINE.md — conventions file unification)
