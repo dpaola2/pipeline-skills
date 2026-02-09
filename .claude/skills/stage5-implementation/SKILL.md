@@ -113,7 +113,7 @@ Read `<projects-path>/PROJECT_SLUG/progress.md` if it exists. This file tracks m
 
 > "Milestone MILESTONE was already completed (commit `COMMIT_SHA` on DATE). Re-implementing will overwrite prior work on the same branch. Continue? If yes, run the command again with `--force`."
 
-- If the file doesn't exist yet, that's fine — you'll create it in Step 10 after committing.
+- If the file doesn't exist yet, that's fine — you'll create it in Step 12 after committing.
 
 ## Before You Start
 
@@ -328,7 +328,52 @@ Pipeline: deficient-line-items-report | Stage: implementation | Milestone: M1
 
 3. Do NOT push unless the user asks you to.
 
-### 10. Knowledge Extraction
+### 10. Quality Capture
+
+After committing, capture code complexity metrics for the files touched in this milestone. This data feeds the PR's quality section and the `/quality` report.
+
+**Step A: Check for Complexity Analysis configuration**
+
+Read `PIPELINE.md` in the primary repository and look for a **Complexity Analysis** section.
+
+- If the section **does not exist** → skip this entire step silently. Do not warn, do not log. Proceed to Step 11.
+- If the section **exists** → extract: tool name, per-file command, score command, hotspot threshold, file glob, and exclude pattern.
+
+**Step B: Get files from the milestone commit**
+
+```bash
+cd <primary-repo-path> && git diff-tree --no-commit-id --name-only -r HEAD -- '<file-glob>'
+```
+
+Filter out any files matching the exclude pattern (e.g., files under `spec/`). If no files remain after filtering, set all quality fields to `—` and skip to Step C.
+
+**Step C: Run score command on each file**
+
+For each file from Step B, run the score command (replacing `{file}` with the file path):
+
+```bash
+cd <primary-repo-path> && <score-command>
+```
+
+Parse the output to extract the flog average (avg) per file. Flog score output format is: `N: flog total, N: flog/method average`. Collect all per-file averages.
+
+Compute:
+- `flog_avg`: mean of all per-file averages (rounded to 1 decimal)
+- `flog_max`: highest individual method score across all files
+
+To find `flog_max` and `flog_max_method`, run the per-file command on the file with the highest average:
+
+```bash
+cd <primary-repo-path> && <per-file-command>
+```
+
+Parse the output to identify the highest-scoring method and its score. Flog per-file output lists methods as `score: ClassName#method_name`.
+
+Store: `flog_avg`, `flog_max`, `flog_max_method`, and `files_analyzed` (count of files).
+
+**Failure handling:** If any command fails (non-zero exit, unparseable output), log a warning to the console, set the affected fields to `—`, and continue. Never block the pipeline on a quality capture failure.
+
+### 11. Knowledge Extraction
 
 After committing, review what you learned during this milestone. Route insights to the right durable location so future projects, sessions, and agents benefit.
 
@@ -354,7 +399,7 @@ The conventions file name comes from `PIPELINE.md` Repository Details → Conven
 
 **Step B: Pipeline-scoped insights → progress.md Notes section**
 
-Some insights are about the pipeline process itself — not about this codebase. Capture these in the milestone's Notes section in `progress.md` (Step 11). They'll be reviewed and may be added to pipeline docs or memory.
+Some insights are about the pipeline process itself — not about this codebase. Capture these in the milestone's Notes section in `progress.md` (Step 12). They'll be reviewed and may be added to pipeline docs or memory.
 
 **What qualifies as pipeline-scoped:**
 - Stage 4 test antipatterns discovered (e.g., "cumulative matchers fail in suite runs")
@@ -366,7 +411,7 @@ Some insights are about the pipeline process itself — not about this codebase.
 
 If you have no new insights for this milestone, skip this step and note "No new conventions discovered" in progress.md.
 
-### 11. Update Progress File
+### 12. Update Progress File
 
 After committing to the primary repository, capture the completion timestamp via Bash: `date +"%Y-%m-%dT%H:%M:%S%z"` — save as COMPLETED_AT.
 
@@ -383,6 +428,17 @@ If the file doesn't exist yet, create it with the full structure (including fron
 
 The milestone key in frontmatter uses lowercase (e.g., `pipeline_m1_started_at`, `pipeline_m2_completed_at`).
 
+**Quality frontmatter:** If Step 10 captured quality data, also add these fields for the milestone (omit entirely if no quality data was captured):
+
+```yaml
+pipeline_quality_m1_flog_avg: 8.2
+pipeline_quality_m1_flog_max: 22.1
+pipeline_quality_m1_flog_max_method: "ClassName#method_name"
+pipeline_quality_m1_files_analyzed: 6
+```
+
+Use the actual milestone number (e.g., `m2` for M2). Values come from Step 10. If any value is `—`, write it as a quoted string: `"—"`.
+
 The progress file has this structure:
 
 ```markdown
@@ -392,6 +448,10 @@ pipeline_stage_name: implementation
 pipeline_project: "PROJECT_SLUG"
 pipeline_m1_started_at: "<STARTED_AT>"
 pipeline_m1_completed_at: "<COMPLETED_AT>"
+pipeline_quality_m1_flog_avg: 8.2
+pipeline_quality_m1_flog_max: 22.1
+pipeline_quality_m1_flog_max_method: "ClassName#method_name"
+pipeline_quality_m1_files_analyzed: 6
 ---
 
 # Implementation Progress — PROJECT_SLUG
@@ -432,6 +492,15 @@ pipeline_m1_completed_at: "<COMPLETED_AT>"
 ### Acceptance Criteria
 - [x] Criterion description
 - [ ] Criterion that failed (with reason)
+
+### Quality Snapshot
+[Include only if Step 10 captured quality data. Omit this subsection entirely if Complexity Analysis was not configured or no files were analyzed.]
+
+| Metric | Value |
+|--------|-------|
+| **Flog avg** | [flog_avg] |
+| **Flog max** | [flog_max] (`[flog_max_method]`) |
+| **Files analyzed** | [files_analyzed] |
 
 ### Spec Gaps
 None (or describe gaps found)
@@ -485,7 +554,7 @@ Only files in directories listed in PIPELINE.md Directory Structure that this mi
 - View/partial/template files
 - JavaScript controller files
 - Routes file modifications
-- The conventions file (e.g., `AGENTS.md`, `CLAUDE.md`) — codebase insights discovered during implementation (Step 10)
+- The conventions file (e.g., `AGENTS.md`, `CLAUDE.md`) — codebase insights discovered during implementation (Step 11)
 
 ### Files You May NOT Create or Modify
 

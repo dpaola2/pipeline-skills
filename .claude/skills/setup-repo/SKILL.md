@@ -157,6 +157,59 @@ From the CI config and dependency files, suggest post-flight checks:
 
 Present the suggested checks to the user. They can add, remove, or modify.
 
+### Step 4b: Detect Complexity Analysis Tools
+
+Check for code complexity analysis tools available in the repository. These tools enable quality tracking during Stage 5 implementation and PR creation.
+
+**Detection table:**
+
+| Tool | Detect via | Score command | Per-file command | Repo baseline command |
+|------|-----------|---------------|------------------|----------------------|
+| Flog | `flog` in Gemfile OR `gem list flog` succeeds | `flog -s {file}` | `flog -a -q {file}` | `flog -s app/` |
+| RuboCop Metrics | `rubocop` in Gemfile | `rubocop --only Metrics {file}` | `rubocop --only Metrics {file}` | `rubocop --only Metrics app/` |
+| Flay | `flay` in Gemfile OR `gem list flay` succeeds | `flay {file}` | `flay {file}` | `flay app/` |
+| ESLint complexity | `eslint` in package.json | `npx eslint --rule 'complexity: warn' {file}` | `npx eslint --rule 'complexity: warn' {file}` | `npx eslint --rule 'complexity: warn' src/` |
+| detekt | `detekt` in build.gradle or build.gradle.kts | — | — | `./gradlew detekt` |
+
+**Procedure:**
+
+1. Check the dependency files (Gemfile, package.json, build.gradle) and run `gem list` for standalone gems.
+2. Collect all detected tools.
+3. If any tools are detected, use `AskUserQuestion` to present them:
+
+   > "I detected these complexity analysis tools: [list]. Which would you like to enable for quality tracking?"
+   >
+   > Options: each detected tool as a multi-select option, plus "None — skip quality tracking"
+
+4. For confirmed tools, verify the command works:
+
+```bash
+cd <repo-path> && <repo-baseline-command>
+```
+
+5. If the command succeeds, note the tool for inclusion in PIPELINE.md. If it fails, warn the user and skip that tool.
+6. If no tools are detected, skip silently — the Complexity Analysis section will not be added to PIPELINE.md.
+
+**In Step 6 (Generate PIPELINE.md):** If the user confirmed a complexity tool, add a **Complexity Analysis** section to PIPELINE.md after Post-Flight Checks:
+
+```markdown
+## Complexity Analysis
+
+(OPTIONAL — code complexity measurement tools for quality tracking)
+
+| Setting | Value |
+|---------|-------|
+| **Tool** | [Tool name] |
+| **Per-file command** | `[per-file command]` |
+| **Score command** | `[score command]` |
+| **Repo baseline command** | `[baseline command]` |
+| **Hotspot threshold** | [20 for Flog, or appropriate default] |
+| **File glob** | `[*.rb, *.js, etc.]` |
+| **Exclude** | `[spec/, test/, etc.]` |
+```
+
+If no tools were confirmed, omit the Complexity Analysis section entirely.
+
 ### Step 5: Detect Directory Structure
 
 Use Glob to find which standard directories exist in the repo:

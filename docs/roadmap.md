@@ -27,13 +27,14 @@
 | ROAD-17 | CI Failure Detection + Auto-Fix | Quality assurance | Planned |
 | ROAD-18 | Gameplan Coherence Checklist | Quality assurance | **Done** |
 | ROAD-19 | DORA Metrics (Before/After) | Measurement | **Done** (v1) |
-| ROAD-20 | Code Complexity Analysis (Before/After) | Measurement | Planned |
+| ROAD-20 | Code Quality Analysis (Before/After) | Measurement | Planned |
 | ROAD-21 | Pipeline Dashboard (Factorio Theme) | Visibility | Planned |
 | ROAD-22 | Pipeline Status MCP Server | Visibility | Planned |
 | ROAD-23 | Stage 4 Test Quality Heuristics | Quality assurance | **Done** |
 | ROAD-24 | Merge PIPELINE.md into Conventions Files | Portability | Planned |
 | ROAD-25 | Multi-Runtime Support (Claude Code + Codex) | Portability | Planned |
 | ROAD-26 | Release Notes Skill | Developer experience | **Done** |
+| ROAD-27 | Weekly Pipeline Digest | Visibility | Planned |
 
 ---
 
@@ -673,56 +674,189 @@ The "before" baseline is the pre-pipeline development process. For OrangeQC, thi
 
 ---
 
-### ROAD-20: Code Complexity Analysis (Before/After Pipeline)
+### ROAD-20: Code Quality Analysis (Before/After Pipeline)
 
 **Status:** Planned
 **Theme:** Measurement
+**Parallels:** ROAD-19 (same infrastructure pattern — frontmatter capture, reporting skill, backfill skill)
 
 Measure code complexity of pipeline-generated code vs. hand-written code in the same codebase, answering: "Is the agent writing maintainable code or accumulating tech debt?"
 
 **Why:** The pipeline optimizes for correctness (tests pass, acceptance criteria met) and convention adherence (AGENTS.md, PIPELINE.md). But neither of those guarantees the code is *simple*. An agent can produce correct, convention-following code that's still overly complex — too many branches, too-long methods, excessive coupling. Complexity metrics provide an objective before/after comparison that catches quality dimensions the pipeline doesn't currently measure.
 
-**Metrics to track:**
+**Relationship to ROAD-19 (DORA Metrics):**
 
-| Metric | Tool (Ruby) | What It Catches |
-|--------|-------------|-----------------|
-| **Cyclomatic complexity** | RuboCop Metrics, Flog | Too many conditional branches per method |
-| **ABC score** (Assignment, Branch, Condition) | RuboCop Metrics | Overall method complexity |
-| **Method length** | RuboCop Metrics | Methods doing too much |
-| **Class length** | RuboCop Metrics | God objects |
-| **Flay score** (duplication) | Flay | Copy-paste code |
-| **Reek smells** | Reek | Feature envy, data clump, long parameter list |
-| **Churn × complexity** | Churn + Flog | Files that are both complex and frequently changed (highest maintenance cost) |
+ROAD-19 answers "are we shipping faster?" ROAD-20 answers "is the code any good?" They use the same infrastructure but measure orthogonal things:
 
-**Before/after comparisons (two dimensions):**
+| | ROAD-19 `/metrics` | ROAD-20 `/quality` |
+|---|---|---|
+| **Question** | How fast are we delivering? | How good is the code? |
+| **Frontmatter prefix** | `pipeline_` (timestamps) | `pipeline_quality_` (scores) |
+| **Captured during** | Every stage (start/end times) | Stage 5 completion (per-milestone) + create-pr (summary) |
+| **Backfill skill** | `/backfill-timing` — reads git timestamps | `/backfill-quality` — checks out old branches, runs tools |
+| **Report skill** | `/metrics <slug>` — timing report | `/quality <slug>` — quality report |
+| **PR body section** | Stage timeline, lead time, efficiency | Complexity delta, quality scorecard |
 
-1. **Pipeline code vs. codebase average:** Compare complexity scores of files touched by a pipeline project to the repo-wide average. Are we raising or lowering the bar?
-2. **Pipeline code vs. hand-written code for similar features:** Compare a pipeline-built report (e.g., deficient-line-items) to a hand-built report in the same codebase. Same domain, same patterns — is the agent's output simpler or more complex?
+The two skills are independent — you can run either without the other. ROAD-27 (Weekly Digest) is where they converge, showing the speed-vs-quality tradeoff in a single view.
+
+**Critical design requirement: Platform-agnostic via repo config.**
+
+The skill must NOT hardcode any language-specific tools. Each target repo declares its own complexity analysis tools in its config (currently `PIPELINE.md`, or the conventions file after ROAD-24), following the same pattern as post-flight checks. The skill reads the config and runs whatever the repo declares. `/setup-repo` (ROAD-12) detects available tools during onboarding and writes them into the config.
+
+**Repo config section (new — added to PIPELINE.md / conventions file):**
+
+```markdown
+## Complexity Analysis
+
+| Tool | Command (per-file) | Command (repo baseline) | Metric | Output Format |
+|------|--------------------|------------------------|--------|---------------|
+| Flog | `flog {file}` | `flog app/` | Flog score (lower = simpler) | `{score}: {method}` |
+| RuboCop Metrics | `rubocop --only Metrics {file} --format json` | `rubocop --only Metrics app/ --format json` | Cyclomatic, ABC, method/class length | JSON |
+```
+
+Each row is a tool the repo has available. The skill iterates over rows, runs both the per-file and baseline commands, and compares. Repos can declare any tools — the skill doesn't need to understand the tools, just run the commands and compare numeric output.
+
+**Example configs by platform:**
+
+| Platform | Tools | Detect via |
+|----------|-------|-----------|
+| **Ruby/Rails** | Flog, RuboCop Metrics, Flay, Reek | `flog`/`rubocop`/`flay`/`reek` in Gemfile |
+| **Kotlin/Android** | detekt | `detekt` in build.gradle, `detekt-cli` |
+| **Swift/iOS** | SwiftLint (metrics rules), periphery (dead code) | `.swiftlint.yml`, `periphery` in Package.swift or Brewfile |
+| **TypeScript/Node** | ESLint complexity rule, ts-complexity | `eslint` in package.json with complexity rule config |
+| **Go** | gocyclo, gocognit | `go install` availability |
+
+**Universal metrics (cross-platform):**
+
+These concepts apply to any language — the specific tool varies but the measurement is comparable:
+
+| Metric | What It Catches | Ruby | Kotlin | Swift | TS |
+|--------|----------------|------|--------|-------|----|
+| **Cyclomatic complexity** | Too many branches per method | Flog, RuboCop | detekt | SwiftLint | ESLint |
+| **Method/function length** | Methods doing too much | RuboCop | detekt | SwiftLint | ESLint |
+| **Class/file length** | God objects | RuboCop | detekt | SwiftLint | ESLint |
+| **Duplication** | Copy-paste code | Flay | detekt (or CPD) | — | jscpd |
+| **Code smells** | Feature envy, long params, etc. | Reek | detekt | — | — |
+| **Churn × complexity** | High-maintenance hotspots | Churn + Flog | git log + detekt | git log + SwiftLint | git log + ESLint |
+
+**Frontmatter — captured automatically during pipeline execution:**
+
+Stage 5 (after each milestone) and `/create-pr` embed quality scores into `progress.md` frontmatter:
+
+```yaml
+---
+# Per-milestone quality (captured by Stage 5 after each milestone completes)
+pipeline_quality_m1_flog_avg: 8.2
+pipeline_quality_m1_flog_max: 22.1
+pipeline_quality_m1_flog_max_method: "DeficientLineItemsController#generate_report"
+pipeline_quality_m1_files_touched: 6
+
+# Project summary (captured by /create-pr)
+pipeline_quality_flog_avg: 10.4
+pipeline_quality_flog_max: 22.1
+pipeline_quality_repo_baseline_flog_avg: 15.7
+pipeline_quality_delta: -5.3
+pipeline_quality_verdict: "below_average"
+---
+```
+
+Key naming conventions (mirroring ROAD-19):
+- Prefix: `pipeline_quality_` (vs. `pipeline_` for timing)
+- Per-milestone: `pipeline_quality_m{N}_{tool}_{metric}`
+- Project summary: `pipeline_quality_{tool}_{metric}`
+- Baseline comparison: `pipeline_quality_repo_baseline_{tool}_{metric}`
+- Delta: `pipeline_quality_delta` (negative = better than baseline)
+- Verdict: `pipeline_quality_verdict` — one of `below_average` (good), `at_average`, `above_average` (concerning)
+
+The tool/metric names come from the repo's Complexity Analysis config, so they're platform-specific. A Rails project gets `flog_avg`; an Android project gets `detekt_complexity_avg`. The `/quality` skill interprets whatever keys it finds.
+
+**Before/after comparisons (three dimensions):**
+
+1. **Pipeline code vs. codebase average:** Compare complexity scores of files touched by a pipeline project to the repo-wide baseline. Are we raising or lowering the bar?
+2. **Pipeline code vs. hand-written code for similar features:** Compare a pipeline-built feature to a hand-built feature in the same codebase. Same domain, same patterns — is the agent's output simpler or more complex?
 3. **Over time:** Track whether pipeline-generated code complexity trends up or down as the pipeline matures (skills improve, conventions file grows, knowledge extraction kicks in).
 
-**Implementation approach:**
+**Implementation approach (mirroring ROAD-19 phases):**
 
-1. **v1 (snapshot):** Run `rubocop --only Metrics` and `flog` against pipeline-touched files and compare to repo averages. Manual, per-project.
-2. **v2 (per-project report):** A `/complexity-report <slug>` skill that identifies files changed on the pipeline branch, runs complexity tools, and produces a comparison report (pipeline files vs. repo baseline).
-3. **v3 (integrated into create-pr):** Add complexity delta to the PR body — "This PR's average Flog score: 12.3 (repo average: 15.7)" — so reviewers see it at a glance.
+1. **v1 (frontmatter + reporting skill):**
+   - Modify Stage 5 to run the repo's declared complexity tools after each milestone completes. Embed scores into `progress.md` frontmatter.
+   - Modify `/create-pr` to run the tools against all pipeline-touched files, compute the repo baseline, and embed the summary + delta into frontmatter. Add a "Code Quality" section to the PR body.
+   - Build `/quality <slug>` skill — reads frontmatter from `progress.md`, formats the quality report, writes to `<projects-path>/<slug>/quality.md`. Same read-only, format-and-report pattern as `/metrics`.
 
-**Show Notes considerations:**
-- Show Notes uses RuboCop (already configured) — `rubocop --only Metrics` works out of the box
-- For gems not in the Gemfile (Flog, Flay, Reek), run standalone against the source files
-- Smaller codebase means the "repo average" baseline stabilizes faster
+2. **v2 (backfill):**
+   - Build `/backfill-quality <slug>` skill — checks out the project's pipeline branch (from `progress.md` frontmatter or git branch naming convention), runs the repo's complexity tools against the files changed on that branch, computes the baseline from the merge target, and writes frontmatter into `progress.md`. Marks backfilled entries with `pipeline_quality_backfilled: true`.
+   - This is more expensive than `/backfill-timing` (which just reads git timestamps) because it actually runs analysis tools. For old projects where the branch has been deleted, it can diff the merge commit instead.
+
+3. **v3 (trend tracking):**
+   - The `/quality` skill gains a `--all` mode that reads quality frontmatter across all projects for the active product, producing a trend report: "Project 1: -5.3 delta, Project 2: -2.1 delta, Project 3: +1.8 delta — quality trending slightly up over 3 projects."
+   - ROAD-27 (Weekly Digest) consumes this trend data for the quality score section.
+
+**Output — `/quality <slug>` report (`quality.md`):**
+
+```markdown
+# Code Quality — <slug>
+
+> Generated: <current date/time>
+> Data quality: [live / backfilled]
+> Tools: Flog, RuboCop Metrics (from repo config)
+
+## Quality Scorecard
+
+| Metric | Pipeline Code | Repo Baseline | Delta | Verdict |
+|--------|--------------|---------------|-------|---------|
+| Flog (avg) | 10.4 | 15.7 | -5.3 | Below average (good) |
+| Cyclomatic (avg) | 4.2 | 5.8 | -1.6 | Below average (good) |
+| Method length (avg) | 12 lines | 18 lines | -6 | Below average (good) |
+
+## Per-Milestone Breakdown
+
+| Milestone | Files | Flog avg | Flog max | Hotspot |
+|-----------|-------|----------|----------|---------|
+| M1 | 6 | 8.2 | 22.1 | DeficientLineItemsController#generate_report |
+| M2 | 4 | 13.1 | 18.4 | ReportExporter#to_pdf |
+| **Total** | 10 | 10.4 | 22.1 | — |
+
+## Hotspots (top 5 by complexity)
+
+| File | Method | Flog | Note |
+|------|--------|------|------|
+| app/controllers/deficient_line_items_controller.rb | #generate_report | 22.1 | Consider extracting |
+| ... | | | |
+
+## Data Quality Notes
+
+- [Live vs backfilled]
+- [Which tools ran, which were skipped]
+```
+
+**setup-repo integration:**
+
+Add a new step to `/setup-repo` (after Step 4: Detect Post-Flight Checks):
+
+> **Step 4b: Detect Complexity Analysis Tools**
+>
+> From the dependency files, detect available complexity tools (same detection approach as post-flight checks). Present suggestions to the user — they can add, remove, or modify. Write the confirmed tools into the Complexity Analysis section of the config.
 
 **OrangeQC considerations:**
 - Larger, older codebase — the repo average may be skewed by legacy code
 - More interesting comparison: pipeline code vs. *recent* hand-written code (last 6 months), not historical average
 - StandardRB is already enforced (ROAD-04 post-flight) — complexity metrics go beyond style
+- Available tools: Flog and RuboCop (in Gemfile). Flay and Reek could be added standalone.
+
+**Multi-repo projects (Level 3):**
+- A Level 3 project touches Rails + iOS + Android. Each repo declares its own tools.
+- The quality report shows per-repo results, not cross-language averages.
+- Cross-platform comparison isn't meaningful (Flog scores don't compare to detekt scores). Compare each repo to *its own* baseline.
 
 **Considerations:**
 - Complexity metrics are *indicators*, not judgments. A complex method might be justified by the domain. The goal is visibility, not enforcement.
-- v3 (PR body integration) is the highest-leverage long-term — it makes complexity visible at the exact moment a reviewer is deciding whether to merge
+- PR body integration (v1) is the highest-leverage deliverable — it makes quality visible at the exact moment a reviewer is deciding whether to merge
 - Could feed into ROAD-15 (Knowledge Extraction) — if a pattern consistently produces high-complexity code, that's a pipeline lesson worth capturing
 - Track per-milestone too, not just per-project — some milestones (data model) should be simple; others (complex business logic) may justify higher complexity
+- Repos with no Complexity Analysis section in their config simply skip quality capture — graceful degradation, not a hard requirement
+- The backfill skill is more resource-intensive than `/backfill-timing` — it needs to check out branches and run tools, not just read timestamps. Consider caching baseline scores per-repo so the baseline doesn't need to be recomputed for every backfilled project.
 
-**Related:** ROAD-09 (Code Review — reviewer should consider complexity), ROAD-15 (Knowledge Extraction — complexity patterns are learnable), ROAD-04 (Post-Flight Checks — complexity could become a check)
+**Related:** ROAD-19 (DORA Metrics — same infrastructure pattern, complementary measurement), ROAD-09 (Code Review — reviewer should consider complexity), ROAD-15 (Knowledge Extraction — complexity patterns are learnable), ROAD-04 (Post-Flight Checks — same config-driven pattern), ROAD-12 (setup-repo — detects and writes the config), ROAD-27 (Weekly Digest — consumes quality data for the scorecard, shows speed-vs-quality tradeoff alongside ROAD-19 timing data)
 
 ---
 
@@ -1400,3 +1534,74 @@ The directory lives alongside project directories in the configurable projects p
 - The existing App Store / Play Store links are stable — hardcode them in the template
 
 **Related:** ROAD-08 (Linear Automation — shares the Linear MCP dependency), ROAD-02 (Notifications — release notes could be posted via webhook)
+
+---
+
+### ROAD-27: Weekly Pipeline Digest
+
+**Status:** Planned
+**Theme:** Visibility
+
+A weekly summary report — like Slack's "updates for the week" — that shows pipeline activity, code health trends, and delivery metrics at a glance. Think heatmaps, scorecards, and sparklines, not walls of text.
+
+**Why:** The pipeline generates a lot of data (commits, test results, DORA timing, complexity scores, shipped milestones) but there's no periodic rollup that answers "how did the week go?" Without a digest, you'd have to manually check progress files, git logs, and Linear cycles to piece together the picture. A weekly digest gives the operator (and stakeholders) a cadence-based health check without any effort.
+
+**What it shows:**
+
+| Section | Content | Data Source |
+|---------|---------|-------------|
+| **Things Shipped** | Count of milestones completed, projects that moved stages, PRs merged. Bulleted list of what shipped this week. | `progress.md` files, git log, Linear cycle data |
+| **DORA Metrics** | Lead time (PRD → merged PR), deployment frequency, change failure rate — week-over-week trend with directional arrows (up/down). | ROAD-19 timing metadata from `create-pr` reports |
+| **Code Quality Score** | Composite score based on complexity delta, test coverage, StandardRB/Brakeman findings. Trend indicator (improving/declining/stable). | ROAD-20 complexity data, post-flight check results |
+| **Activity Heatmap** | Grid showing pipeline activity by day — which stages ran, how many milestones were implemented. Visual density = busy week. | Git commit timestamps, progress.md updates |
+| **Pipeline Throughput** | Projects in flight, average stage velocity (days per stage), bottleneck identification (which stage takes longest). | Derived from project artifact timestamps |
+
+**Output format options:**
+
+| Format | Pros | Cons |
+|--------|------|------|
+| **Markdown file** | Simple, versionable, readable anywhere | No actual heatmap rendering |
+| **Slack message** | Visible to the team, matches "updates for the week" pattern | Requires webhook integration (ROAD-02) |
+| **HTML report** | Can render actual heatmaps and sparklines | Needs a viewer, more complex to generate |
+
+**Recommendation:** Start with markdown (v1), add Slack posting (v2) once ROAD-02 ships.
+
+**Code Quality Score design:**
+
+Not a single magic number — a scorecard with a few key indicators:
+
+| Indicator | Measurement | Good / Neutral / Concerning |
+|-----------|------------|----------------------------|
+| **Complexity trend** | Average Flog score of pipeline-touched files vs. repo average | Below avg / At avg / Above avg |
+| **Test health** | Ratio of passing to total specs in pipeline-touched areas | All pass / Flaky / Failures |
+| **Lint cleanliness** | StandardRB + Brakeman findings introduced by pipeline code | Zero / Warnings only / Errors |
+| **Churn** | Files touched by pipeline that were also touched in prior week (rework signal) | Low / Moderate / High |
+
+Each indicator gets a directional marker (improved / stable / declined) compared to the previous week.
+
+**Implementation:**
+
+A `/weekly-digest` skill (standalone utility, like `/release-notes`) that:
+
+1. Reads `pipeline.md` to find all configured products and their project paths
+2. Scans project directories for `progress.md` files updated in the last 7 days
+3. Pulls git log for pipeline branches (commits in the last 7 days)
+4. Reads DORA timing from the most recent `create-pr` metrics
+5. Runs complexity tools if ROAD-20 is available (graceful skip if not)
+6. Assembles the digest using a template
+7. Writes to `<projects-path>/digests/<date>-weekly.md`
+
+**Dependencies (soft):**
+- ROAD-19 (DORA Metrics) — for the metrics section. Digest works without it but that section will be empty.
+- ROAD-20 (Code Complexity) — for the quality score. Same graceful degradation.
+- ROAD-02 (Notifications) — for Slack posting in v2.
+
+**Considerations:**
+- The digest should work even if only some data sources are available — degrade gracefully by omitting sections rather than failing
+- Week boundary: use Monday-to-Sunday to align with Linear cycles
+- First run bootstraps — no "previous week" comparison, just absolute numbers
+- Could eventually run on a cron/schedule (pairs with ROAD-11 Ludicrous Speed for unattended execution), but v1 is manual invocation
+- The "things shipped" section is the most valuable part for stakeholders — lead with it
+- Heatmap in markdown can be approximated with emoji blocks (like GitHub's contribution graph) — not as pretty as HTML but functional
+
+**Related:** ROAD-19 (DORA Metrics — primary data source), ROAD-20 (Code Complexity — quality score data), ROAD-02 (Notifications — Slack delivery), ROAD-21 (Dashboard — digest is the periodic snapshot; dashboard is the live view), ROAD-26 (Release Notes — similar "summarize the period" pattern)
