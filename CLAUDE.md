@@ -133,6 +133,9 @@ The pipeline runs manually, one stage at a time:
 
 /setup-repo <repo-path> [product-name]            → explores repo, generates PIPELINE.md + pipeline config,
                                                     optionally activates the product
+
+/release-notes <cycle_number>                     → generates release notes from Linear cycle data
+                                                    (standalone utility, not a pipeline stage)
 ```
 
 ### Human Checkpoints

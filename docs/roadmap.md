@@ -33,6 +33,7 @@
 | ROAD-23 | Stage 4 Test Quality Heuristics | Quality assurance | **Done** |
 | ROAD-24 | Merge PIPELINE.md into Conventions Files | Portability | Planned |
 | ROAD-25 | Multi-Runtime Support (Claude Code + Codex) | Portability | Planned |
+| ROAD-26 | Release Notes Skill | Developer experience | **Done** |
 
 ---
 
@@ -1267,3 +1268,119 @@ Option 3 is simplest for v1. Show Notes already has `CLAUDE.md`. If Codex is add
 - The `allowed-tools` whitelisting in Claude Code skills is a security feature (prevents planning stages from modifying code). Codex's equivalent is sandbox modes. The adapter layer needs to preserve these constraints.
 
 **Related:** ROAD-11 (Ludicrous Speed — MCP orchestration subsumes this), ROAD-22 (Pipeline Status MCP — could orchestrate Codex workers), ROAD-24 (Merge PIPELINE.md — conventions file unification)
+
+---
+
+### ROAD-26: Release Notes Skill
+
+**Status:** Done
+**Theme:** Developer experience
+
+Built a `/release-notes <cycle_number>` skill that generates release notes from Linear cycle data — the first pipeline skill to use Linear MCP tools.
+
+**What was built:**
+- **Skill file** at `.claude/skills/release-notes/SKILL.md` — standalone utility (not a pipeline stage)
+- **Multi-team cycle lookup** — queries Engineering, Web, iOS, and Android teams for completed issues in the target cycle
+- **Automated categorization** — labels → title keywords → default Maintenance, with `[INTERNAL?]` flags for non-customer-facing items
+- **Title rewriting** — transforms internal issue titles into customer-friendly descriptions
+- **Template discovery** — reads the most recent file in `<projects-path>/release-notes/` as a format template; falls back to a built-in template on first run
+- **Mobile build prompts** — asks operator for iOS/Android build numbers via `AskUserQuestion`
+- **Output** — writes to `<projects-path>/release-notes/<end-date>-cycle-<N>.md`
+
+**Design decisions:**
+- First skill to use Linear MCP tools (`list_teams`, `list_cycles`, `list_issues`, `list_issue_statuses`)
+- Batch categorization (no per-issue prompts) — operator reviews flagged items at the end
+- Built-in template matches the existing Cycle 45 format (header, Mobile App Builds, Links, New Features, Maintenance, Cleaning Up)
+- Statuses queried: "Done" + "Pending Release" (code-complete, awaiting deployment)
+
+**Original design context:**
+
+A `/release-notes <cycle_number>` skill that generates release notes from Linear cycle data — pulling closed issues, categorizing them, and formatting them using the previous cycle's notes as a template.
+
+**Why:** Release notes are currently assembled manually: query Linear for the cycle, read through closed issues, categorize them (new features, maintenance, cleanup), check mobile build numbers, and write the formatted post. This is a repeatable, structured task — exactly the kind the pipeline should automate. The operator already has the Linear MCP plugin available, so the data is accessible.
+
+**How it works:**
+
+1. **Read the previous cycle's release notes** — look in the `release-notes/` directory (under the configured projects path from `pipeline.md`) for the most recent file. This establishes the template format (sections, tone, link structure). If no previous file exists (first run), use the built-in template.
+2. **Fetch the target cycle** — use `list_cycles` with the team to get cycle N's metadata (start date, end date).
+3. **Find closed issues** — use `list_issues` filtered to the target cycle with state "Done" (or equivalent completed state). Also check for issues that closed *between* cycles N-1 and N that aren't captured in the previous notes.
+4. **Fetch mobile build numbers** — ask the operator for current iOS and Android build numbers (these aren't in Linear).
+5. **Categorize issues** — group by type:
+   - **New Features** — new user-facing capabilities
+   - **Maintenance** — bug fixes, performance improvements, infrastructure
+   - **Cleaning Up** — tech debt, code removal, deprecations
+   Use issue labels, title keywords, and description to infer category. Flag ambiguous items for operator review.
+6. **Generate formatted notes** — produce release notes matching the template structure:
+   - Header with cycle number and date range
+   - Mobile app builds section with App Store / Play Store links
+   - Categorized bullet points with bold feature names and descriptions
+7. **Write to file** — save the release notes to `<projects-path>/release-notes/<date>-cycle-<N>.md` (e.g., `2026-01-27-cycle-45.md`), where the date is the cycle end date. Present the draft to the operator for wordsmithing before posting.
+
+**Template structure** (based on current format):
+
+```markdown
+# Release Notes for Cycle {N} ({start_date} - {end_date})
+
+**Mobile App Builds**
+
+* **iOS**: {version}
+* **Android**: {version}
+
+**Links**
+
+* [iOS in the App Store](https://apps.apple.com/us/app/orangeqc/id324039524)
+* [OrangeQC in the Google Play Store](https://play.google.com/store/apps/details?id=com.orangeqc.native)
+
+**New Features**
+
+* **{Feature Name}** - {Description}
+
+**Maintenance**
+
+* {Description of fix or improvement}
+
+**Cleaning Up**
+
+* {Description of removal or deprecation}
+```
+
+**Categorization heuristics:**
+
+| Signal | Category |
+|--------|----------|
+| Label: "feature", "enhancement" | New Features |
+| Label: "bug", "fix" | Maintenance |
+| Label: "tech-debt", "cleanup", "deprecation" | Cleaning Up |
+| Title contains "Add", "New", "Introduce" | New Features |
+| Title contains "Fix", "Resolve", "Update" | Maintenance |
+| Title contains "Remove", "Delete", "Clean up", "Deprecate" | Cleaning Up |
+| Platform labels: "ios", "android", "web" | Include platform context in description |
+
+**What the operator still does:**
+
+- Provides mobile build numbers (not tracked in Linear)
+- Wordsmithes the descriptions (agent-generated descriptions are a starting point)
+- Decides what to include/exclude (some closed issues are internal and shouldn't be in release notes)
+- Posts the final notes to the team channel
+
+**Output directory:**
+
+```
+<projects-path>/
+  release-notes/
+    2026-01-20-cycle-44.md
+    2026-01-27-cycle-45.md
+    2026-02-03-cycle-46.md
+```
+
+The directory lives alongside project directories in the configurable projects path (from `pipeline.md` Work Directory). The filename uses the cycle end date + cycle number, so files sort chronologically and are easy to find. Step 1 reads the most recent file in this directory to use as the template for the next cycle.
+
+**Considerations:**
+- This is a **standalone utility skill**, not a pipeline stage — it operates on Linear cycles, not on pipeline projects
+- The skill should handle the case where no previous cycle notes exist (first run / empty `release-notes/` directory) by using the built-in template structure directly
+- Issues closed between cycle boundaries (e.g., closed after cycle N-1 ended but before cycle N started) should be captured — these are the ones most likely to be missed manually
+- Pipeline-generated projects will naturally show up as closed issues in their cycles — the skill should describe them as features, not as "pipeline project completed"
+- Could eventually auto-detect mobile build versions from App Store Connect / Play Console APIs, but manual input is fine for v1
+- The existing App Store / Play Store links are stable — hardcode them in the template
+
+**Related:** ROAD-08 (Linear Automation — shares the Linear MCP dependency), ROAD-02 (Notifications — release notes could be posted via webhook)
