@@ -6,14 +6,16 @@
 
 ## Self-Describing Documents (DORA Frontmatter)
 
-**Observed:** 2026-02-09
-**Context:** ROAD-19 backfill across 4 completed OrangeQC projects (28 documents)
+**Observed:** 2026-02-09 (updated: second backfill pass added 9 more documents)
+**Context:** ROAD-19 backfill across all 10 OrangeQC projects (42 documents total)
 
 Each pipeline output document carries its own timing metadata in YAML frontmatter (`pipeline_stage`, `pipeline_completed_at`, etc.). This makes every document self-describing — the `/metrics` skill can compute timing reports by scanning frontmatter across all files in a project directory, rather than requiring a separate data store or manual timestamp tracking.
 
 **Key tradeoff:** Backfilled data has lower precision than live-captured data. Document header dates give day-level accuracy; git commit timestamps give second-level accuracy. Only `completed_at` can be recovered retroactively — `started_at` is unrecoverable, so backfilled documents omit it. All backfilled documents are tagged (`pipeline_backfilled: true` + source attribution) so consumers can distinguish live from inferred timestamps.
 
-**Implication:** Every new stage skill should capture timestamps in frontmatter at execution time. Retrofitting is possible but lossy.
+**Second backfill pass (Feb 9):** The initial backfill covered 4 completed projects (28 documents across Stages 0–7). A gap analysis found 9 more files missing frontmatter: null-position-crash Stages 0–2 (ran before DORA instrumentation), deficient-line-items-report-feature-flag (2 files at Stage 0–1), and 4 draft PRDs (heroku-hatchbox-migration, increase-large-report-limit, public-pages-codebase-rename, tailwind-reports-tab). All 42 pipeline documents now have frontmatter. Sources used: document header dates (day-level), git commit author dates (second-level), and architecture approval checklist dates.
+
+**Implication:** Every new stage skill should capture timestamps in frontmatter at execution time. Retrofitting is possible but lossy. A periodic "frontmatter gap check" across all projects catches files that slip through — skills may not emit frontmatter consistently in all code paths (e.g., Stage 0 PRDs generated before DORA instrumentation was added).
 
 ---
 
