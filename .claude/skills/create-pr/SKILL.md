@@ -9,6 +9,7 @@ allowed-tools:
   - Grep
   - Bash
   - Edit
+  - Write
 ---
 
 # Create PR
@@ -253,6 +254,34 @@ pipeline_pr_url: "<PR_URL>"
 ```
 
 If progress.md has no frontmatter, prepend one with the stage 5 fields plus the PR fields.
+
+### 8. Generate Metrics Report
+
+After updating the PR timing, generate the project metrics report. This provides an immediate timing summary for every completed project.
+
+1. Read all `.md` files in `<projects-path>/$ARGUMENTS/` and extract YAML frontmatter from each (lines between `---` markers). Parse `pipeline_started_at`, `pipeline_completed_at`, `pipeline_approved_at`, `pipeline_m*_started_at`, `pipeline_m*_completed_at`, `pipeline_pr_created_at`, `pipeline_pr_url`, and `pipeline_backfilled` fields.
+
+2. Enrich with git data — get PR merge status:
+
+```bash
+cd <primary-repo-path> && gh pr list --head '<branch-prefix>$ARGUMENTS' --state all --json mergedAt,createdAt,url --limit 1
+```
+
+3. Compute metrics:
+   - **Stage durations**: `completed_at - started_at` for each stage (where both exist)
+   - **Human review time**: `approved_at - completed_at` for architecture and gameplan
+   - **Per-milestone deltas**: time between consecutive milestone `completed_at` timestamps
+   - **Implementation window**: first milestone `completed_at` → last milestone `completed_at`
+   - **PR review time**: PR `createdAt` → PR `mergedAt` (if merged)
+   - **Total lead time**: earliest `started_at` (or `completed_at`) → PR merge (or latest timestamp)
+
+4. Write the report to `<projects-path>/$ARGUMENTS/metrics.md` with:
+   - Stage timeline table (stage, document, started, completed, duration, wait)
+   - Implementation breakdown table (per-milestone completed_at, delta from prior, commit SHA)
+   - Summary table (total lead time, active agent time, human review time, PR review time)
+   - Data quality notes (which timestamps are live vs backfilled)
+
+Format durations as: `Xm` (under 1h), `Xh Ym` (1-24h), `Xd Yh` (over 24h). Use `—` for unavailable data.
 
 ## What NOT To Do
 
