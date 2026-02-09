@@ -388,6 +388,58 @@ cd <primary-repo-path> && gh pr list --head '<branch-prefix>$ARGUMENTS' --state 
 
 Format durations as: `Xm` (under 1h), `Xh Ym` (1-24h), `Xd Yh` (over 24h). Use `—` for unavailable data.
 
+### 10. Update Aggregate Metrics
+
+After the per-project metrics report, update the product-level aggregate metrics file. This step is **non-blocking** — if it fails (e.g., can't parse a progress file), log a warning and continue. Never block PR creation on aggregate metrics.
+
+1. Read `pipeline.md` to get the projects path (`<projects-path>`).
+
+2. Scan all subdirectories in `<projects-path>/` for `progress.md` files.
+
+3. For each project directory with a `progress.md`, check if the project is completed:
+   - **Has frontmatter:** Look for `pipeline_pr_url` or `pipeline_pr_created_at` fields → completed.
+   - **No frontmatter:** Check the Milestone Status table — if all milestones are "Complete" and a PR URL or commit SHA can be found in the file, include with available data.
+
+4. For each completed project, extract:
+   - Project name (from directory name)
+   - Level (from `prd.md` header if available)
+   - Milestone count (from Milestone Status table)
+   - Per-milestone timing (from `pipeline_m*_started_at` / `pipeline_m*_completed_at` frontmatter)
+   - Implementation window (first milestone start → last milestone complete)
+   - PR created date, PR merged date (from frontmatter + GitHub API)
+   - Stage 4 first commit date (from `metrics.md` or git log)
+   - Data quality flag (backfilled vs live timing)
+
+5. Compute aggregate stats:
+   - Total projects completed
+   - Total milestones implemented
+   - Median milestone delta (across all projects with per-milestone timing)
+   - Fastest milestone (project + milestone ID + time)
+   - Slowest milestone same-day (excluding overnight gaps)
+   - Fastest project (tests → last commit)
+   - Largest project (tests → last commit, most milestones)
+   - PR review times (for merged PRs)
+
+6. Also collect in-progress projects (directories with `progress.md` but no `pipeline_pr_url`, or with `prd.md` but no `progress.md`).
+
+7. Write the aggregate report to `<projects-path>/metrics.md` with these sections:
+   - **Completed Projects** table (project, level, PRD date, first commit, last commit, PR created, PR merged, Stage 4→PR time)
+   - **Implementation Speed** table (project, milestones, test gen → last commit, commits) with per-project milestone delta sub-tables
+   - **PR Review Time** table
+   - **Pipeline Throughput** summary stats
+   - **Agent Speed Highlights** (median delta, fastest/slowest milestone, combined times)
+   - **In-Progress Projects** table
+   - **Data Quality Notes** section noting which projects have live vs backfilled vs no timing data
+
+8. Add YAML frontmatter to the aggregate metrics file:
+
+```yaml
+---
+pipeline_generated_at: "<current-date>"
+pipeline_product: "<product-name>"
+---
+```
+
 ## What NOT To Do
 
 - **Do not write implementation code.** The only modifications this skill makes are auto-fix commits from post-flight checks.

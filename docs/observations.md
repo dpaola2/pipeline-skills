@@ -36,18 +36,20 @@ This project ran the full pipeline (Stages 0–7, PR #2268 created), but its PR 
 
 ## Human Review Is the Bottleneck (Confirmed)
 
-**Observed:** 2026-02-09
-**Context:** DORA metrics across 4 completed OrangeQC projects
+**Observed:** 2026-02-09 (updated with null-position-crash data)
+**Context:** DORA metrics across 5 completed OrangeQC projects
 
-Aggregate data from all 4 completed projects:
+Aggregate data from all 5 completed projects:
 
 | Metric | Value |
 |--------|-------|
 | Median milestone implementation time | 10 minutes |
-| Fastest milestone | 4 minutes (inspection-schedule-limit M1) |
-| 3 small projects (6 milestones total) | 53 minutes combined agent time |
+| Fastest milestone | 2m 11s (null-position-crash M1) |
+| 4 small projects (8 milestones total) | 60 minutes combined agent time |
 | PR review time (2 merged PRs) | 2d 17h and 3d 1h |
 
 Agent execution time is measured in minutes. Human review time is measured in days. This confirms Design Priority #5 ("Optimize the Bottleneck") — improvements that reduce human review friction (notifications, better PR descriptions, automated checks) will deliver more wall-clock speedup than making agents faster.
+
+`null-position-crash` is notable as the first project with fully live DORA timing from Stage 3 onward (not backfilled). Its 7m implementation window (2 milestones) is the fastest project end-to-end, and its M1 at 2m 11s is the fastest individual milestone observed.
 
 **Implication:** ROAD-02 (Notifications) and ROAD-09 (Code Review) likely have higher ROI than ROAD-11 (Ludicrous Speed) for reducing total lead time.
