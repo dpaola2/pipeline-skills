@@ -13,9 +13,11 @@ const STAGES = [
   { stage: 99, name: 'Complete', label: '', icon: 'icon-chest', chest: true },
 ];
 
+const ROW1 = STAGES.slice(0, 6);   // S0 → HC (after S2)
+const ROW2 = STAGES.slice(6);      // S4 → Complete (rendered right-to-left)
+
 let autoRefresh = false;
 let autoTimer = null;
-let openStage = null; // currently open popover stage
 
 fetch('/img/sprites.svg')
   .then(r => r.text())
@@ -31,7 +33,7 @@ async function loadData() {
     ]);
     const projData = await projRes.json();
     const metData = await metRes.json();
-    renderBelt(projData.projects);
+    renderSnake(projData.projects);
     renderStats(projData.projects, metData);
   } catch (err) {
     const loading = document.getElementById('loading');
@@ -49,10 +51,9 @@ function getProjectStageSlot(project) {
   return project.currentStage;
 }
 
-function renderBelt(projects) {
+function renderSnake(projects) {
   const container = document.getElementById('assembly-line');
 
-  // Group projects by stage slot
   const groups = {};
   for (const p of projects) {
     const slot = getProjectStageSlot(p);
@@ -61,136 +62,121 @@ function renderBelt(projects) {
   }
 
   const activeStages = new Set(
-    projects
-      .filter(p => p.status !== 'completed' && p.status !== 'draft')
+    projects.filter(p => p.status !== 'completed' && p.status !== 'draft')
       .map(p => getProjectStageSlot(p))
   );
 
-  // Build the belt
-  let html = '<div class="belt-line">';
-  STAGES.forEach((s, i) => {
-    if (i > 0) {
-      html += '<div class="belt-seg"><div class="conveyor-belt"></div></div>';
-    }
-
-    const count = (groups[s.stage] || []).length;
-    const hasActive = activeStages.has(s.stage);
-
-    let cls = 'stage-machine';
-    if (s.checkpoint) {
-      cls += ' checkpoint';
-      if (hasActive) cls += ' waiting';
-    } else if (s.chest) {
-      if (count > 0) cls += ' completed';
-    } else if (hasActive) {
-      cls += ' active';
-    }
-
-    const badge = count > 0
-      ? `<span class="count-badge${s.chest ? ' badge-green' : ''}">${count}</span>`
-      : '';
-
-    html += `<div class="stage-slot" data-stage="${s.stage}">
-      <div class="${cls}" title="${s.label ? s.label + ': ' : ''}${s.name}">
-        <svg class="stage-icon"><use href="#${s.icon}"/></svg>
-        ${badge}
-      </div>
-      <div class="stage-tag">${s.label || '✓'}</div>
-    </div>`;
+  // Row 1: left to right, machines on top
+  let html = '<div class="snake-row">';
+  // Machines sub-row
+  html += '<div class="snake-machines-row">';
+  ROW1.forEach((s, i) => {
+    if (i > 0) html += '<div class="snake-belt-h-spacer"></div>';
+    html += renderMachine(s, groups, activeStages);
   });
   html += '</div>';
+  // Belt sub-row
+  html += '<div class="snake-belt-row">';
+  ROW1.forEach((s, i) => {
+    if (i > 0) html += '<div class="snake-belt-h"></div>';
+    html += renderBelt(s, groups);
+  });
+  html += '</div>';
+  html += '</div>';
 
-  // Popover container (rendered below the belt)
-  html += '<div class="popover-area" id="popover-area"></div>';
+  // Turn connector (right side)
+  html += '<div class="snake-turn-right"><div class="snake-turn-belt"><div class="conveyor-belt-vertical"></div></div></div>';
+
+  // Row 2: right to left, machines on bottom
+  const row2Reversed = [...ROW2].reverse();
+  html += '<div class="snake-row">';
+  // Belt sub-row (on top for row 2)
+  html += '<div class="snake-belt-row belt-reverse">';
+  row2Reversed.forEach((s, i) => {
+    if (i > 0) html += '<div class="snake-belt-h"></div>';
+    html += renderBelt(s, groups);
+  });
+  html += '</div>';
+  // Machines sub-row (on bottom for row 2)
+  html += '<div class="snake-machines-row">';
+  row2Reversed.forEach((s, i) => {
+    if (i > 0) html += '<div class="snake-belt-h-spacer"></div>';
+    html += renderMachine(s, groups, activeStages);
+  });
+  html += '</div>';
+  html += '</div>';
 
   container.innerHTML = html;
 
-  // Wire up click handlers
-  container.querySelectorAll('.stage-slot').forEach(slot => {
-    slot.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const stage = parseInt(slot.dataset.stage, 10);
-      const items = groups[stage] || [];
-      if (items.length === 0) {
-        closePopover();
-        return;
-      }
-      if (openStage === stage) {
-        closePopover();
-      } else {
-        showPopover(slot, stage, items);
-      }
+  // Wire up item hover/click
+  container.querySelectorAll('.belt-item').forEach(el => {
+    el.addEventListener('click', () => {
+      window.location.href = '/project/' + el.dataset.slug;
     });
   });
 }
 
-function showPopover(slotEl, stage, projects) {
-  openStage = stage;
+function renderMachine(s, groups, activeStages) {
+  const items = groups[s.stage] || [];
+  const hasActive = activeStages.has(s.stage);
+  const hasItems = items.length > 0;
 
-  // Highlight the active slot
-  document.querySelectorAll('.stage-slot').forEach(s => s.classList.remove('open'));
-  slotEl.classList.add('open');
+  let cls = 'stage-machine';
+  if (s.checkpoint) {
+    cls += ' checkpoint';
+    if (hasActive) cls += ' waiting';
+  } else if (s.chest) {
+    if (hasItems) cls += ' completed';
+  } else if (hasActive) {
+    cls += ' active';
+  }
 
-  const stageInfo = STAGES.find(s => s.stage === stage);
-  const area = document.getElementById('popover-area');
-
-  area.innerHTML = `<div class="popover-panel">
-    <div class="popover-header">
-      <span class="popover-title">${stageInfo ? stageInfo.label + ' ' + stageInfo.name : 'Complete'}</span>
-      <span class="popover-count">${projects.length} project${projects.length !== 1 ? 's' : ''}</span>
+  return `<div class="snake-machine">
+    <div class="${cls}" title="${s.label ? s.label + ': ' : ''}${s.name}">
+      <svg class="stage-icon"><use href="#${s.icon}"/></svg>
     </div>
-    <div class="popover-items">
-      ${projects.map(p => renderProjectItem(p)).join('')}
-    </div>
+    <div class="snake-machine-label">${s.label || '✓'}</div>
   </div>`;
-  area.style.display = 'block';
 }
 
-function closePopover() {
-  openStage = null;
-  document.querySelectorAll('.stage-slot').forEach(s => s.classList.remove('open'));
-  const area = document.getElementById('popover-area');
-  if (area) {
-    area.style.display = 'none';
-    area.innerHTML = '';
-  }
-}
+function renderBelt(s, groups) {
+  const items = groups[s.stage] || [];
+  const hasItems = items.length > 0;
 
-// Close popover when clicking outside
-document.addEventListener('click', (e) => {
-  if (!e.target.closest('.stage-slot') && !e.target.closest('.popover-panel')) {
-    closePopover();
-  }
-});
-
-function renderProjectItem(project) {
-  const statusClass = project.waitingForHuman ? 'waiting' : project.status;
-  const levelClass = project.level ? `level-${project.level}` : '';
-  const milestoneText = project.totalMilestones > 0
-    ? `${project.completedMilestones}/${project.totalMilestones}`
-    : '';
-
-  // Mini stage progress bar
-  const allStages = [0, 1, 2, 3, 4, 5, 7];
-  const progressPips = allStages.map(s => {
-    const has = project.stages && project.stages[s];
-    const isCurrent = s === project.currentStage && project.status !== 'completed';
-    let pipClass = 'pip';
-    if (has && !isCurrent) pipClass += ' pip-done';
-    if (isCurrent) pipClass += ' pip-current';
-    return `<span class="${pipClass}"></span>`;
+  const beltItems = items.map(p => {
+    const statusClass = p.status === 'completed' ? 'item-complete' :
+                        p.status === 'in_progress' ? 'item-active' :
+                        p.waitingForHuman ? 'item-waiting' : 'item-draft';
+    const milestones = p.totalMilestones > 0 ? ` ${p.completedMilestones}/${p.totalMilestones}` : '';
+    const level = p.level ? `L${p.level}` : '';
+    return `<div class="belt-item ${statusClass}" data-slug="${p.slug}" title="${escapeAttr(p.title || p.slug)}${milestones ? '\n' + milestones + ' milestones' : ''}">
+      <span class="item-name">${escapeHtml(shortName(p.title || p.slug))}</span>
+      ${level ? `<span class="item-level">${level}</span>` : ''}
+      ${milestones ? `<span class="item-ms">${milestones.trim()}</span>` : ''}
+    </div>`;
   }).join('');
 
-  return `<a href="/project/${project.slug}" class="project-item status-${statusClass}">
-    <div class="project-item-top">
-      <span class="project-name">${escapeHtml(project.title || project.slug)}</span>
-      ${project.level ? `<span class="level-badge ${levelClass}">L${project.level}</span>` : ''}
-    </div>
-    <div class="project-item-bottom">
-      <span class="pip-bar">${progressPips}</span>
-      ${milestoneText ? `<span class="milestone-progress">${milestoneText}</span>` : ''}
-    </div>
-  </a>`;
+  return `<div class="snake-belt-section${hasItems ? ' has-items' : ''}">
+    <div class="belt-track"></div>
+    <div class="belt-items">${beltItems}</div>
+  </div>`;
+}
+
+function shortName(name) {
+  // Abbreviate long names to fit on belt items
+  if (name.length <= 16) return name;
+  return name
+    .replace(/^Fix /, '')
+    .replace(/^Add /, '')
+    .replace(/ — .*/, '')
+    .replace(/ Report$/, ' Rpt')
+    .replace(/ Migration$/, ' Migr.')
+    .replace(/ Feature Flag$/, ' FF')
+    .substring(0, 18);
+}
+
+function escapeAttr(str) {
+  return str.replace(/"/g, '&quot;').replace(/\n/g, '&#10;');
 }
 
 function renderStats(projects, metrics) {
@@ -202,7 +188,6 @@ function renderStats(projects, metrics) {
   const inProgress = projects.filter(p => p.status === 'in_progress').length;
   const draft = projects.filter(p => p.status === 'draft').length;
   const totalMilestones = projects.reduce((sum, p) => sum + p.completedMilestones, 0);
-
   const sp = metrics.speed || {};
 
   const stats = [
@@ -229,7 +214,6 @@ function escapeHtml(str) {
 }
 
 document.getElementById('btn-refresh').addEventListener('click', loadData);
-
 document.getElementById('btn-auto').addEventListener('click', () => {
   autoRefresh = !autoRefresh;
   const btn = document.getElementById('btn-auto');
@@ -252,7 +236,6 @@ document.addEventListener('keydown', (e) => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
     loadData();
   }
-  if (e.key === 'Escape') closePopover();
 });
 
 loadData();
