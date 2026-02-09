@@ -9,5 +9,8 @@ pipeline.md
 pipelines/*.md
 !pipelines/README.md
 
+# Dashboard
+dashboard/node_modules/
+
 # Claude Code local settings
 .claude/settings.json

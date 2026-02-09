@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pipeline Dashboard</title>
+  <link rel="stylesheet" href="/css/factorio.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+  <!-- SVG Sprites -->
+  <div style="display:none" id="svg-sprites"></div>
+
+  <header class="header">
+    <div class="logo">PIPELINE <span>DASHBOARD</span></div>
+    <div class="header-actions">
+      <span class="auto-refresh-indicator" id="refresh-indicator"></span>
+      <button class="btn" id="btn-refresh" title="Refresh (R)">Refresh</button>
+      <button class="btn" id="btn-auto" title="Toggle auto-refresh">Auto</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div id="assembly-line" class="assembly-line">
+      <div class="loading" id="loading">Loading pipeline</div>
+    </div>
+
+    <div class="stats-panel" id="stats-panel" style="display:none">
+      <div class="panel-title">Production Statistics</div>
+      <div class="stats-grid" id="stats-grid"></div>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

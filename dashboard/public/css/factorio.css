@@ -1,0 +1,411 @@
+/* Factorio Palette */
+:root {
+  --bg-floor: #1a1a1a;
+  --bg-panel: #222;
+  --bg-surface: #2a2a2a;
+  --bg-elevated: #333;
+  --orange: #ff6600;
+  --orange-glow: #ff8833;
+  --orange-dim: #cc5500;
+  --green: #4caf50;
+  --green-bright: #66cc66;
+  --red: #f44336;
+  --amber: #ffc107;
+  --blue: #42a5f5;
+  --text-primary: #e0e0e0;
+  --text-secondary: #999;
+  --text-dim: #666;
+  --border: #444;
+  --border-dim: #333;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg-floor);
+  color: var(--text-primary);
+  font-family: 'Courier New', 'Consolas', monospace;
+  min-height: 100vh;
+}
+
+/* Conveyor Belt Animation */
+@keyframes belt-scroll {
+  from { background-position: 0 0; }
+  to { background-position: 40px 0; }
+}
+
+@keyframes belt-scroll-down {
+  from { background-position: 0 0; }
+  to { background-position: 0 40px; }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 5px var(--orange); }
+  50% { box-shadow: 0 0 15px var(--orange), 0 0 30px rgba(255, 102, 0, 0.3); }
+}
+
+@keyframes checkpoint-pulse {
+  0%, 100% { box-shadow: 0 0 5px var(--amber); }
+  50% { box-shadow: 0 0 15px var(--amber), 0 0 25px rgba(255, 193, 7, 0.3); }
+}
+
+.conveyor-belt {
+  background:
+    repeating-linear-gradient(
+      90deg,
+      #333 0px, #333 8px,
+      #2a2a2a 8px, #2a2a2a 12px,
+      #383838 12px, #383838 20px,
+      #2a2a2a 20px, #2a2a2a 24px,
+      #333 24px, #333 32px,
+      #2a2a2a 32px, #2a2a2a 36px,
+      #383838 36px, #383838 40px
+    );
+  animation: belt-scroll 1.5s linear infinite;
+  height: 6px;
+  border-radius: 3px;
+}
+
+.conveyor-belt-vertical {
+  background:
+    repeating-linear-gradient(
+      180deg,
+      #333 0px, #333 8px,
+      #2a2a2a 8px, #2a2a2a 12px,
+      #383838 12px, #383838 20px,
+      #2a2a2a 20px, #2a2a2a 24px
+    );
+  animation: belt-scroll-down 1.5s linear infinite;
+  width: 6px;
+  border-radius: 3px;
+}
+
+/* Stage Machine — icon-only box */
+.stage-machine {
+  background: var(--bg-surface);
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  padding: 5px;
+  text-align: center;
+  position: relative;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stage-machine:hover {
+  border-color: var(--orange);
+}
+
+.stage-machine.active {
+  border-color: var(--orange);
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+.stage-machine.checkpoint {
+  border-color: var(--amber);
+  border-style: dashed;
+}
+
+.stage-machine.checkpoint.waiting {
+  animation: checkpoint-pulse 2s ease-in-out infinite;
+}
+
+.stage-machine.completed {
+  border-color: var(--green);
+}
+
+.stage-machine .stage-icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Project Item Card */
+.project-item {
+  background: var(--bg-panel);
+  border-left: 3px solid var(--text-dim);
+  border-radius: 0 3px 3px 0;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  max-width: 200px;
+}
+
+.project-item:hover {
+  background: var(--bg-elevated);
+  transform: translateX(2px);
+}
+
+.project-item.status-completed { border-left-color: var(--green); }
+.project-item.status-in_progress { border-left-color: var(--blue); }
+.project-item.status-waiting { border-left-color: var(--amber); }
+.project-item.status-draft { border-left-color: var(--text-dim); }
+
+.project-item .project-name {
+  font-size: 10px;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.project-item .project-meta {
+  font-size: 9px;
+  color: var(--text-secondary);
+  display: flex;
+  gap: 6px;
+  margin-top: 1px;
+}
+
+/* Level Badge */
+.level-badge {
+  display: inline-block;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 0 3px;
+  font-size: 9px;
+  color: var(--text-secondary);
+  font-weight: bold;
+}
+
+.level-badge.level-1 { color: var(--green); border-color: var(--green); }
+.level-badge.level-2 { color: var(--orange); border-color: var(--orange); }
+.level-badge.level-3 { color: var(--red); border-color: var(--red); }
+
+/* Milestone Progress */
+.milestone-progress {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+/* Production Stats Panel */
+.stats-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-dim);
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.stats-panel .panel-title {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--orange);
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--border-dim);
+  padding-bottom: 4px;
+}
+
+.stat-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-dim);
+  border-radius: 4px;
+  padding: 8px;
+  text-align: center;
+}
+
+.stat-card .stat-value {
+  font-size: 22px;
+  font-weight: bold;
+  color: var(--orange);
+  line-height: 1;
+}
+
+.stat-card .stat-label {
+  font-size: 9px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 3px;
+}
+
+/* Stage Progress Bar (detail page) */
+.stage-progress-bar {
+  display: flex;
+  gap: 2px;
+  margin: 16px 0;
+}
+
+.stage-progress-bar .stage-pip {
+  flex: 1;
+  height: 8px;
+  background: var(--bg-elevated);
+  border-radius: 4px;
+  position: relative;
+}
+
+.stage-pip.completed { background: var(--green); }
+.stage-pip.active { background: var(--blue); }
+.stage-pip.approved { background: var(--green); }
+
+/* Milestone Timeline (detail page) */
+.milestone-timeline {
+  position: relative;
+  padding-left: 30px;
+}
+
+.milestone-timeline::before {
+  content: '';
+  position: absolute;
+  left: 12px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--bg-elevated);
+  border-radius: 2px;
+}
+
+.milestone-entry {
+  position: relative;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-dim);
+  border-radius: 4px;
+}
+
+.milestone-entry::before {
+  content: '';
+  position: absolute;
+  left: -24px;
+  top: 14px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--bg-elevated);
+  border: 2px solid var(--border);
+}
+
+.milestone-entry.completed::before {
+  background: var(--green);
+  border-color: var(--green-bright);
+}
+
+.milestone-entry.active::before {
+  background: var(--blue);
+  border-color: var(--blue);
+}
+
+.milestone-entry .milestone-id {
+  font-weight: bold;
+  color: var(--orange);
+  font-size: 12px;
+}
+
+.milestone-entry .milestone-desc {
+  color: var(--text-primary);
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.milestone-entry .milestone-timing {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* Header */
+.header {
+  background: var(--bg-panel);
+  border-bottom: 2px solid var(--orange-dim);
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header .logo {
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--orange);
+  letter-spacing: 1px;
+}
+
+.header .logo span {
+  color: var(--text-secondary);
+  font-weight: normal;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.btn:hover {
+  background: var(--bg-elevated);
+  border-color: var(--orange);
+}
+
+.btn.active {
+  background: var(--orange-dim);
+  border-color: var(--orange);
+  color: #fff;
+}
+
+/* Quality/DORA panels */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.data-table th {
+  text-align: left;
+  color: var(--text-secondary);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border-dim);
+}
+
+.data-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border-dim);
+  color: var(--text-primary);
+}
+
+.data-table tr:last-child td { border-bottom: none; }
+
+.verdict-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.verdict-pass { background: rgba(76, 175, 80, 0.2); color: var(--green); border: 1px solid var(--green); }
+.verdict-warn { background: rgba(255, 193, 7, 0.2); color: var(--amber); border: 1px solid var(--amber); }
+.verdict-fail { background: rgba(244, 67, 54, 0.2); color: var(--red); border: 1px solid var(--red); }
+.verdict-none { background: rgba(102, 102, 102, 0.2); color: var(--text-secondary); border: 1px solid var(--border); }
+
+/* No data state */
+.no-data {
+  color: var(--text-dim);
+  font-style: italic;
+  font-size: 12px;
+  text-align: center;
+  padding: 20px;
+}

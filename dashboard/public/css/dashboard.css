@@ -1,0 +1,267 @@
+/* Layout */
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 12px 16px;
+}
+
+/* Belt Line — horizontal row of stages */
+.assembly-line {
+  margin: 16px 0;
+}
+
+.belt-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 8px 0;
+}
+
+.belt-seg {
+  display: flex;
+  align-items: center;
+}
+
+.belt-seg .conveyor-belt {
+  width: 24px;
+}
+
+/* Stage slot (icon + label) */
+.stage-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.stage-slot:hover .stage-machine {
+  border-color: var(--orange);
+}
+
+.stage-slot.open .stage-machine {
+  border-color: var(--orange);
+  box-shadow: 0 0 10px rgba(255, 102, 0, 0.4);
+}
+
+.stage-tag {
+  font-size: 8px;
+  color: var(--text-dim);
+  margin-top: 2px;
+  letter-spacing: 0.5px;
+}
+
+/* Count badge */
+.count-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: var(--orange);
+  color: #000;
+  font-size: 9px;
+  font-weight: bold;
+  min-width: 14px;
+  height: 14px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  line-height: 1;
+}
+
+.count-badge.badge-green {
+  background: var(--green);
+}
+
+/* Popover panel */
+.popover-area {
+  display: none;
+  margin-top: 8px;
+}
+
+.popover-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px;
+  animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.popover-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-dim);
+}
+
+.popover-title {
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--orange);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.popover-count {
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.popover-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 4px;
+}
+
+/* Mini progress pips on project cards */
+.pip-bar {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+
+.pip {
+  width: 6px;
+  height: 3px;
+  background: var(--bg-elevated);
+  border-radius: 1px;
+}
+
+.pip.pip-done {
+  background: var(--green);
+}
+
+.pip.pip-current {
+  background: var(--blue);
+}
+
+/* Project item layout tweaks for popover */
+.project-item-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.project-item-bottom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* Page Header with breadcrumb */
+.page-header {
+  margin-bottom: 16px;
+}
+
+.breadcrumb {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.breadcrumb a {
+  color: var(--orange);
+  text-decoration: none;
+}
+
+.breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+.page-title {
+  font-size: 18px;
+  color: var(--text-primary);
+}
+
+.page-subtitle {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 3px;
+}
+
+/* Detail Page Layout */
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.detail-grid .full-width {
+  grid-column: 1 / -1;
+}
+
+/* Loading state */
+.loading {
+  text-align: center;
+  padding: 30px;
+  color: var(--text-dim);
+}
+
+.loading::after {
+  content: '...';
+  animation: dots 1.5s steps(3, end) infinite;
+}
+
+@keyframes dots {
+  0% { content: '.'; }
+  33% { content: '..'; }
+  66% { content: '...'; }
+}
+
+/* Auto-refresh indicator */
+.auto-refresh-indicator {
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.auto-refresh-indicator.active {
+  color: var(--green);
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+  .belt-seg .conveyor-belt {
+    width: 12px;
+  }
+
+  .popover-items {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 500px) {
+  .container {
+    padding: 8px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "pipeline-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Factorio-themed pipeline dashboard",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "glob": "^11.0.0",
+    "gray-matter": "^4.0.3"
+  }
+}

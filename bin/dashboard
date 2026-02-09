@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+DASHBOARD_DIR="$SCRIPT_DIR/../dashboard"
+
+# Parse --port flag or PORT env
+PORT="${PORT:-3000}"
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --port) PORT="$2"; shift 2;;
+    *) shift;;
+  esac
+done
+
+# Install dependencies if needed
+if [ ! -d "$DASHBOARD_DIR/node_modules" ]; then
+  echo "Installing dashboard dependencies..."
+  cd "$DASHBOARD_DIR" && npm install --silent
+fi
+
+PORT="$PORT" node "$DASHBOARD_DIR/server.js"
