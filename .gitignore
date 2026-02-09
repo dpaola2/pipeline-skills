@@ -8,3 +8,6 @@ inbox/
 pipeline.md
 pipelines/*.md
 !pipelines/README.md
+
+# Claude Code local settings
+.claude/settings.json
