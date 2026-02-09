@@ -16,7 +16,7 @@
 | ROAD-06 | Project Document Linking | Developer experience | Planned |
 | ROAD-07 | ADR Integration | Knowledge capture | Planned |
 | ROAD-08 | Linear Automation | Orchestration | Planned |
-| ROAD-09 | Stage 6 — Code Review | Quality assurance | Planned |
+| ROAD-09 | Stage 6 — Code Review | Quality assurance | **Done** |
 | ROAD-10 | Post-QA Iteration / Re-entry | Pipeline lifecycle | Planned |
 | ROAD-11 | Ludicrous Speed Mode | Orchestration | Planned |
 | ROAD-12 | Multi-Product Support + Setup Repo | Portability | **Done** |
@@ -295,12 +295,19 @@ But it also introduces **branch stacking complexity** — if Project A's branch 
 
 ### ROAD-09: Stage 6 — Automated Code Review
 
-**Status:** Planned (designed, not built)
+**Status:** Done
 **Theme:** Quality assurance
 
 Build the Stage 6 skill for automated code review against the target repo's AGENTS.md and the project's architecture proposal.
 
-**Why:** Currently code review is manual. An automated first-pass review that checks for convention violations, security scoping issues, and architecture drift would catch mechanical issues before human review.
+**What was built:**
+- `/stage6-review <project-slug>` — reviews the full branch diff after all milestones complete
+- 6 review dimensions: convention compliance, security, spec compliance, cross-platform consistency (V1 no-op), code quality, test coverage
+- Categorized findings (Blocker / Major / Minor / Note) with specific file:line references
+- Verdict: APPROVED (zero Blockers/Majors) or CHANGES REQUESTED
+- Output: `review-report.md` with DORA frontmatter
+
+**V1 scope:** Report-only (no auto-fix loop), Rails-only (cross-platform dimension is a no-op), no Linear integration, no re-review tracking.
 
 **Related:** `docs/gap-analysis.md` § 3.6
 

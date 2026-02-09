@@ -193,21 +193,22 @@ The implementation agent works milestone-by-milestone, writing code to make the 
 
 ---
 
-### Stage 6: Review
+### Stage 6: Review *(Implemented)*
 **Agent Type:** Code reviewer
-**Input:** PR diff + AGENTS.md + Spec
-**Output:** Review feedback (approve or request changes)
+**Skill:** `/stage6-review <project-slug>`
+**Input:** Branch diff + conventions file + architecture proposal + gameplan + progress + test-coverage-matrix
+**Output:** Review Report (`projects/<slug>/review-report.md`)
 
-The review agent examines each PR against conventions, security requirements, and the spec.
+The review agent examines the full branch diff against conventions, security requirements, the approved spec, and code quality standards. Produces a report with categorized findings and a verdict.
 
-- Checks code against `AGENTS.md` conventions
-- Validates security (scoped queries, authorization, no XSS/injection)
-- Verifies consistency with the approved spec
-- Checks cross-platform payload compatibility
-- Validates test coverage against acceptance criteria
-- Flags deviations from architecture proposal
-
-**Loop:** If issues found, returns to Stage 5 for fixes. This loop is automated for convention/style issues. Architectural concerns escalate to human review.
+- Checks code against conventions file (e.g., `AGENTS.md`) — naming, file organization, architecture patterns, code style
+- Validates security — scoped queries, authorization, injection vulnerabilities, secrets, authentication
+- Verifies spec compliance — endpoints, data model, acceptance criteria, scope creep, missing features
+- Checks cross-platform consistency (V1: Rails-only, dimension is a no-op)
+- Checks code quality — debugging artifacts, TODOs, dead code, N+1 patterns, complexity
+- Validates test coverage against acceptance criteria and test-coverage-matrix
+- Categorizes findings by severity (Blocker / Major / Minor / Note)
+- Verdict: APPROVED (zero Blockers and Majors) or CHANGES REQUESTED
 
 **See:** `docs/stages/06-review.md` for full specification
 

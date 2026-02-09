@@ -142,10 +142,10 @@ The pipeline shifts the constraint from execution to clarity. Everything in this
 - [x] ~~Convention for agent commit messages~~ — Stage 5 skill defines commit message format
 
 ### 3.6 Review Stage Gaps
-- [ ] Review criteria not formalized beyond AGENTS.md
-- [ ] No automated way to check cross-platform payload consistency
-- [ ] Escalation criteria (when does review escalate to human?) not defined
-- [ ] **Stage 6 skill not yet built** — review is currently manual
+- [x] ~~Review criteria not formalized beyond AGENTS.md~~ — Stage 6 skill checks 6 dimensions with defined severity levels
+- [ ] No automated way to check cross-platform payload consistency (V1 is Rails-only; dimension 4 is a no-op)
+- [x] ~~Escalation criteria (when does review escalate to human?) not defined~~ — Blocker/Major findings → CHANGES REQUESTED; human decides next steps
+- [x] ~~**Stage 6 skill not yet built**~~ — `/stage6-review <slug>` implemented
 
 ### 3.7 QA Plan Stage Gaps
 - [x] ~~QA plan format not defined~~ — `templates/qa-plan.md` exists, validated on first project
@@ -200,12 +200,12 @@ This means:
 1. ~~Prototype Stage 4 (Test Generation)~~ — Done. 7 test files, 123 test cases.
 2. ~~Prototype Stage 5 (Implementation)~~ — Done. 8 milestones, 17 new files, all tests passing.
 3. ~~Prototype Stage 7 (QA Plan)~~ — Done. 40 manual test scenarios.
-4. Stage 6 (Review) — **Not yet built.** Code review was manual for the first project.
+4. ~~Stage 6 (Review)~~ — Done. `/stage6-review <slug>` produces `review-report.md`.
 
 ### Phase 3: Orchestration (Current)
 
 Now that individual stages work well when run manually:
-1. Build Stage 6 (Review) skill — automated code review against AGENTS.md
+1. ~~Build Stage 6 (Review) skill~~ — Done (ROAD-09)
 2. Build orchestration layer (Claude Code custom commands → Agent SDK)
 3. Wire up Linear integration (automated ticket creation, status transitions)
 4. Run a second project end-to-end to validate pipeline repeatability
