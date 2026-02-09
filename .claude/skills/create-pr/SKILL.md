@@ -239,6 +239,21 @@ EOF
 
 Use a HEREDOC for the body to preserve formatting.
 
+### 7. Update Progress File with PR Timing
+
+After the PR is created, capture the timestamp and PR URL, then update `<projects-path>/$ARGUMENTS/progress.md` frontmatter:
+
+1. Capture the timestamp: `date +"%Y-%m-%dT%H:%M:%S%z"` — save as PR_CREATED_AT.
+2. Extract the PR URL from the `gh pr create` output.
+3. If progress.md has YAML frontmatter (between `---` markers), use the Edit tool to add these fields before the closing `---`:
+
+```yaml
+pipeline_pr_created_at: "<PR_CREATED_AT>"
+pipeline_pr_url: "<PR_URL>"
+```
+
+If progress.md has no frontmatter, prepend one with the stage 5 fields plus the PR fields.
+
 ## What NOT To Do
 
 - **Do not write implementation code.** The only modifications this skill makes are auto-fix commits from post-flight checks.

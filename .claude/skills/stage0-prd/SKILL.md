@@ -24,6 +24,16 @@ You **generate a structured PRD** from raw input notes (feature descriptions, Sl
 
 ## Step-by-Step Procedure
 
+### Step 0: Capture Start Time
+
+Run this command via Bash and save the result as STARTED_AT:
+
+```bash
+date +"%Y-%m-%dT%H:%M:%S%z"
+```
+
+You will use this timestamp in the output frontmatter.
+
 ### Step 1: Read Pipeline Config and List Inbox
 
 First, read `pipeline.md` to extract:
@@ -150,7 +160,21 @@ Use these markers consistently:
    mkdir -p <projects-path>/<slug>
    ```
 
-2. Write the generated PRD to `<projects-path>/<slug>/prd.md`
+2. Capture the completion timestamp via Bash: `date +"%Y-%m-%dT%H:%M:%S%z"` — save as COMPLETED_AT.
+
+3. Prepend YAML frontmatter to the generated PRD content before writing:
+
+```yaml
+---
+pipeline_stage: 0
+pipeline_stage_name: prd
+pipeline_project: "<slug>"
+pipeline_started_at: "<STARTED_AT>"
+pipeline_completed_at: "<COMPLETED_AT>"
+---
+```
+
+4. Write the generated PRD (with frontmatter) to `<projects-path>/<slug>/prd.md`
 
 3. Do **NOT** move or delete the inbox file — the user manages their own inbox.
 

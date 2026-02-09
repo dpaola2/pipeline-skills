@@ -1,3 +1,11 @@
+---
+pipeline_stage: 0
+pipeline_stage_name: prd
+pipeline_project: "[slug]"
+pipeline_started_at: "[ISO 8601 timestamp]"
+pipeline_completed_at: "[ISO 8601 timestamp]"
+---
+
 # [Feature Name] - PRD
 
 > **Status:** Draft | Review | Approved

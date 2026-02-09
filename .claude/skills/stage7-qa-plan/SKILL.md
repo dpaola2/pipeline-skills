@@ -39,6 +39,12 @@ Read `<projects-path>/$ARGUMENTS/progress.md` and check the **Milestone Status**
 
 ## Before You Start
 
+**First**, capture the start timestamp by running this via Bash and saving the result as STARTED_AT:
+
+```bash
+date +"%Y-%m-%dT%H:%M:%S%z"
+```
+
 After passing the pre-flight check, read ALL of these files:
 
 1. The pipeline config at `pipeline.md` — get the primary repository path, the **projects path** (from Work Directory → Projects), and other repo locations
@@ -102,7 +108,21 @@ From the architecture proposal and progress file:
 
 ### 6. Write the QA Plan
 
-Write to `<projects-path>/$ARGUMENTS/qa-plan.md` using the template from `templates/qa-plan.md`.
+Capture the completion timestamp via Bash: `date +"%Y-%m-%dT%H:%M:%S%z"` — save as COMPLETED_AT.
+
+Prepend YAML frontmatter to the QA plan content before writing:
+
+```yaml
+---
+pipeline_stage: 7
+pipeline_stage_name: qa-plan
+pipeline_project: "$ARGUMENTS"
+pipeline_started_at: "<STARTED_AT>"
+pipeline_completed_at: "<COMPLETED_AT>"
+---
+```
+
+Write the QA plan (with frontmatter) to `<projects-path>/$ARGUMENTS/qa-plan.md` using the template from `templates/qa-plan.md`.
 
 For the **Manual Testing Checklist** section, organize tests by feature area (matching the gameplan's milestones). For each test:
 - Write a clear scenario description

@@ -42,6 +42,18 @@ This gate is non-negotiable.
 
 ## Before You Start
 
+**First**, capture the start timestamp by running this via Bash and saving the result as STARTED_AT:
+
+```bash
+date +"%Y-%m-%dT%H:%M:%S%z"
+```
+
+**Then**, backfill the gameplan approval timestamp: if `<projects-path>/$ARGUMENTS/gameplan.md` has YAML frontmatter with an empty `pipeline_approved_at` field, fill it now:
+
+1. Look for the approval date in the gameplan's Approval Checklist section (the `### Date:` field). Parse it into ISO 8601 format.
+2. If no date is found in the checklist, use the current timestamp: `date +"%Y-%m-%dT%H:%M:%S%z"`.
+3. Use the Edit tool to update the `pipeline_approved_at:` line in the frontmatter with the resolved timestamp (quoted).
+
 After passing the pre-flight check, read these files:
 
 1. The pipeline config at `pipeline.md` — get the primary repository path, the **projects path** (from Work Directory → Projects), and other repo locations
@@ -160,6 +172,20 @@ Check the PRD header for the project level:
 - **Level 3** (all platforms): Also write iOS and Android tests per the stage spec. (repo paths from pipeline.md Target Repositories)
 
 ### 7. Write the Coverage Matrix
+
+Capture the completion timestamp via Bash: `date +"%Y-%m-%dT%H:%M:%S%z"` — save as COMPLETED_AT.
+
+Prepend YAML frontmatter to the coverage matrix content before writing:
+
+```yaml
+---
+pipeline_stage: 4
+pipeline_stage_name: test-generation
+pipeline_project: "$ARGUMENTS"
+pipeline_started_at: "<STARTED_AT>"
+pipeline_completed_at: "<COMPLETED_AT>"
+---
+```
 
 Write to `<projects-path>/$ARGUMENTS/test-coverage-matrix.md`:
 

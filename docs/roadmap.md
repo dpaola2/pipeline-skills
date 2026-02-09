@@ -26,7 +26,7 @@
 | ROAD-16 | T-Shirt Size Estimates | Developer experience | **Done** |
 | ROAD-17 | CI Failure Detection + Auto-Fix | Quality assurance | Planned |
 | ROAD-18 | Gameplan Coherence Checklist | Quality assurance | **Done** |
-| ROAD-19 | DORA Metrics (Before/After) | Measurement | Planned |
+| ROAD-19 | DORA Metrics (Before/After) | Measurement | **Done** (v1) |
 | ROAD-20 | Code Complexity Analysis (Before/After) | Measurement | Planned |
 | ROAD-21 | Pipeline Dashboard (Factorio Theme) | Visibility | Planned |
 | ROAD-22 | Pipeline Status MCP Server | Visibility | Planned |
@@ -607,7 +607,7 @@ Option B: A separate `/verify-gameplan <slug>` skill that can be run independent
 
 ### ROAD-19: DORA Metrics (Before/After Pipeline)
 
-**Status:** Planned
+**Status:** Done (v1)
 **Theme:** Measurement
 
 Track the four DORA metrics before and after pipeline adoption to measure whether the pipeline actually improves development outcomes.
@@ -643,17 +643,33 @@ The "before" baseline is the pre-pipeline development process. For OrangeQC, thi
 
 **Implementation approach:**
 
-1. **v1 (manual):** Create a spreadsheet or markdown table in the pipeline repo that tracks these metrics per project. Fill in manually after each project completes. Low effort, immediate value.
-2. **v2 (semi-automated):** A `/metrics <slug>` skill that pulls git timestamps, PR data (`gh` CLI), and CI results to auto-populate most fields. Human fills in failure/recovery data.
-3. **v3 (automated):** Integrate with deploy hooks and incident tracking for fully automated capture.
+1. **v1 (done — frontmatter-based):** Every pipeline stage now embeds machine-readable YAML frontmatter with `pipeline_started_at` and `pipeline_completed_at` timestamps into its output document. The `/metrics <slug>` skill reads all frontmatter, enriches with git/PR data, and computes stage-level timing, human review wait times, and total lead time. The `/backfill-timing <slug>` skill retrofits frontmatter onto existing projects using git commit timestamps, document header dates, and file modification times. This replaces the originally-planned manual spreadsheet — timing data is captured automatically as a side effect of running the pipeline.
+2. **v2 (planned):** Integrate with deploy hooks and CI results for deployment frequency and change failure rate. Human fills in recovery data.
+3. **v3 (planned):** Fully automated capture with incident tracking integration.
+
+**What was built (v1):**
+- **YAML frontmatter** on all pipeline output documents (`pipeline_stage`, `pipeline_started_at`, `pipeline_completed_at`)
+- **Approval timestamps** (`pipeline_approved_at`) on architecture-proposal.md and gameplan.md, backfilled by the downstream stage
+- **Per-milestone timing** in progress.md frontmatter (`pipeline_m1_started_at`, `pipeline_m1_completed_at`, etc.)
+- **PR timing** in progress.md (`pipeline_pr_created_at`, `pipeline_pr_url`), added by the `/create-pr` skill
+- **`/backfill-timing <slug>`** skill — retrofits frontmatter onto pre-existing projects from git commits, document dates, and file timestamps
+- **`/metrics <slug>`** skill — reads all frontmatter, computes stage timeline, active agent time, human review time, idle time, and agent efficiency ratio
+- **Templates updated** — all 5 output templates include frontmatter placeholder blocks
+
+**Key design decisions:**
+- Flat `pipeline_` prefixed keys (not nested YAML) — simpler grep/awk parsing, better Obsidian Properties rendering
+- Frontmatter (not blockquotes or HTML comments) — standard format, parseable, rendered by GitHub/Obsidian
+- Backfilled documents marked with `pipeline_backfilled: true` and source attribution
+- `started_at` omitted on backfilled documents (unrecoverable)
+- Agent Efficiency = active agent time / (agent + idle) — the key leverage metric
 
 **Considerations:**
-- Start with v1 — the discipline of tracking is more valuable than the automation
 - Small sample size is a real limitation. OrangeQC has 3 pipeline projects so far. Statistical significance requires patience.
 - DORA metrics measure the delivery *system*, not just the pipeline. Improvements may come from better PRDs, faster reviews, or CI improvements — not just the agent doing the coding
 - Lead Time is the most directly measurable and the most likely to show dramatic improvement (agent implements in minutes vs. agency implements over days/weeks)
+- Deployment Frequency and Change Failure Rate require v2 (deploy hook integration) — not captured by frontmatter alone
 
-**Related:** ROAD-08 (Linear Automation — milestone transitions provide timing data), ROAD-17 (CI Auto-Fix — affects change failure rate)
+**Related:** ROAD-08 (Linear Automation — milestone transitions provide timing data), ROAD-17 (CI Auto-Fix — affects change failure rate), ROAD-21 (Pipeline Dashboard — will consume metrics data)
 
 ---
 

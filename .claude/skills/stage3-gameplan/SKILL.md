@@ -37,6 +37,12 @@ This gate is non-negotiable.
 
 ## Before You Start
 
+**First**, capture the start timestamp by running this via Bash and saving the result as STARTED_AT:
+
+```bash
+date +"%Y-%m-%dT%H:%M:%S%z"
+```
+
 After passing the pre-flight check, read these files:
 
 1. The pipeline config at `pipeline.md` — get the primary repository path, the **projects path** (from Work Directory → Projects), and other repo locations
@@ -111,16 +117,39 @@ Complete every section of the non-functional checklist in the template:
 - Feature flag strategy
 - Done criteria for each phase
 
-### 7. Write the Engineering Gameplan
+### 7. Backfill Architecture Approval Timestamp
 
-Write to `<projects-path>/$ARGUMENTS/gameplan.md` using the template from `templates/gameplan.md`.
+If `<projects-path>/$ARGUMENTS/architecture-proposal.md` has YAML frontmatter with an empty `pipeline_approved_at` field, fill it now:
+
+1. Look for the approval date in the architecture proposal's Approval Checklist section (the `### Date:` field). Parse it into ISO 8601 format.
+2. If no date is found in the checklist, use the current timestamp: `date +"%Y-%m-%dT%H:%M:%S%z"`.
+3. Use the Edit tool to update the `pipeline_approved_at:` line in the frontmatter with the resolved timestamp (quoted).
+
+### 8. Write the Engineering Gameplan
+
+Capture the completion timestamp via Bash: `date +"%Y-%m-%dT%H:%M:%S%z"` — save as COMPLETED_AT.
+
+Prepend YAML frontmatter to the gameplan content before writing:
+
+```yaml
+---
+pipeline_stage: 3
+pipeline_stage_name: gameplan
+pipeline_project: "$ARGUMENTS"
+pipeline_started_at: "<STARTED_AT>"
+pipeline_completed_at: "<COMPLETED_AT>"
+pipeline_approved_at:
+---
+```
+
+Write the gameplan (with frontmatter) to `<projects-path>/$ARGUMENTS/gameplan.md` using the template from `templates/gameplan.md`.
 
 Update the header to reference the approved architecture:
 - Set "Approved Architecture" to the path of the architecture proposal
 
-**Important:** Include the Approval Checklist section from the template (with Status: Pending). This is the gate Stage 4 checks before generating tests.
+**Important:** Include the Approval Checklist section from the template (with Status: Pending). This is the gate Stage 4 checks before generating tests. The `pipeline_approved_at` field is left empty — Stage 4 will fill it when it reads the approval date.
 
-### 8. Coherence Verification (MANDATORY)
+### 9. Coherence Verification (MANDATORY)
 
 After writing the gameplan, re-read it alongside the PRD and architecture proposal and run every check below. **Fix any failures before presenting the gameplan to the user.** These checks prevent errors that propagate through Stage 4 (tests), Stage 5 (implementation), and Stage 7 (QA plan).
 

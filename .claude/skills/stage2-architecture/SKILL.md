@@ -28,7 +28,13 @@ You are a **technical designer**. You propose the data model, API endpoints, mig
 
 ## Before You Start
 
-Read these files in order:
+**First**, capture the start timestamp by running this via Bash and saving the result as STARTED_AT:
+
+```bash
+date +"%Y-%m-%dT%H:%M:%S%z"
+```
+
+Then read these files in order:
 
 1. The pipeline config at `pipeline.md` — get the primary repository path, the **projects path** (from Work Directory → Projects), and other repo locations
 2. The repo config at `PIPELINE.md` in the primary repository (path from `pipeline.md`) — understand framework, directory structure, API conventions, security model, and all repo-specific details
@@ -130,9 +136,24 @@ For significant design decisions:
 
 ### 10. Write the Architecture Proposal
 
-Write to `<projects-path>/$ARGUMENTS/architecture-proposal.md` using the template from `templates/architecture-proposal.md`.
+Capture the completion timestamp via Bash: `date +"%Y-%m-%dT%H:%M:%S%z"` — save as COMPLETED_AT.
 
-**Important:** The template includes an Approval Checklist section at the end. Leave the Status as "Pending" — the human reviewer will update it.
+Prepend YAML frontmatter to the proposal content before writing:
+
+```yaml
+---
+pipeline_stage: 2
+pipeline_stage_name: architecture
+pipeline_project: "$ARGUMENTS"
+pipeline_started_at: "<STARTED_AT>"
+pipeline_completed_at: "<COMPLETED_AT>"
+pipeline_approved_at:
+---
+```
+
+Write the proposal (with frontmatter) to `<projects-path>/$ARGUMENTS/architecture-proposal.md` using the template from `templates/architecture-proposal.md`.
+
+**Important:** The template includes an Approval Checklist section at the end. Leave the Status as "Pending" — the human reviewer will update it. The `pipeline_approved_at` field is left empty — Stage 3 will fill it when it reads the approval date.
 
 ## Referencing the Codebase
 

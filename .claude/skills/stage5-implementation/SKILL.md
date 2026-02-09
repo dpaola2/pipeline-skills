@@ -117,6 +117,12 @@ Read `<projects-path>/PROJECT_SLUG/progress.md` if it exists. This file tracks m
 
 ## Before You Start
 
+**First**, capture the start timestamp by running this via Bash and saving the result as STARTED_AT:
+
+```bash
+date +"%Y-%m-%dT%H:%M:%S%z"
+```
+
 After passing all pre-flight checks, read these files:
 
 1. The pipeline config at `pipeline.md` — get the primary repository path, the **projects path** (from Work Directory → Projects), and other repo locations
@@ -362,15 +368,32 @@ If you have no new insights for this milestone, skip this step and note "No new 
 
 ### 11. Update Progress File
 
-After committing to the primary repository, update the progress file in the **projects directory** (from `pipeline.md` Work Directory — NOT the primary repository).
+After committing to the primary repository, capture the completion timestamp via Bash: `date +"%Y-%m-%dT%H:%M:%S%z"` — save as COMPLETED_AT.
+
+Update the progress file in the **projects directory** (from `pipeline.md` Work Directory — NOT the primary repository).
 
 **File:** `<projects-path>/PROJECT_SLUG/progress.md`
 
-If the file doesn't exist yet, create it with the full structure. If it already exists, update the **Milestone Status** table and add/replace the milestone entry section.
+If the file doesn't exist yet, create it with the full structure (including frontmatter). If it already exists, update the **Milestone Status** table, add/replace the milestone entry section, and update the frontmatter.
+
+**Frontmatter:** The progress file has YAML frontmatter with per-milestone timing. Each milestone invocation adds its own `pipeline_mN_started_at` / `pipeline_mN_completed_at` pair.
+
+- If creating the file for the first time, include the frontmatter block.
+- If the file already exists, read the existing frontmatter and add the new milestone timing fields (do not overwrite existing milestone fields). Use the Edit tool to update the frontmatter.
+
+The milestone key in frontmatter uses lowercase (e.g., `pipeline_m1_started_at`, `pipeline_m2_completed_at`).
 
 The progress file has this structure:
 
 ```markdown
+---
+pipeline_stage: 5
+pipeline_stage_name: implementation
+pipeline_project: "PROJECT_SLUG"
+pipeline_m1_started_at: "<STARTED_AT>"
+pipeline_m1_completed_at: "<COMPLETED_AT>"
+---
+
 # Implementation Progress — PROJECT_SLUG
 
 | Field | Value |

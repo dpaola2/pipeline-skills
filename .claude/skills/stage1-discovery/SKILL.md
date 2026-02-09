@@ -26,7 +26,13 @@ You are a **codebase explorer**. Your job is to understand how things work TODAY
 
 ## Before You Start
 
-Read these files in order:
+**First**, capture the start timestamp by running this via Bash and saving the result as STARTED_AT:
+
+```bash
+date +"%Y-%m-%dT%H:%M:%S%z"
+```
+
+Then read these files in order:
 
 1. The pipeline config at `pipeline.md` — get the primary repository path, the **projects path** (from Work Directory → Projects), and other repo locations
 2. The repo config at `PIPELINE.md` in the primary repository (path from `pipeline.md`) — understand branch conventions, framework, directory structure, test commands, and all repo-specific details
@@ -102,7 +108,21 @@ List ambiguities the PRD doesn't resolve and that code exploration didn't clarif
 
 ### 8. Write the Discovery Report
 
-Write the report to `<projects-path>/$ARGUMENTS/discovery-report.md` using the template structure from `templates/discovery-report.md`.
+Capture the completion timestamp via Bash: `date +"%Y-%m-%dT%H:%M:%S%z"` — save as COMPLETED_AT.
+
+Prepend YAML frontmatter to the report content before writing:
+
+```yaml
+---
+pipeline_stage: 1
+pipeline_stage_name: discovery
+pipeline_project: "$ARGUMENTS"
+pipeline_started_at: "<STARTED_AT>"
+pipeline_completed_at: "<COMPLETED_AT>"
+---
+```
+
+Write the report (with frontmatter) to `<projects-path>/$ARGUMENTS/discovery-report.md` using the template structure from `templates/discovery-report.md`.
 
 ## What NOT To Do
 
