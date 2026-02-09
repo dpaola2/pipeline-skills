@@ -205,6 +205,114 @@
   border-top: 2px solid var(--text-dim);
 }
 
+/* Legend Panel */
+.legend-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-dim);
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.legend-panel .panel-title {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--orange);
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--border-dim);
+  padding-bottom: 4px;
+}
+
+.legend-content {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.legend-stages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  flex: 1;
+}
+
+.legend-stage {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.legend-icon {
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border);
+  border-radius: 3px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.legend-icon .stage-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.legend-icon.checkpoint {
+  border-color: var(--amber);
+  border-style: dashed;
+}
+
+.legend-stage-info {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.legend-label {
+  font-size: 9px;
+  font-weight: bold;
+  color: var(--orange);
+}
+
+.legend-name {
+  font-size: 9px;
+  color: var(--text-secondary);
+}
+
+.legend-statuses {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.legend-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  color: var(--text-secondary);
+}
+
+.legend-swatch {
+  display: inline-block;
+  width: 16px;
+  height: 8px;
+  border-radius: 2px;
+  border: 1px solid var(--border);
+}
+
+.swatch-active { background: var(--blue); border-color: var(--blue); }
+.swatch-waiting { background: var(--amber); border-color: var(--amber); }
+.swatch-draft { background: var(--text-dim); border-color: var(--text-dim); }
+.swatch-complete { background: var(--green); border-color: var(--green); }
+
 /* Stats Grid */
 .stats-grid {
   display: grid;

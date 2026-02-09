@@ -238,4 +238,30 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+function renderLegend() {
+  const container = document.getElementById('legend-stages');
+  // Deduplicate: show each unique stage concept once
+  const seen = new Set();
+  const legendItems = STAGES.filter(s => {
+    const key = s.checkpoint ? 'checkpoint' : s.pr ? 'pr' : s.chest ? 'chest' : s.stage;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  container.innerHTML = legendItems.map(s => {
+    const label = s.label || '✓';
+    return `<div class="legend-stage">
+      <div class="legend-icon${s.checkpoint ? ' checkpoint' : ''}">
+        <svg class="stage-icon"><use href="#${s.icon}"/></svg>
+      </div>
+      <div class="legend-stage-info">
+        <span class="legend-label">${label}</span>
+        <span class="legend-name">${s.name}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+renderLegend();
 loadData();
