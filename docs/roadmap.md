@@ -35,6 +35,7 @@
 | ROAD-25 | Multi-Runtime Support (Claude Code + Codex) | Portability | Planned |
 | ROAD-26 | Release Notes Skill | Developer experience | **Done** |
 | ROAD-27 | Weekly Pipeline Digest | Visibility | Planned |
+| ROAD-28 | Extract Metrics & Quality into In-Project Prompts | Portability | Planned |
 
 ---
 
@@ -1612,3 +1613,45 @@ A `/weekly-digest` skill (standalone utility, like `/release-notes`) that:
 - Heatmap in markdown can be approximated with emoji blocks (like GitHub's contribution graph) — not as pretty as HTML but functional
 
 **Related:** ROAD-19 (DORA Metrics — primary data source), ROAD-20 (Code Complexity — quality score data), ROAD-02 (Notifications — Slack delivery), ROAD-21 (Dashboard — digest is the periodic snapshot; dashboard is the live view), ROAD-26 (Release Notes — similar "summarize the period" pattern)
+
+---
+
+### ROAD-28: Extract Metrics & Quality into In-Project Prompts
+
+**Status:** Planned
+**Theme:** Portability
+
+Move metrics collection and code quality analysis logic out of pipeline skills and into in-project prompt files (e.g., `PIPELINE.md` or conventions files) so that any agent — not just one running from this pipeline repo — can capture the same data.
+
+**Why:** Currently, metrics capture (ROAD-19 DORA timing, ROAD-20 code quality) and quality checks are baked into the skill files in `.claude/skills/`. This means they only run when you use _this_ pipeline's skills. If someone runs an agent directly against a target repo (e.g., via Claude Code in the OrangeQC repo, or via Codex), none of that instrumentation fires. Extracting the metrics and quality instructions into the target repo's own prompt files makes them portable — any agent that reads the repo's conventions will know to capture timing frontmatter, run complexity tools, and report quality metrics.
+
+**What moves:**
+- **DORA timing frontmatter** — instructions for when to stamp `pipeline_start`, `pipeline_stage_N_start/end`, etc. into project artifacts
+- **Code quality tool invocation** — which tools to run, how to compare per-file vs. baseline scores, how to format the output (already partly designed in ROAD-20's "repo config section")
+- **Post-flight check commands** — lint, security scan, test commands that currently live in skill logic
+- **PR body metrics sections** — templates for the stage timeline, lead time, complexity delta, and quality scorecard sections in PR descriptions
+
+**What stays in skills:**
+- Orchestration logic (which stage to run, checkpoint enforcement, artifact file management)
+- Template structure and stage sequencing
+- Linear integration and project tracker coordination
+
+**Design approach:**
+
+Add a `## Metrics & Quality` section to `PIPELINE.md` (or the conventions file, post-ROAD-24) that declares:
+
+1. **Timing capture points** — which events to timestamp and where to write them
+2. **Quality tools** — commands to run, expected output format, comparison strategy (extends ROAD-20's complexity analysis table)
+3. **Post-flight checks** — commands and pass/fail criteria
+4. **PR report template** — markdown snippets for metrics sections in PR descriptions
+
+Skills become thinner — they read the repo config for _what_ to measure and _how_, rather than hardcoding it. This is the same pattern ROAD-20 already specifies for complexity tools, extended to all instrumentation.
+
+**Migration path:**
+1. Define the `## Metrics & Quality` schema in `PIPELINE.md`
+2. Populate it for OrangeQC and Show Notes repos
+3. Update `/setup-repo` to detect and generate this section for new repos
+4. Refactor skills to read metrics config from repo instead of inline logic
+5. Verify that a standalone Claude Code session in a target repo (without pipeline skills) still captures metrics when following the repo's conventions
+
+**Related:** ROAD-19 (DORA Metrics — timing data that moves to repo config), ROAD-20 (Code Quality — complexity tools already designed for repo config), ROAD-24 (Merge PIPELINE.md — the destination file may change), ROAD-25 (Multi-Runtime — this is a prerequisite for runtime-agnostic instrumentation)
