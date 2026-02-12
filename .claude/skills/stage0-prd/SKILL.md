@@ -178,7 +178,23 @@ pipeline_completed_at: "<COMPLETED_AT>"
 
 3. Do **NOT** move or delete the inbox file — the user manages their own inbox.
 
-### Step 6: Report to User
+### Step 6: Commit Pipeline Artifacts
+
+Commit the new PRD to version control in the projects directory:
+
+1. Check if the projects directory is inside a git repository:
+   ```bash
+   cd <projects-path> && git rev-parse --git-dir 2>/dev/null
+   ```
+   If this command fails (not a git repo), skip this step silently.
+
+2. Stage and commit:
+   ```bash
+   cd <projects-path> && git add <slug>/prd.md && git commit -m "pipeline: prd for <slug>"
+   ```
+   If nothing to commit (no changes detected), skip silently.
+
+### Step 7: Report to User
 
 Tell the user:
 

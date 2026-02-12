@@ -251,6 +251,22 @@ Before finalizing, verify:
 - [ ] The dimension summary table accurately reflects the findings
 - [ ] DORA frontmatter is present and complete
 
+### Step 13: Commit Pipeline Artifacts
+
+Commit the review report to version control in the projects directory:
+
+1. Check if the projects directory is inside a git repository:
+   ```bash
+   cd <projects-path> && git rev-parse --git-dir 2>/dev/null
+   ```
+   If this command fails (not a git repo), skip this step silently.
+
+2. Stage and commit:
+   ```bash
+   cd <projects-path> && git add $ARGUMENTS/review-report.md && git commit -m "pipeline: review-report for $ARGUMENTS"
+   ```
+   If nothing to commit (no changes detected), skip silently.
+
 ## What NOT To Do
 
 - **Do not fix any code.** This is a report-only stage. You produce findings; the human decides what to fix.

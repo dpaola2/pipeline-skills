@@ -64,6 +64,26 @@ After passing the pre-flight check, read these files:
 6. The stage spec at `docs/stages/04-test-generation.md` — your role and success criteria
 7. The conventions file in the primary repository (path from `PIPELINE.md` Repository Details) — **critical**: test conventions, directory structure, factory patterns, test framework configuration
 
+### Commit Pending Pipeline Changes
+
+Before starting work, commit any uncommitted changes in the projects directory (e.g., human approval edits made between stages):
+
+1. Check if the projects directory is inside a git repository:
+   ```bash
+   cd <projects-path> && git rev-parse --git-dir 2>/dev/null
+   ```
+   If this command fails (not a git repo), skip this step silently.
+
+2. Check for uncommitted changes in the project subdirectory:
+   ```bash
+   cd <projects-path> && git status --porcelain $ARGUMENTS/
+   ```
+
+3. If there are changes, stage and commit them:
+   ```bash
+   cd <projects-path> && git add $ARGUMENTS/ && git commit -m "pipeline: approve artifacts for $ARGUMENTS"
+   ```
+
 ## Step-by-Step Procedure
 
 ### 1. Explore Existing Test Patterns
@@ -272,6 +292,22 @@ In the primary repository, commit all new files on the `pipeline/$ARGUMENTS` bra
 1. `git add` each new file by name (do NOT use `git add .` or `git add -A`)
 2. Commit with message: `Add Stage 4 test suite for $ARGUMENTS`
 3. Do NOT push unless the user asks you to
+
+### Commit Pipeline Artifacts
+
+Commit the test-coverage-matrix (and any gameplan frontmatter updates) to version control in the projects directory:
+
+1. Check if the projects directory is inside a git repository:
+   ```bash
+   cd <projects-path> && git rev-parse --git-dir 2>/dev/null
+   ```
+   If this command fails (not a git repo), skip this step silently.
+
+2. Stage and commit:
+   ```bash
+   cd <projects-path> && git add $ARGUMENTS/test-coverage-matrix.md $ARGUMENTS/gameplan.md && git commit -m "pipeline: test-coverage-matrix for $ARGUMENTS"
+   ```
+   If nothing to commit (no changes detected), skip silently.
 
 ### Report to User
 

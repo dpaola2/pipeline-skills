@@ -151,6 +151,22 @@ Write to `<projects-path>/$ARGUMENTS/quality.md`:
 - If the branch is gone, note "Fresh analysis unavailable — branch merged/deleted" and use frontmatter only
 - Use `—` for any metric that cannot be computed
 
+### 6. Commit Pipeline Artifacts
+
+Commit the quality report to version control in the projects directory:
+
+1. Check if the projects directory is inside a git repository:
+   ```bash
+   cd <projects-path> && git rev-parse --git-dir 2>/dev/null
+   ```
+   If this command fails (not a git repo), skip this step silently.
+
+2. Stage and commit:
+   ```bash
+   cd <projects-path> && git add $ARGUMENTS/quality.md && git commit -m "pipeline: quality for $ARGUMENTS"
+   ```
+   If nothing to commit (no changes detected), skip silently.
+
 ## What NOT To Do
 
 - **Do not modify any project documents.** Only write `quality.md`.

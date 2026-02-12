@@ -109,7 +109,7 @@ After each auto-fix command, check `git status --porcelain` for changes. If file
 2. Stage and commit them:
 
 ```bash
-cd <primary-repo-path> && git add -A && git commit -m "Post-flight: auto-fix style issues"
+cd <primary-repo-path> && git add $(git diff --name-only) && git commit -m "Post-flight: auto-fix style issues"
 ```
 
 3. Re-run the same check without the fix flag to confirm it's clean. If it still reports issues, **STOP** and report them to the user.
@@ -439,6 +439,22 @@ pipeline_generated_at: "<current-date>"
 pipeline_product: "<product-name>"
 ---
 ```
+
+### 11. Commit Pipeline Artifacts
+
+Commit the updated progress file, project metrics, and aggregate metrics to version control in the projects directory:
+
+1. Check if the projects directory is inside a git repository:
+   ```bash
+   cd <projects-path> && git rev-parse --git-dir 2>/dev/null
+   ```
+   If this command fails (not a git repo), skip this step silently.
+
+2. Stage and commit:
+   ```bash
+   cd <projects-path> && git add $ARGUMENTS/progress.md $ARGUMENTS/metrics.md metrics.md && git commit -m "pipeline: create-pr metrics for $ARGUMENTS"
+   ```
+   If nothing to commit (no changes detected), skip silently.
 
 ## What NOT To Do
 

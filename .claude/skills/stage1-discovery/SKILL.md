@@ -124,6 +124,22 @@ pipeline_completed_at: "<COMPLETED_AT>"
 
 Write the report (with frontmatter) to `<projects-path>/$ARGUMENTS/discovery-report.md` using the template structure from `templates/discovery-report.md`.
 
+### 9. Commit Pipeline Artifacts
+
+Commit the discovery report to version control in the projects directory:
+
+1. Check if the projects directory is inside a git repository:
+   ```bash
+   cd <projects-path> && git rev-parse --git-dir 2>/dev/null
+   ```
+   If this command fails (not a git repo), skip this step silently.
+
+2. Stage and commit:
+   ```bash
+   cd <projects-path> && git add $ARGUMENTS/discovery-report.md && git commit -m "pipeline: discovery-report for $ARGUMENTS"
+   ```
+   If nothing to commit (no changes detected), skip silently.
+
 ## What NOT To Do
 
 - **Do not suggest how to build the feature.** That is Stage 2 (Architecture). You document what exists.

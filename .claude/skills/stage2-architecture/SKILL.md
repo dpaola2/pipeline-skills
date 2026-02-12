@@ -155,6 +155,22 @@ Write the proposal (with frontmatter) to `<projects-path>/$ARGUMENTS/architectur
 
 **Important:** The template includes an Approval Checklist section at the end. Leave the Status as "Pending" — the human reviewer will update it. The `pipeline_approved_at` field is left empty — Stage 3 will fill it when it reads the approval date.
 
+### 11. Commit Pipeline Artifacts
+
+Commit the architecture proposal to version control in the projects directory:
+
+1. Check if the projects directory is inside a git repository:
+   ```bash
+   cd <projects-path> && git rev-parse --git-dir 2>/dev/null
+   ```
+   If this command fails (not a git repo), skip this step silently.
+
+2. Stage and commit:
+   ```bash
+   cd <projects-path> && git add $ARGUMENTS/architecture-proposal.md && git commit -m "pipeline: architecture-proposal for $ARGUMENTS"
+   ```
+   If nothing to commit (no changes detected), skip silently.
+
 ## Referencing the Codebase
 
 The primary repository path is in `pipeline.md` Target Repositories. When you need to:

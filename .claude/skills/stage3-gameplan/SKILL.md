@@ -53,6 +53,26 @@ After passing the pre-flight check, read these files:
 6. The stage spec at `docs/stages/03-gameplan.md`
 7. The output template at `templates/gameplan.md`
 
+### Commit Pending Pipeline Changes
+
+Before starting work, commit any uncommitted changes in the projects directory (e.g., human approval edits made between stages):
+
+1. Check if the projects directory is inside a git repository:
+   ```bash
+   cd <projects-path> && git rev-parse --git-dir 2>/dev/null
+   ```
+   If this command fails (not a git repo), skip this step silently.
+
+2. Check for uncommitted changes in the project subdirectory:
+   ```bash
+   cd <projects-path> && git status --porcelain $ARGUMENTS/
+   ```
+
+3. If there are changes, stage and commit them:
+   ```bash
+   cd <projects-path> && git add $ARGUMENTS/ && git commit -m "pipeline: approve artifacts for $ARGUMENTS"
+   ```
+
 ## Step-by-Step Procedure
 
 ### 1. Break PRD Into Functional Milestones
@@ -206,6 +226,22 @@ No two milestones should both claim to **create** the same file. A file created 
 ---
 
 If all 7 checks pass, the gameplan is ready for human review. If any check fails, fix the gameplan and re-run that check before proceeding.
+
+### 10. Commit Pipeline Artifacts
+
+Commit the gameplan (and any architecture-proposal frontmatter updates) to version control in the projects directory:
+
+1. Check if the projects directory is inside a git repository:
+   ```bash
+   cd <projects-path> && git rev-parse --git-dir 2>/dev/null
+   ```
+   If this command fails (not a git repo), skip this step silently.
+
+2. Stage and commit:
+   ```bash
+   cd <projects-path> && git add $ARGUMENTS/gameplan.md $ARGUMENTS/architecture-proposal.md && git commit -m "pipeline: gameplan for $ARGUMENTS"
+   ```
+   If nothing to commit (no changes detected), skip silently.
 
 ## What NOT To Do
 

@@ -142,6 +142,22 @@ Before finalizing, verify:
 - [ ] A tester could follow the plan without asking any clarifying questions
 - [ ] The rollback plan is actionable
 
+### 8. Commit Pipeline Artifacts
+
+Commit the QA plan to version control in the projects directory:
+
+1. Check if the projects directory is inside a git repository:
+   ```bash
+   cd <projects-path> && git rev-parse --git-dir 2>/dev/null
+   ```
+   If this command fails (not a git repo), skip this step silently.
+
+2. Stage and commit:
+   ```bash
+   cd <projects-path> && git add $ARGUMENTS/qa-plan.md && git commit -m "pipeline: qa-plan for $ARGUMENTS"
+   ```
+   If nothing to commit (no changes detected), skip silently.
+
 ## What NOT To Do
 
 - **Do not run tests or write code.** This is a document-generation stage.

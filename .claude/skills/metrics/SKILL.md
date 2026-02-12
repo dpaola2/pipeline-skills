@@ -148,6 +148,22 @@ Use `—` for fields where data is unavailable.
 - If only `completed_at` exists, still show it in the timeline for ordering
 - Note data quality issues in the "Data Quality Notes" section
 
+### 7. Commit Pipeline Artifacts
+
+Commit the metrics report to version control in the projects directory:
+
+1. Check if the projects directory is inside a git repository:
+   ```bash
+   cd <projects-path> && git rev-parse --git-dir 2>/dev/null
+   ```
+   If this command fails (not a git repo), skip this step silently.
+
+2. Stage and commit:
+   ```bash
+   cd <projects-path> && git add $ARGUMENTS/metrics.md && git commit -m "pipeline: metrics for $ARGUMENTS"
+   ```
+   If nothing to commit (no changes detected), skip silently.
+
 ## What NOT To Do
 
 - **Do not modify any project documents.** Only write `metrics.md`.

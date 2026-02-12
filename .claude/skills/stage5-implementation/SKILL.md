@@ -517,6 +517,22 @@ Any implementation notes, gotchas, or lessons learned
 - Record any spec gaps or implementation notes
 - Do NOT commit this file to the primary repository — it lives in the projects directory (from `pipeline.md` Work Directory), not the primary repo
 
+### 13. Commit Pipeline Artifacts
+
+Commit the progress file to version control in the projects directory:
+
+1. Check if the projects directory is inside a git repository:
+   ```bash
+   cd <projects-path> && git rev-parse --git-dir 2>/dev/null
+   ```
+   If this command fails (not a git repo), skip this step silently.
+
+2. Stage and commit:
+   ```bash
+   cd <projects-path> && git add PROJECT_SLUG/progress.md && git commit -m "pipeline: MILESTONE progress for PROJECT_SLUG"
+   ```
+   If nothing to commit (no changes detected), skip silently.
+
 ## When the Spec Has Gaps
 
 If you discover that the architecture proposal or gameplan is incomplete, ambiguous, or contradictory:
