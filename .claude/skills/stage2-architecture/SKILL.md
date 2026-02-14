@@ -22,6 +22,7 @@ You are a **technical designer**. You propose the data model, API endpoints, mig
 - **Input 1:** `<projects-path>/$ARGUMENTS/prd.md`
 - **Input 2:** `<projects-path>/$ARGUMENTS/discovery-report.md`
 - **Output:** `<projects-path>/$ARGUMENTS/architecture-proposal.md`
+- **Output (conditional):** `<projects-path>/$ARGUMENTS/decisions/ADR-*.md` — one per significant decision with 2+ viable alternatives
 - **Output template:** `templates/architecture-proposal.md`
 - **Stage spec:** `docs/stages/02-architecture.md` (read this for full behavioral guidance)
 - **Constraints:** Project constraints doc if one exists (e.g., `docs/orangeqc-constraints.md`)
@@ -142,7 +143,17 @@ For significant design decisions:
 - Pros and cons of each
 - Why you chose the proposed approach
 
-### 10. Write the Architecture Proposal
+### 10. Generate ADRs
+
+For each significant decision that had 2+ genuinely viable alternatives, write an ADR file to `<projects-path>/$ARGUMENTS/decisions/ADR-NNN-<kebab-title>.md`.
+
+- Use `templates/adr.md` as the format
+- Sequential numbering starting at 001 (e.g., `ADR-001-service-vs-concern.md`)
+- Set `Stage: 2` in the metadata
+- Not every design choice needs an ADR — only choices where alternatives were genuinely viable and the rationale matters for future understanding
+- If no decisions warrant an ADR, skip this step
+
+### 11. Write the Architecture Proposal
 
 Capture the completion timestamp via Bash: `date +"%Y-%m-%dT%H:%M:%S%z"` — save as COMPLETED_AT.
 
@@ -163,9 +174,9 @@ Write the proposal (with frontmatter) to `<projects-path>/$ARGUMENTS/architectur
 
 **Important:** The template includes an Approval Checklist section at the end. Leave the Status as "Pending" — the human reviewer will update it. The `pipeline_approved_at` field is left empty — Stage 3 will fill it when it reads the approval date.
 
-### 11. Commit Pipeline Artifacts
+### 12. Commit Pipeline Artifacts
 
-Commit the architecture proposal to version control in the projects directory:
+Commit the architecture proposal and any ADRs to version control in the projects directory:
 
 1. Check if the projects directory is inside a git repository:
    ```bash
@@ -175,7 +186,7 @@ Commit the architecture proposal to version control in the projects directory:
 
 2. Stage and commit:
    ```bash
-   cd <projects-path> && git add $ARGUMENTS/architecture-proposal.md && git commit -m "pipeline: architecture-proposal for $ARGUMENTS"
+   cd <projects-path> && git add $ARGUMENTS/architecture-proposal.md $ARGUMENTS/decisions/ && git commit -m "pipeline: architecture-proposal for $ARGUMENTS"
    ```
    If nothing to commit (no changes detected), skip silently.
 
@@ -205,5 +216,6 @@ If `pipeline.md` lists an API docs repository, reference it for existing respons
 Tell the user:
 1. The architecture proposal has been written
 2. Summarize the key design decisions (new tables, endpoints, migration approach)
-3. List the open questions that need human input
-4. **Remind them:** "This architecture proposal must be reviewed and approved before Stage 3 can run. To approve: edit `<projects-path>/$ARGUMENTS/architecture-proposal.md`, find the Approval Checklist at the bottom, and set Status to 'Approved' (or 'Approved with Modifications'). Then run `/stage3-gameplan $ARGUMENTS`."
+3. List ADRs generated (with titles), or "None" if no decisions warranted an ADR
+4. List the open questions that need human input
+5. **Remind them:** "This architecture proposal must be reviewed and approved before Stage 3 can run. To approve: edit `<projects-path>/$ARGUMENTS/architecture-proposal.md`, find the Approval Checklist at the bottom, and set Status to 'Approved' (or 'Approved with Modifications'). Then run `/stage3-gameplan $ARGUMENTS`."

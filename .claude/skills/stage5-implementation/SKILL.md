@@ -41,6 +41,7 @@ If the second argument is missing, **STOP** and tell the user:
 - **Input 6:** Test files in the primary repository's test directory (path from pipeline.md) — the failing tests you must make pass
 - **Output 1:** Implementation code in the primary repository (path from pipeline.md), committed to the project branch
 - **Output 2:** `<projects-path>/PROJECT_SLUG/progress.md` — updated with milestone completion data (in the agent-pipeline repo)
+- **Output (conditional):** `<projects-path>/PROJECT_SLUG/decisions/ADR-*.md` — written when implementation decisions deviate from or extend the architecture
 - **Stage spec:** `docs/stages/05-implementation.md` (read for full behavioral guidance)
 
 ## Pre-Flight Checks (MANDATORY)
@@ -399,7 +400,16 @@ Some insights are about the pipeline process itself — not about this codebase.
 
 If you have no new insights for this milestone, skip this step and note "No new conventions discovered" in progress.md.
 
-### 12. Update Progress File
+### 12. Generate ADRs (If Needed)
+
+If you made a technical decision during this milestone that deviates from or fills a gap in the architecture proposal — e.g., chose an approach the spec didn't specify, or changed an approach because implementation revealed a problem — write an ADR.
+
+- Check `<projects-path>/PROJECT_SLUG/decisions/` for existing ADRs to continue the numbering sequence (e.g., if ADR-003 exists, the next is ADR-004)
+- Use `templates/adr.md` as the format
+- Set `Stage: 5` in the metadata
+- If no decisions during this milestone warrant an ADR, skip this step
+
+### 13. Update Progress File
 
 After committing to the primary repository, capture the completion timestamp via Bash: `date +"%Y-%m-%dT%H:%M:%S%z"` — save as COMPLETED_AT.
 
@@ -505,9 +515,9 @@ Any implementation notes, gotchas, or lessons learned
 - Record any spec gaps or implementation notes
 - Do NOT commit this file to the primary repository — it lives in the projects directory (from `pipeline.md` Work Directory), not the primary repo
 
-### 13. Commit Pipeline Artifacts
+### 14. Commit Pipeline Artifacts
 
-Commit the progress file to version control in the projects directory:
+Commit the progress file and any ADRs to version control in the projects directory:
 
 1. Check if the projects directory is inside a git repository:
    ```bash
@@ -517,7 +527,7 @@ Commit the progress file to version control in the projects directory:
 
 2. Stage and commit:
    ```bash
-   cd <projects-path> && git add PROJECT_SLUG/progress.md && git commit -m "pipeline: MILESTONE progress for PROJECT_SLUG"
+   cd <projects-path> && git add PROJECT_SLUG/progress.md PROJECT_SLUG/decisions/ && git commit -m "pipeline: MILESTONE progress for PROJECT_SLUG"
    ```
    If nothing to commit (no changes detected), skip silently.
 
@@ -584,8 +594,9 @@ Tell the user:
    - [ ] Not satisfied (and why)
 5. **Spec gaps discovered:** Any issues found in the architecture or gameplan
 6. **Conventions file updates:** List any insights added to the target repo's conventions file (e.g., `AGENTS.md`, `CLAUDE.md`), or "None" if no new insights
-7. **Progress file:** Confirm that `<projects-path>/PROJECT_SLUG/progress.md` was updated with the milestone entry
-8. **Next step:** "The next milestone is M_NEXT_. Run `/stage5-implementation PROJECT_SLUG M_NEXT_` when ready."
+7. **ADRs generated:** List any ADRs written during this milestone (with titles), or "None"
+8. **Progress file:** Confirm that `<projects-path>/PROJECT_SLUG/progress.md` was updated with the milestone entry
+9. **Next step:** "The next milestone is M_NEXT_. Run `/stage5-implementation PROJECT_SLUG M_NEXT_` when ready."
 
 If this was the **last milestone**, instead say:
 

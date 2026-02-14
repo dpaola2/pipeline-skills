@@ -239,7 +239,19 @@ Include fields, associations, and custom formatting.]
 
 ---
 
-## 8. Summary
+## 8. Architecture Decision Records
+
+> ADRs for significant decisions are in the `decisions/` subdirectory. Only decisions with 2+ genuinely viable alternatives are recorded here.
+
+<!-- If no ADRs were generated, replace the table below with: "No decisions in this project warranted a standalone ADR." -->
+
+| ADR | Title | Summary |
+|-----|-------|---------|
+| [ADR-001](decisions/ADR-001-title.md) | [Title] | [One-line summary] |
+
+---
+
+## 9. Summary
 
 ### Files to Create
 | File | Purpose |

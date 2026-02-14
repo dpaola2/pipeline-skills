@@ -14,7 +14,7 @@
 | ROAD-04 | Post-Flight Checks | Quality assurance | **Done** |
 | ROAD-05 | Externalize Platform Config (two-file) | Portability | **Done** |
 | ROAD-06 | Project Document Linking | Developer experience | Planned |
-| ROAD-07 | ADR Integration | Knowledge capture | Planned |
+| ROAD-07 | ADR Integration | Knowledge capture | **Done** |
 | ROAD-08 | Linear Automation | Orchestration | Planned |
 | ROAD-09 | Stage 6 — Code Review | Quality assurance | **Done** |
 | ROAD-10 | Post-QA Iteration / Re-entry | Pipeline lifecycle | Planned |
@@ -201,25 +201,23 @@ Provide a way to make pipeline project documents (PRD, architecture proposal, ga
 
 ### ROAD-07: ADR Integration (Architecture Decision Records)
 
-**Status:** Planned
+**Status:** Done
 **Theme:** Knowledge capture
 
-Integrate Architecture Decision Records into the pipeline process, capturing significant architectural decisions made during Stage 2 (Architecture) and Stage 3 (Gameplan).
+Integrated Architecture Decision Records into the pipeline, capturing significant technical decisions during Stage 2 (Architecture) and Stage 5 (Implementation).
 
-**Why:** The architecture proposal captures *what* was decided, but not always *why* one approach was chosen over alternatives. ADRs formalize this. They're especially valuable when a future developer (or agent) asks "why was it done this way?"
+**What was built:**
+- **ADR template** (`templates/adr.md`) — lightweight format: Context, Decision, Alternatives Considered (table), Consequences
+- **Stage 2 integration** — new step 10 generates ADRs for decisions with 2+ genuinely viable alternatives. ADRs are written to `<projects-path>/<slug>/decisions/ADR-NNN-<kebab-title>.md` and committed alongside the architecture proposal
+- **Stage 5 integration** — new step 12 generates ADRs when implementation decisions deviate from or extend the architecture proposal. Continues the numbering sequence from Stage 2
+- **Architecture proposal cross-reference** — new section 8 in the template lists all generated ADRs with links
+- **Project directory convention** — `decisions/` subdirectory added to the standard project layout
 
-**When ADRs would be generated:**
-- Stage 2 makes a non-obvious architectural choice (e.g., "service object vs. concern", "new table vs. column on existing table")
-- Human reviewer during architecture approval flags a decision worth recording
-- Stage 5 encounters an implementation surprise that changes the approach
-
-**Format:** Standard ADR template (Title, Status, Context, Decision, Consequences). Stored in the project directory and optionally copied to the target repo.
-
-**Considerations:**
-- Not every project needs ADRs — small projects (Level 1) rarely make decisions worth recording
-- The pipeline should make it easy to create ADRs, not mandate them
-- Could be a section in the architecture proposal that gets extracted into standalone ADR files when warranted
-- ADRs should reference the pipeline project that created them
+**Design decisions:**
+- ADRs are project-directory-only artifacts (not committed to the target repo) — they're pipeline-scoped, not repo-scoped
+- Not every decision needs an ADR — only choices where alternatives were genuinely viable and the rationale matters
+- Sequential numbering (ADR-001, 002, ...) shared across stages within a project
+- Stage metadata (`Stage: 2` or `Stage: 5`) tracks where the decision was made
 
 ---
 

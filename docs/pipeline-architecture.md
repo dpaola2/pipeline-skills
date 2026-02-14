@@ -54,7 +54,7 @@ The discovery agent explores the existing codebase to understand how things work
 ### Stage 2: Architecture
 **Agent Type:** Technical designer
 **Input:** PRD + Discovery Report
-**Output:** Architecture Proposal
+**Output:** Architecture Proposal + Architecture Decision Records (for significant decisions with alternatives)
 
 The architecture agent proposes the technical design: data model changes, API endpoints, migrations, and cross-platform contracts.
 
@@ -179,7 +179,7 @@ The test generation agent writes comprehensive test suites from the approved spe
 ### Stage 5: Implementation
 **Agent Type:** Code builder (per platform)
 **Input:** Spec + Failing Tests (per milestone)
-**Output:** Implementation code + Passing tests
+**Output:** Implementation code + Passing tests + ADRs for implementation decisions that deviate from the spec
 
 The implementation agent works milestone-by-milestone, writing code to make the failing tests pass.
 

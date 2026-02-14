@@ -101,6 +101,7 @@ Project artifacts live **outside this repo**, in a configurable directory per pr
   test-coverage-matrix.md        # Output of Stage 4
   progress.md                    # Output of Stage 5 (milestone tracking)
   qa-plan.md                     # Output of Stage 7
+  decisions/                     # ADRs — significant technical decisions (Stages 2, 5)
 ```
 
 The inbox (raw input notes for Stage 0) also lives externally, at `pipeline.md` Work Directory → Inbox.
