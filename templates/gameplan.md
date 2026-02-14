@@ -28,13 +28,13 @@ pipeline_approved_at: "[ISO 8601 timestamp — filled by Stage 4]"
 
 | Ticket | Description | Platform |
 |--------|-------------|----------|
-| [LIN-XXX] | [Brief description] | Web / iOS / Android |
+| [LIN-XXX] | [Brief description] | [Platform from PIPELINE.md] |
 
 ### Out of Scope
 - [Explicitly what we're NOT doing]
 
 ### Constraints & Conventions
-- AGENTS.md: [Link to repo AGENTS.md]
+- Conventions file: [Link to conventions file from PIPELINE.md Repository Details]
 - [Any project-specific constraints]
 
 ---
@@ -71,18 +71,15 @@ pipeline_approved_at: "[ISO 8601 timestamp — filled by Stage 4]"
 - [ ] [XX-002]: [Specific, testable criterion]
 - [ ] [XX-003]: [Specific, testable criterion]
 
-**Web/API:**
+**[Primary platform from PIPELINE.md]:**
 - [ ] Migration: [create/alter table]
-- [ ] Model: [Model with validations, associations, scopes]
-- [ ] Controller: [Endpoints]
-- [ ] Serializer: [Blueprint]
-- [ ] Tests: [Model specs, request specs]
+- [ ] Model: [Model with validations, associations, scopes/queries]
+- [ ] Controller/handler: [Endpoints/routes]
+- [ ] Serializer: [if applicable per PIPELINE.md]
+- [ ] Tests: [test types per framework]
 
-**iOS:**
-- [ ] [Specific task or N/A]
-
-**Android:**
-- [ ] [Specific task or N/A]
+<!-- Include one task section per additional active platform from PIPELINE.md Platforms.
+     Mark "N/A" for platforms not in scope for this project level. -->
 
 **Dependencies:** None (first milestone)
 
@@ -96,36 +93,24 @@ pipeline_approved_at: "[ISO 8601 timestamp — filled by Stage 4]"
 - [ ] [XX-010]: [Criterion]
 - [ ] [XX-011]: [Criterion]
 
-**Web/API:**
-- [ ] [Specific tasks]
-
-**iOS:**
-- [ ] [Specific tasks]
-
-**Android:**
+**[Primary platform from PIPELINE.md]:**
 - [ ] [Specific tasks]
 
 **Dependencies:** M1 (needs data model)
 
 ---
 
-### M3: [Feature Area 3 - e.g., Mobile UI]
+### M3: [Feature Area 3]
 **What:** [Brief description]
 **Linear:** [LIN-XXX]
 
 **Acceptance Criteria:**
 - [ ] [XX-020]: [Criterion]
 
-**Web/API:**
-- [ ] [Specific tasks or N/A]
-
-**iOS:**
+**[Primary platform from PIPELINE.md]:**
 - [ ] [Specific tasks]
 
-**Android:**
-- [ ] [Specific tasks]
-
-**Dependencies:** M1 (needs API endpoints)
+**Dependencies:** M1 (needs core implementation)
 
 ---
 
@@ -144,13 +129,10 @@ pipeline_approved_at: "[ISO 8601 timestamp — filled by Stage 4]"
 - [ ] Task prints a summary of what was created (account credentials, key IDs, URLs to test)
 - [ ] All scenarios from the manual QA checklist have supporting test data
 
-**Primary Platform:**
-- [ ] Seed task file — idempotent
-- [ ] Uses existing test data helpers/factories where available
+**[Primary platform from PIPELINE.md]:**
+- [ ] Seed task file — idempotent (per PIPELINE.md Framework & Stack Seed command format)
+- [ ] Uses existing test data helpers where available
 - [ ] No production-unsafe operations (dev/staging only)
-
-**iOS:** N/A
-**Android:** N/A
 
 **Dependencies:** All prior feature milestones (needs the full feature implemented)
 
@@ -164,8 +146,8 @@ pipeline_approved_at: "[ISO 8601 timestamp — filled by Stage 4]"
 - [ ] [Edge case handling]
 - [ ] [Print styles, responsive behavior]
 
-**Web/API:**
-- [ ] [View updates]
+**[Primary platform from PIPELINE.md]:**
+- [ ] [View/UI updates]
 
 **Dependencies:** All prior milestones
 
@@ -227,12 +209,12 @@ _If the product has no event tracking infrastructure, note that here and skip th
 
 | Type | Coverage | Platform | Owner |
 |------|----------|----------|-------|
-| Model/unit specs | [What's covered] | Rails | Pipeline |
-| Request/API specs | [What's covered] | Rails | Pipeline |
-| System/E2E specs | [What's covered] | Rails | Pipeline |
-| Unit tests | [What's covered] | iOS | Pipeline |
-| Unit tests | [What's covered] | Android | Pipeline |
+| Model/unit tests | [What's covered] | [Primary platform from PIPELINE.md] | Pipeline |
+| Request/integration tests | [What's covered] | [Primary platform from PIPELINE.md] | Pipeline |
+| System/E2E tests | [What's covered] | [Primary platform from PIPELINE.md] | Pipeline |
 | Manual QA | [Key scenarios] | All | Human |
+
+> Add rows for additional active platforms from PIPELINE.md Platforms if Level 3.
 
 ### Feature Flags & Rollout
 - [ ] Feature flag: `[flag_name]`
@@ -241,7 +223,8 @@ _If the product has no event tracking infrastructure, note that here and skip th
 - [ ] Rollout plan: [phases]
 
 ### Mobile-Specific
-- [ ] Firebase events planned
+<!-- CONDITIONAL: Include only if PIPELINE.md Platforms lists mobile platforms (iOS, Android). Otherwise omit. -->
+- [ ] Mobile analytics events planned
 - [ ] Crash reporting considerations
 - [ ] Offline behavior defined (if applicable)
 - [ ] Min OS version implications

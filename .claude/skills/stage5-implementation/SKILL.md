@@ -90,9 +90,7 @@ If the requested milestone is M1, skip this check.
 
 For M2+, check out the project branch and run the test files associated with prior milestones. Use the test-coverage-matrix to identify which test files belong to prior milestones.
 
-For example, if implementing M3:
-- M1 tests: `spec/models/report_setting_spec.rb`, `spec/services/analytics/deficient_line_items_spec.rb`
-- M2 tests: relevant contexts in `spec/requests/reports/deficient_line_items_controller_spec.rb`
+For example, if implementing M3, use the test-coverage-matrix to identify test files belonging to M1 and M2, then run those files.
 
 Run those tests:
 
@@ -193,17 +191,7 @@ Search the primary repository (path from pipeline.md) for:
 
 ### 4. Plan the Implementation Order
 
-Based on the tests and the gameplan's platform tasks, follow the Implementation Order from PIPELINE.md. This ensures dependencies are satisfied as you build.
-
-1. **Migration(s)** — schema changes first (if any)
-2. **Model(s)** — with validations, associations, scopes, class methods
-3. **Service(s)** — business logic and query objects
-4. **Route(s)** — register new paths in the routes file
-5. **Controller(s)** — actions, authorization, data loading
-6. **Views** — templates and partials
-7. **JavaScript controller(s)** — interactive behavior
-
-Refer to PIPELINE.md for the canonical ordering and any framework-specific adjustments.
+Based on the tests and the gameplan's platform tasks, follow the **Implementation Order from PIPELINE.md**. This ensures dependencies are satisfied as you build. The order varies by framework — PIPELINE.md defines the canonical sequence for this repo.
 
 ### 5. Implement the Code
 
@@ -213,7 +201,7 @@ Write each file following these rules:
 - Follow existing patterns from the codebase exactly. Match style, naming, indentation.
 - Follow AGENTS.md conventions explicitly.
 - Write the minimum viable code that makes the tests pass. No gold-plating.
-- No dead code, no TODO comments, no debugging artifacts (`puts`, `pp`, `debugger`, `binding.pry`).
+- No dead code, no TODO comments, no debugging artifacts (see PIPELINE.md Framework & Stack "Debug patterns" for the language-specific list).
 - No commented-out code.
 
 **Migrations:**
@@ -235,17 +223,17 @@ Write each file following these rules:
 - Match instance variable names that the tests and views expect.
 - Sanitize user inputs (sort columns, direction) per the architecture's whitelist pattern.
 
-**Views (ERB):**
+**Views/Templates:**
 - Follow the view structure from the architecture proposal.
 - Use existing CSS classes and HTML patterns from similar views in the codebase.
-- Connect Stimulus controllers via `data-controller` attributes.
+- Follow the view/template and frontend conventions from PIPELINE.md Framework & Stack and the conventions file.
 
 **Routes:**
 - Add routes inside the correct namespace block.
 - Match the exact route definitions from the architecture.
 
-**Stimulus controllers:**
-- Follow existing Stimulus controller patterns in the codebase.
+**Frontend JavaScript/controllers:**
+- Follow existing frontend controller/component patterns from the codebase (e.g., Stimulus, React, LiveView — per PIPELINE.md Framework & Stack).
 
 ### 6. Run Milestone Tests
 
@@ -291,7 +279,7 @@ Check the results:
 
 Before committing, verify:
 
-- No `binding.pry`, `debugger`, `puts`, `pp`, or `console.log` statements
+- No debug artifacts (check for patterns from PIPELINE.md Framework & Stack "Debug patterns")
 - No TODO or FIXME comments
 - No commented-out code
 - No dead code (unused methods, unreachable branches)
@@ -307,14 +295,14 @@ Commit all new and modified files on the project branch:
 2. Commit with the following message format:
 
 ```
-[MILESTONE][Rails] Brief description of what was implemented
+[MILESTONE][<platform label from PIPELINE.md>] Brief description of what was implemented
 
 - Bullet point summary of key changes
 
 Pipeline: PROJECT_SLUG | Stage: implementation | Milestone: MILESTONE
 ```
 
-Example:
+Example (for a Rails project where PIPELINE.md Platform label is "Rails"):
 
 ```
 [M1][Rails] Add ReportSetting model and Analytics::DeficientLineItems service
@@ -574,8 +562,8 @@ Only files in directories listed in PIPELINE.md Directory Structure that this mi
 
 ### Files You May NOT Create or Modify
 
-- Anything in the test directory — Stage 4 owns test files and factories
-- Dependency manifest files (e.g., `Gemfile`, `package.json`) — no new dependencies without explicit approval
+- Anything in the test directory — Stage 4 owns test files and test data setup
+- Dependency manifest files (e.g., `Gemfile`, `package.json`, `mix.exs`) — no new dependencies without explicit approval
 - Database configuration or other infrastructure config
 - Deployment scripts or CI configuration
 - `.env` or any credentials files

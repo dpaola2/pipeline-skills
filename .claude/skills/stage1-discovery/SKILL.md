@@ -78,14 +78,14 @@ Look for:
 
 Check the PRD header for the project level:
 
-- **Level 1** (small project): Focus on Rails. Lightweight discovery.
-- **Level 2** (web only): Focus on the primary platform. Mark other platform sections as "N/A — Level 2 (web-only) project."
+- **Level 1** (small project): Focus on the primary platform. Lightweight discovery.
+- **Level 2** (primary platform only): Focus on the primary platform. Mark other platform sections as "N/A — Level 2 (primary platform only) project."
 - **Level 3** (all platforms): Search all repositories listed in `pipeline.md` Target Repositories that have Active status in the primary repo's `PIPELINE.md` Platforms table.
 
 ### 5. Document Cross-Platform Patterns
 
 Even for web-only projects, document:
-- How data flows through the system (Rails models → controllers → serializers → response)
+- How data flows through the system (models → controllers → serializers → response)
 - Current serialization format for related resources
 - API versioning approach for related endpoints
 - How similar existing features are structured (find a comparable feature as a reference)
@@ -146,7 +146,7 @@ Commit the discovery report to version control in the projects directory:
 - **Do not give opinions on code quality** unless it represents a technical risk.
 - **Do not explore unrelated code.** Stay focused on entities and patterns relevant to the PRD.
 - **Do not modify any files in the target repos.** Read only.
-- **Do not skip the schema lookup.** The current table definitions from `db/schema.rb` are critical for the Architecture stage.
+- **Do not skip the schema lookup.** The current table/schema definitions (schema file path from PIPELINE.md Directory Structure) are critical for the Architecture stage.
 
 ## When You're Done
 

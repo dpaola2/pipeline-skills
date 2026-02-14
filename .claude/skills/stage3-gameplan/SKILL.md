@@ -82,7 +82,7 @@ Organize by **feature area**, not by platform:
 - **M0: Discovery & Alignment** — Always complete (Stages 1-2 did this). Mark as done.
 - **M1** typically: Data model, core backend, foundational API
 - **M2+**: Progressive feature areas building on M1
-- **Penultimate milestone (always):** QA Test Data — a rake task that seeds realistic data for manual QA. Comes after all feature implementation milestones and before the final polish/edge-cases milestone. See the gameplan template for the standard structure and acceptance criteria.
+- **Penultimate milestone (always):** QA Test Data — a seed task (per PIPELINE.md Framework & Stack Seed command format) that seeds realistic data for manual QA. Comes after all feature implementation milestones and before the final polish/edge-cases milestone. See the gameplan template for the standard structure and acceptance criteria.
 - **Final milestone:** Empty states, edge cases, polish
 
 Guidelines:
@@ -102,10 +102,9 @@ For each milestone:
 
 ### 3. Map Platform Tasks Within Each Milestone
 
-For each milestone:
-- **Web/API tasks:** Specific files to create/modify, endpoints, views, controllers, tests
-- **iOS tasks:** Mark "N/A" for Level 2 projects
-- **Android tasks:** Mark "N/A" for Level 2 projects
+For each milestone, create one task section per **active platform** from PIPELINE.md Platforms table:
+- **Primary platform tasks:** Specific files to create/modify, endpoints, views, controllers, tests
+- **Additional platform tasks:** One section per additional active platform from PIPELINE.md. Mark "N/A" for platforms not in scope for this project level.
 
 Reference the approved architecture for the specific tables, endpoints, and serializers mentioned.
 
@@ -120,7 +119,7 @@ Complete every section of the non-functional checklist in the template:
 - **Analytics & Instrumentation:** Success metrics from the PRD, specific events to track (with names, triggers, and properties), and what framework/approach to use. If the target repo has no analytics infrastructure, note that and skip the events table. Check `PIPELINE.md` and the discovery report for existing analytics patterns.
 - **Testing Plan:** What types of tests per platform, coverage expectations
 - **Feature Flags & Rollout:** Flag name, default state, rollout plan
-- **Mobile-Specific:** Mark N/A for Level 2 projects
+- **Mobile-Specific:** Mark N/A if PIPELINE.md Platforms does not list mobile platforms
 - **Legacy & Migration:** Backwards compatibility from the architecture
 - **Export/Reporting:** Export requirements from the PRD
 

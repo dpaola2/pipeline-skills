@@ -71,7 +71,7 @@ For modified tables:
 - New indexes
 
 Include:
-- Rails model code (associations, validations, scopes)
+- Model code following the framework conventions from PIPELINE.md and the conventions file (associations, validations, scopes/queries)
 - Associations map (visual representation of relationships)
 - Expected data volumes and growth rates
 
@@ -79,12 +79,14 @@ Include:
 
 For each migration:
 - Type (DDL, data migration, concurrent index)
-- SQL or Rails migration code
-- Whether it needs `disable_ddl_transaction!`
+- Migration code per framework conventions
+- Whether it needs special transaction handling (e.g., `disable_ddl_transaction!` for Rails, equivalent for other frameworks)
 - Backfill strategy (if migrating existing data)
 - Rollback plan
 
-### 4. Design API Endpoints (if applicable)
+### 4. Design API Endpoints
+
+**If PIPELINE.md has an "API Conventions" section**, design the endpoints below. **Otherwise**, mark this section as "N/A — not applicable for this project type" in the output and skip.
 
 For each endpoint:
 - HTTP method, path, purpose
@@ -99,6 +101,8 @@ For each endpoint:
 
 ### 5. Analyze Backwards Compatibility
 
+**If PIPELINE.md has a "Backwards Compatibility" section**, generate the compatibility matrix below. **Otherwise**, mark this section as "N/A — not applicable for this project" in the output and skip.
+
 Generate the compatibility matrix:
 - What each platform version sees
 - For Level 2 (web-only) projects: the matrix is simpler but still required — document what web users see and confirm no impact on existing API consumers
@@ -107,13 +111,17 @@ Generate the compatibility matrix:
 
 ### 6. Design Security Model
 
-For every new data access path (if `PIPELINE.md` has a Multi-Tenant Security section, follow those rules):
+**If PIPELINE.md has a "Multi-Tenant Security" section**, follow its scoping and authorization rules for every new data access path. **Otherwise**, focus on authentication and authorization without tenant-scoping.
+
+For every new data access path:
 - Query scoping chain (per the scoping rules in `PIPELINE.md`)
 - Authorization model (who can do what, which roles/permissions)
 - Permission requirements
 - New attack surface analysis
 
 ### 7. Assess Export Impact
+
+**If the PRD mentions exports or PIPELINE.md has export-related features**, assess the impact below. **Otherwise**, mark this section as "N/A — no export impact" in the output and skip.
 
 - How new data appears in existing exports (PDF, CSV, email reports)
 - New export requirements from the PRD
@@ -186,8 +194,8 @@ If `pipeline.md` lists an API docs repository, reference it for existing respons
 ## What NOT To Do
 
 - **Do not leave any section as "TBD."** Complete every section or flag it as an open question with options.
-- **Do not skip the backwards compatibility matrix.** Even for web-only features.
-- **Do not skip security scoping.** Every new data access path needs a scoping chain.
+- **Do not skip the backwards compatibility matrix** if PIPELINE.md has a Backwards Compatibility section.
+- **Do not skip security design.** Every new data access path needs authentication and authorization. If PIPELINE.md has Multi-Tenant Security, also include tenant scoping chains.
 - **Do not modify any files in the target repos.**
 - **Do not generate the gameplan.** That is Stage 3, and it requires approved architecture first.
 - **Do not invent new patterns** when existing codebase patterns will work. Follow what exists.

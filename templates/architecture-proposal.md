@@ -43,19 +43,13 @@ ALTER TABLE [existing_table]
   ADD COLUMN [column_name] [type] [constraints];
 ```
 
-### Rails Models
+### Models
 
-```ruby
-# app/models/[model].rb
-class [Model] < ApplicationRecord
-  belongs_to :[parent]
-  has_many :[children], dependent: :destroy
-
-  validates :[field], presence: true
-  # [other validations]
-
-  scope :[scoping_scope_name], [per PIPELINE.md Multi-Tenant Security, if applicable]
-end
+```
+[Model code following framework conventions from PIPELINE.md and the conventions file.
+Include: associations/relationships, validations/constraints, scopes/queries, class methods.
+If PIPELINE.md has Multi-Tenant Security, include the tenant-scoping scope/query.
+Use the language and framework idioms from PIPELINE.md Framework & Stack.]
 ```
 
 ### Associations Map
@@ -70,8 +64,8 @@ end
 
 | Migration | Type | Notes |
 |-----------|------|-------|
-| Create [table] | DDL | Standard create_table |
-| Add index on [table.column] | DDL | `disable_ddl_transaction!` + concurrent |
+| Create [table] | DDL | Standard table creation per framework conventions |
+| Add index on [table.column] | DDL | Concurrent if supported by framework/database |
 | Backfill [column] | Data | [Strategy: batch update, background job, etc.] |
 
 ### Expected Data Volumes
@@ -83,6 +77,9 @@ end
 ---
 
 ## 2. API Endpoints
+
+<!-- CONDITIONAL: Include this section only if PIPELINE.md has an "API Conventions" section.
+     Otherwise write: "N/A — this project does not expose an API." -->
 
 ### New Endpoints
 
@@ -153,23 +150,24 @@ Include fields, associations, and custom formatting.]
 
 ## 3. Backwards Compatibility
 
+<!-- CONDITIONAL: Include this section only if PIPELINE.md has a "Backwards Compatibility" section.
+     Otherwise write: "N/A — no backwards compatibility concerns for this project." -->
+
 ### Compatibility Matrix
 
-| Feature / Behavior | Web (current) | iOS (current) | iOS (v[old]) | Android (current) | Android (v[old]) |
-|-------------------|:---:|:---:|:---:|:---:|:---:|
-| [Behavior 1] | Full | Full | [Impact] | Full | [Impact] |
-| [Behavior 2] | Full | Full | [Impact] | Full | [Impact] |
+| Feature / Behavior | [Column per active platform and old version from PIPELINE.md Platforms] |
+|-------------------|:---:|
+| [Behavior 1] | [Full/Partial/None per platform] |
+| [Behavior 2] | [Full/Partial/None per platform] |
 
 ### Old Client Behavior
 
-**iOS v[old]:**
-- [What old iOS app sees/doesn't see]
+> One subsection per platform with old versions (from PIPELINE.md Backwards Compatibility).
+
+**[Platform] v[old]:**
+- [What old client sees/doesn't see]
 - [Any degraded functionality]
 - [Any data that appears differently]
-
-**Android v[old]:**
-- [What old Android app sees/doesn't see]
-- [Any degraded functionality]
 
 ### API Versioning
 
@@ -187,10 +185,13 @@ Include fields, associations, and custom formatting.]
 
 ### Query Scoping
 
+<!-- CONDITIONAL: Include scoping chains only if PIPELINE.md has a "Multi-Tenant Security" section.
+     Otherwise focus on authentication and authorization only. -->
+
 | Resource | Scoping Chain |
 |----------|--------------|
-| [Resource] | [Scoping chain per PIPELINE.md Multi-Tenant Security] |
-| [Nested resource] | [Scoping chain per PIPELINE.md Multi-Tenant Security] |
+| [Resource] | [Scoping chain per PIPELINE.md Multi-Tenant Security, if applicable] |
+| [Nested resource] | [Scoping chain, if applicable] |
 
 ### Authorization
 
@@ -208,6 +209,9 @@ Include fields, associations, and custom formatting.]
 ---
 
 ## 5. Export Impact
+
+<!-- CONDITIONAL: Include this section if the PRD mentions exports or the project has export features.
+     Otherwise write: "N/A — no export impact." -->
 
 | Export | Format | Changes | Backwards Compatible? |
 |-------|--------|---------|----------------------|
@@ -240,16 +244,16 @@ Include fields, associations, and custom formatting.]
 ### Files to Create
 | File | Purpose |
 |------|---------|
-| `app/models/[model].rb` | [Purpose] |
-| `app/controllers/api/v1/[controller].rb` | [Purpose] |
-| `app/blueprints/[blueprint].rb` | [Purpose] |
-| `db/migrate/[timestamp]_create_[table].rb` | [Purpose] |
+| `[models dir from PIPELINE.md]/[model file]` | [Purpose] |
+| `[controllers dir from PIPELINE.md]/[controller file]` | [Purpose] |
+| `[serializers dir from PIPELINE.md]/[serializer file]` | [Purpose — if applicable] |
+| `[migrations dir from PIPELINE.md]/[migration file]` | [Purpose] |
 
 ### Files to Modify
 | File | Changes |
 |------|---------|
-| `app/models/[existing_model].rb` | Add association |
-| `config/routes.rb` | Add new routes |
+| `[models dir from PIPELINE.md]/[existing_model file]` | Add association |
+| `[routes path from PIPELINE.md]` | Add new routes |
 
 ---
 

@@ -103,18 +103,7 @@ Get the commit count:
 cd <primary-repo-path> && git log --oneline origin/<base-branch>...<branch-prefix><slug> | wc -l
 ```
 
-Categorize the changed files into groups:
-- **Models** — `app/models/`
-- **Controllers** — `app/controllers/`
-- **Services** — `app/services/`
-- **Views** — `app/views/`
-- **Migrations** — `db/migrate/`
-- **JavaScript** — `app/javascript/`, `app/assets/javascripts/`
-- **Routes** — `config/routes.rb`
-- **Tests** — `spec/`, `test/`
-- **Other** — everything else (config, lib, blueprints, etc.)
-
-Adapt these categories based on the directory structure in PIPELINE.md.
+Categorize the changed files into groups based on the directory structure in PIPELINE.md. Map each file to its purpose category (Models, Controllers, Services, Views, Migrations, Frontend JS, Routes, Tests, Other) using the paths from PIPELINE.md Directory Structure.
 
 ### Step 2: Read all changed files
 
@@ -130,7 +119,7 @@ Compare each non-test file against the conventions file (AGENTS.md or equivalent
 - **File organization** — files are in the correct directories per PIPELINE.md
 - **Architecture patterns** — correct use of service objects, concerns, inheritance, serializers per conventions
 - **Code style** — formatting, structure consistent with existing code and conventions
-- **Framework idioms** — proper use of framework features (e.g., Rails scopes, callbacks, validations)
+- **Framework idioms** — proper use of framework features (e.g., scopes, callbacks, validations — per the conventions file and PIPELINE.md Framework & Stack)
 
 Record findings with specific file:line references and what the convention says.
 
@@ -141,11 +130,11 @@ Record findings with specific file:line references and what the convention says.
 **If PIPELINE.md HAS a "Multi-Tenant Security" section:** Check all of the following:
 
 - **Unscoped queries** — all DB queries must be scoped to account/user (per the Multi-Tenant Security section)
-- **Controller authorization** — `before_action` filters, permission checks in place before data access
-- **Injection vulnerabilities** — no string interpolation in SQL queries, no unsanitized params in views (XSS), no command injection
+- **Controller/handler authorization** — framework authorization patterns (per conventions file) in place before data access
+- **Injection vulnerabilities** — no string interpolation in queries, no unsanitized params in views/templates (XSS), no command injection
 - **Secrets in code** — no hardcoded credentials, API keys, tokens, passwords
 - **API authentication** — all new endpoints require authentication (unless explicitly public in the spec)
-- **Mass assignment** — strong parameters used correctly, no open `permit!`
+- **Mass assignment** — parameter filtering used correctly per framework conventions (e.g., strong parameters in Rails, changesets in Ecto)
 
 For each finding, explain the vulnerability and the specific fix.
 
@@ -162,24 +151,28 @@ Compare the implementation against the architecture proposal and gameplan:
 
 ### Step 6: Review Dimension 4 — Cross-Platform Consistency
 
-**V1: This dimension is a no-op for Rails-only projects.**
+**If PIPELINE.md Platforms has only ONE active platform**, this dimension is a limited check.
 
-If PIPELINE.md has an "API Conventions" section, check:
+**If PIPELINE.md Platforms has 2+ active platforms**, check:
+- API response format consistency across platform implementations
+- Data model assumptions are consistent
+
+**If PIPELINE.md has an "API Conventions" section**, also check:
 - API response format consistency with existing endpoints documented in the conventions
 - Error response format matches the documented pattern
 
-Otherwise, record: "Skipped (V1) — Rails-only review"
+**If none of the above apply**, record: "Skipped — single-platform project with no API conventions"
 
 ### Step 7: Review Dimension 5 — Code Quality
 
 Check all changed files (both test and non-test) for:
 
-- **Debugging artifacts** — `puts`, `pp`, `p `, `debugger`, `binding.pry`, `binding.irb`, `console.log`, `byebug`, `print` statements used for debugging
+- **Debugging artifacts** — check for patterns from PIPELINE.md Framework & Stack "Debug patterns" (e.g., `puts`, `binding.pry`, `console.log`, `IO.inspect` — varies by language)
 - **TODO/FIXME comments** — these should be spec items or Linear tickets, not code comments
 - **Commented-out code** — dead code that should be removed
 - **Dead code** — unused methods, unreachable branches, unused variables
-- **N+1 query patterns** — associations loaded inside loops without eager loading (`.includes`, `.preload`, `.eager_load`)
-- **Missing eager loads** — controller actions that load associations without preloading
+- **N+1 query patterns** — associations loaded inside loops without eager loading (framework-specific eager loading methods per conventions file)
+- **Missing eager loads** — controller/handler actions that load associations without preloading
 - **Unnecessary complexity** — overly complex logic that could be simplified
 
 ### Step 8: Review Dimension 6 — Test Coverage

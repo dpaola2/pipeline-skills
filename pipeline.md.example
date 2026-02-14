@@ -19,6 +19,20 @@
 >
 > The primary repository's `PIPELINE.md` is the one skills read most — it has the framework details,
 > directory structure, and implementation order that drive Stages 1-7.
+>
+> ### Required PIPELINE.md fields used by skills
+>
+> **Repository Details:**
+> - Default branch, Conventions file, Test command, Test directory, Branch prefix, PR base branch
+> - **App type** — `web-api`, `web-only`, `api-only`, `cli`, `desktop`, or `library`
+> - **Platform label** — Human-readable name for commit messages and reports (e.g., `Rails`, `Phoenix`, `Django`)
+>
+> **Framework & Stack:**
+> - Language, Framework, Test framework, ORM, Database, etc.
+> - **Syntax check** — Command to verify file syntax (e.g., `ruby -c {file}`, `elixir -c {file}`, `node --check {file}`)
+> - **Debug patterns** — Regex of debug artifacts to check for (e.g., `binding\.pry\|puts\|pp\|debugger\|byebug`)
+> - **Seed command format** — How to run seed/data tasks (e.g., `bundle exec rake {task}`, `mix run {task}`)
+> - **Test data pattern** — How test data is set up: `factories`, `fixtures`, or `manual`
 
 ---
 

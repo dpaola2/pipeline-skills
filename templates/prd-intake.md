@@ -51,7 +51,7 @@ pipeline_completed_at: "[ISO 8601 timestamp]"
 
 | ID | Requirement | Platform | Priority |
 |----|------------|----------|----------|
-| [XX-001] | [Specific, testable requirement] | Web / iOS / Android / All | Must / Should / Nice |
+| [XX-001] | [Specific, testable requirement] | [Platform from PIPELINE.md] / All | Must / Should / Nice |
 | [XX-002] | [Specific, testable requirement] | [Platform] | [Priority] |
 
 ### [Functional Area 2]
@@ -64,17 +64,18 @@ pipeline_completed_at: "[ISO 8601 timestamp]"
 
 ## 4. Platform-Specific Requirements
 
-### Web (Rails Admin)
-- [Web-specific requirements, UI expectations, admin workflows]
+> Include one subsection per active platform from PIPELINE.md Platforms table.
+> Mark platforms not in scope as "No changes required — Level [N] project."
 
-### iOS
-- [iOS-specific requirements, UI patterns, device considerations]
-- **Old app compatibility:** [What old iOS versions see/don't see]
+### [Primary Platform from PIPELINE.md]
+- [Platform-specific requirements, UI expectations, workflows]
 
-### Android
-- [Android-specific requirements, UI patterns, device considerations]
-- **Old app compatibility:** [What old Android versions see/don't see]
+<!-- CONDITIONAL: Include one subsection per additional active platform from PIPELINE.md Platforms -->
+### [Additional Platform]
+- [Platform-specific requirements, UI patterns, device considerations]
+- **Old app compatibility:** [What old versions see/don't see — if PIPELINE.md has Backwards Compatibility section]
 
+<!-- CONDITIONAL: Include only if PIPELINE.md has API Conventions section -->
 ### API
 - [API requirements that serve all platforms]
 - [Authentication/authorization requirements]
@@ -111,11 +112,14 @@ pipeline_completed_at: "[ISO 8601 timestamp]"
 
 ## 7. Backwards Compatibility
 
+<!-- CONDITIONAL: Include this section only if PIPELINE.md has a Backwards Compatibility section.
+     Otherwise write: "N/A — no backwards compatibility concerns for this project." -->
+
 ### Compatibility Matrix
 
-| Feature | Web (current) | iOS (current) | iOS (old) | Android (current) | Android (old) |
-|---------|:---:|:---:|:---:|:---:|:---:|
-| [Feature aspect 1] | [Full/Partial/None] | [Full/Partial/None] | [Full/Partial/None] | [Full/Partial/None] | [Full/Partial/None] |
+| Feature | [Column per active platform and old version from PIPELINE.md Platforms] |
+|---------|:---:|
+| [Feature aspect 1] | [Full/Partial/None per platform] |
 
 ### Migration Strategy
 - [How existing data transitions]

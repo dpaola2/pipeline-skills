@@ -104,6 +104,7 @@ Use the Task tool with an Explore agent to analyze the repository. The agent sho
 
 **Language & Framework:**
 - `Gemfile` → Ruby/Rails (read for Rails version, Ruby version from `.ruby-version`)
+- `mix.exs` → Elixir (check for Phoenix, Scenic, Nerves)
 - `package.json` → Node.js (check for framework: Next.js, Express, etc.)
 - `requirements.txt` or `pyproject.toml` → Python (check for Django, Flask, FastAPI)
 - `go.mod` → Go
@@ -121,12 +122,29 @@ Use the Task tool with an Explore agent to analyze the repository. The agent sho
 - Deploy: `kamal`, `capistrano`, presence of `Procfile` (Heroku)
 - Background jobs: `sidekiq`, `solid_queue`, `good_job`, `delayed_job`
 
+**For Elixir repos, also detect:**
+- Test framework: ExUnit (default), or check for Wallaby (browser tests)
+- Web framework: Phoenix (check for `phoenix` in mix.exs deps)
+- Database: Ecto with `postgrex` (PostgreSQL), `ecto_sqlite3` (SQLite)
+- Desktop: Check for `scenic` (desktop GUI framework)
+
 **For all repos, detect:**
-- Test command: `.rspec` file → `bundle exec rspec`, `pytest.ini`/`conftest.py` → `pytest`, `jest.config.*` → `npx jest`
+- Test command: `.rspec` file → `bundle exec rspec`, `pytest.ini`/`conftest.py` → `pytest`, `jest.config.*` → `npx jest`, `mix.exs` → `mix test`
 - Conventions file: `CLAUDE.md`, `AGENTS.md`, `CONVENTIONS.md`, `CONTRIBUTING.md`
 - CI config: `.github/workflows/`, `.circleci/`, `Jenkinsfile`
 - Linters and security tools from CI config and dependency files
 - Directory structure: `app/models/`, `app/controllers/`, `app/services/`, `app/views/`, `app/jobs/`, `app/mailers/`, `spec/`, `test/`, `src/`, `lib/`
+
+**New fields to detect (for all frameworks):**
+
+| Field | Detection Logic |
+|-------|----------------|
+| **App type** | Rails with API routes → `web-api`; Rails without API → `web-only`; Phoenix → `web-only` (or `web-api` if API routes found); Scenic → `desktop`; CLI tools → `cli`; Hex/npm packages → `library` |
+| **Platform label** | Rails → `Rails`; Phoenix → `Phoenix`; Elixir (non-Phoenix) → `Elixir`; Django → `Django`; Flask → `Flask`; FastAPI → `FastAPI`; Next.js → `Next.js`; Express → `Express` |
+| **Syntax check** | Ruby → `ruby -c {file}`; Elixir → `elixir -c {file}`; Python → `python -m py_compile {file}`; Node.js/TS → `node --check {file}` |
+| **Debug patterns** | Ruby → `binding\.pry\|puts\|pp\|debugger\|byebug`; Elixir → `IO\.inspect\|IO\.puts\|dbg`; Python → `breakpoint\(\)\|pdb\.set_trace\|print\(`; Node.js → `console\.log\|debugger` |
+| **Seed command format** | Rails → `bundle exec rake {task}`; Elixir → `mix run {task}`; Django → `python manage.py {task}`; Node.js → `node {task}` |
+| **Test data pattern** | Rails: check for FactoryBot → `factories`; fixtures dir → `fixtures`. Elixir: check for `ex_machina` → `factories`; else `fixtures`. Python: check for `factory_boy` → `factories`; else `fixtures`. Node.js: check for test helpers → `manual` |
 
 ### Step 3: Present Findings for Confirmation
 
@@ -212,32 +230,17 @@ If no tools were confirmed, omit the Complexity Analysis section entirely.
 
 ### Step 5: Detect Directory Structure
 
-Use Glob to find which standard directories exist in the repo:
+Use Glob to find which standard directories exist in the repo. Check for framework-appropriate directories based on the detected language/framework:
 
-```
-app/models/
-app/controllers/
-app/views/
-app/services/
-app/helpers/
-app/javascript/controllers/
-app/jobs/
-app/mailers/
-app/blueprints/
-app/serializers/
-spec/models/
-spec/requests/
-spec/controllers/
-spec/services/
-spec/jobs/
-spec/mailers/
-spec/system/
-spec/features/
-spec/factories/
-test/
-src/
-lib/tasks/pipeline/
-```
+**Rails:** `app/models/`, `app/controllers/`, `app/views/`, `app/services/`, `app/helpers/`, `app/javascript/controllers/`, `app/jobs/`, `app/mailers/`, `app/blueprints/`, `app/serializers/`, `spec/models/`, `spec/requests/`, `spec/controllers/`, `spec/services/`, `spec/jobs/`, `spec/mailers/`, `spec/system/`, `spec/features/`, `spec/factories/`, `test/`, `lib/tasks/pipeline/`
+
+**Elixir/Phoenix:** `lib/[app_name]/`, `lib/[app_name]_web/controllers/`, `lib/[app_name]_web/live/`, `lib/[app_name]_web/templates/`, `lib/[app_name]_web/components/`, `priv/repo/migrations/`, `test/`, `test/support/`
+
+**Python/Django:** `[app]/models/`, `[app]/views/`, `[app]/serializers/`, `[app]/tests/`, `migrations/`, `templates/`
+
+**Node.js:** `src/`, `src/controllers/`, `src/models/`, `src/routes/`, `src/services/`, `test/`, `__tests__/`
+
+**General:** `src/`, `lib/`, `test/`, `tests/`, `config/`
 
 Include only directories that actually exist.
 
@@ -246,9 +249,9 @@ Include only directories that actually exist.
 Write `<repo-path>/PIPELINE.md` following the standard structure. Use the OrangeQC `PIPELINE.md` as a structural reference (read it for section ordering and formatting).
 
 **REQUIRED sections** (always include):
-- Repository Details (with detected default branch, test command, branch prefix `pipeline/`, PR base branch = default branch)
+- Repository Details (with detected default branch, test command, branch prefix `pipeline/`, PR base branch = default branch, **App type**, **Platform label**)
 - Platforms (single row for the detected platform)
-- Framework & Stack (detected values)
+- Framework & Stack (detected values, plus **Syntax check**, **Debug patterns**, **Seed command format**, **Test data pattern**)
 - Directory Structure (detected paths)
 - Implementation Order (standard for the detected framework)
 - Guardrails (standard rules: no direct commits to default branch, no push without request, no destructive operations)

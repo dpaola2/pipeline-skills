@@ -44,10 +44,9 @@ pipeline_completed_at: "[ISO 8601 timestamp]"
 
 | Type | File | Count | Covers |
 |------|------|-------|--------|
-| Model specs | `spec/models/...` | [N] | [What's covered] |
-| Service specs | `spec/services/...` | [N] | [What's covered] |
-| Request specs | `spec/requests/...` | [N] | [What's covered] |
-| Exporter specs | `spec/services/exporter/...` | [N] | [What's covered] |
+| [Test type] | `[test dir from PIPELINE.md]/...` | [N] | [What's covered] |
+
+> One row per test type, using directory paths from PIPELINE.md Directory Structure.
 
 ### What Automated Tests Verify
 - [Bullet list of key behaviors verified by automated tests]
@@ -56,14 +55,14 @@ pipeline_completed_at: "[ISO 8601 timestamp]"
 
 ## 3. Test Data Setup
 
-### Rake Task
+### Test Data Setup
 
 ```bash
 cd [primary repo path from pipeline.md Target Repositories]
-[run seed task per framework — e.g., bundle exec rake pipeline:seed_[slug]]
+[seed command from PIPELINE.md Framework & Stack, e.g., bundle exec rake pipeline:seed_[slug]]
 ```
 
-[If no rake task exists: "No seed task was created for this project. Test data must be set up manually — see scenarios below."]
+[If no seed task exists: "No seed task was created for this project. Test data must be set up manually — see scenarios below."]
 
 ### Scenarios Seeded
 

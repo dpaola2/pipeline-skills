@@ -11,7 +11,7 @@
 | **Agent Type** | Technical designer |
 | **Input** | PRD + Discovery Report |
 | **Output** | Architecture Proposal |
-| **Repos Accessed** | Rails (primary), iOS/Android (reference) |
+| **Repos Accessed** | Primary repo, additional platform repos (reference) |
 | **Human Review** | **Required** — Architecture Review checkpoint (before Stage 3) |
 | **Linear** | Creates architecture review issue |
 
@@ -27,13 +27,13 @@ The architecture agent proposes the technical design for the feature. This is th
    - New tables, columns, indexes
    - Modifications to existing tables
    - Associations and relationships
-   - UUIDv7 primary keys (OrangeQC convention)
+   - Primary key format per PIPELINE.md conventions
    - Data types and constraints
    - Default values and nullability
 
 2. **Migration Planning:**
    - DDL statements needed
-   - `disable_ddl_transaction!` for concurrent index operations
+   - Concurrent index operations (if supported by framework/database)
    - Backfill strategy (if migrating existing data)
    - Rollback plan
    - Expected data volumes and growth
@@ -42,7 +42,7 @@ The architecture agent proposes the technical design for the feature. This is th
    - New or modified endpoints (method, path, purpose)
    - Full example request JSON (with all fields)
    - Full example response JSON (with all fields)
-   - Serializer/blueprint design
+   - Serializer design (per PIPELINE.md Framework & Stack)
    - Pagination requirements
    - Error response format
    - Human-readable formats (ISO 8601, string enums, readable numbers)
@@ -79,9 +79,9 @@ The agent should:
 
 ### Convention Adherence
 
-The architecture proposal must follow conventions from `AGENTS.md`:
+The architecture proposal must follow conventions from the conventions file (path from PIPELINE.md):
 - Naming conventions (table names, column names, endpoint paths)
-- Serialization patterns (Blueprinter, jbuilder, or whatever the project uses)
+- Serialization patterns (per PIPELINE.md Framework & Stack)
 - Migration patterns (how the project handles schema changes)
 - API response structure (envelope format, meta fields, pagination format)
 
@@ -102,7 +102,7 @@ Uses template: `templates/architecture-proposal.md`
 
 Key sections:
 1. **Data Model Changes** - New/modified tables with full schema
-2. **Migrations** - SQL/Rails migration code
+2. **Migrations** - Migration code per framework conventions
 3. **API Endpoints** - Full request/response examples
 4. **Backwards Compatibility** - Compatibility matrix
 5. **Security** - Scoping and authorization design
@@ -117,15 +117,15 @@ Key sections:
 For each endpoint, the proposal should include:
 
 ```
-### POST /api/v1/checklists/:checklist_id/sections
+### POST /api/v1/resources/:resource_id/items
 
-**Purpose:** Create a new section within a checklist
+**Purpose:** Create a new item within a resource
 
 **Request:**
 ```json
 {
-  "section": {
-    "name": "Bathroom Fixtures",
+  "item": {
+    "name": "Example Item",
     "position": 2
   }
 }
@@ -134,20 +134,20 @@ For each endpoint, the proposal should include:
 **Response (201 Created):**
 ```json
 {
-  "section": {
+  "item": {
     "id": "01234567-89ab-cdef-0123-456789abcdef",
-    "name": "Bathroom Fixtures",
+    "name": "Example Item",
     "position": 2,
-    "checklist_id": "fedcba98-7654-3210-fedc-ba9876543210",
-    "line_items_count": 0,
+    "resource_id": "fedcba98-7654-3210-fedc-ba9876543210",
+    "items_count": 0,
     "created_at": "2026-02-05T14:30:00Z",
     "updated_at": "2026-02-05T14:30:00Z"
   }
 }
 ```
 
-**Authorization:** User must have edit access to the checklist's account.
-**Scoping:** Checklist looked up via `current_account.checklists.find(params[:checklist_id])`
+**Authorization:** User must have edit access to the resource's account.
+**Scoping:** [Per PIPELINE.md Multi-Tenant Security scoping chain, if applicable]
 ```
 
 ---
@@ -188,7 +188,7 @@ Key questions:
 - [ ] Security scoping is explicit for every new data access path
 - [ ] Proposal follows existing codebase patterns (from discovery report)
 - [ ] Open questions are specific and actionable
-- [ ] A mobile engineer could read the API section and know exactly what to build against
+- [ ] An engineer on another platform could read the API section and know exactly what to build against
 - [ ] The proposal is self-contained enough for a human to review without running code
 
 ---
@@ -201,4 +201,4 @@ Key questions:
 | API design inconsistent with existing endpoints | Review compares to existing patterns | Align with established patterns |
 | Missing backwards compatibility analysis | Checklist review | Add compatibility matrix |
 | Over-engineering (too many abstractions) | Human review flags complexity | Simplify to minimum viable design |
-| Under-specifying (vague endpoint descriptions) | Mobile engineers can't build from it | Add explicit examples |
+| Under-specifying (vague endpoint descriptions) | Other platform engineers can't build from it | Add explicit examples |

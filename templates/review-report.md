@@ -93,7 +93,7 @@ pipeline_review_notes: "[count]"
 | Convention Compliance | [Pass / Fail] | [count by severity, e.g., "1 Major, 2 Minor"] |
 | Security | [Pass / Fail / Skipped] | [count or "N/A — no multi-tenant security config"] |
 | Spec Compliance | [Pass / Fail] | [count by severity] |
-| Cross-Platform Consistency | Skipped (V1) | N/A — Rails-only review |
+| Cross-Platform Consistency | [Pass / Fail / Skipped] | [count or "N/A — single-platform project" or "Skipped — no API conventions"] |
 | Code Quality | [Pass / Fail] | [count by severity] |
 | Test Coverage | [Pass / Fail] | [count by severity] |
 
@@ -114,27 +114,11 @@ A dimension **Fails** if it has any Blocker or Major findings. **Pass** means Mi
 
 ### Files Reviewed
 
-[List all reviewed files, grouped by category:]
+[List all reviewed files, grouped by category. Derive categories from PIPELINE.md Directory Structure
+— use the Purpose column as the group heading. Example categories: Models, Controllers, Services,
+Views, Migrations, Frontend JS, Routes, Tests, Other.]
 
-**Models:**
-- `[file_path]`
-
-**Controllers:**
-- `[file_path]`
-
-**Services:**
-- `[file_path]`
-
-**Views:**
-- `[file_path]`
-
-**Migrations:**
-- `[file_path]`
-
-**JavaScript:**
-- `[file_path]`
-
-**Routes:**
+**[Category from PIPELINE.md Directory Structure]:**
 - `[file_path]`
 
 **Tests:**

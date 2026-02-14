@@ -23,14 +23,14 @@ pipeline_completed_at: "[ISO 8601 timestamp]"
 ### Entities Identified
 | Entity | PRD Reference | Existing? | Current Location |
 |--------|--------------|-----------|-----------------|
-| [Entity 1] | [Requirement ID] | Yes / No | `app/models/entity.rb` or N/A |
+| [Entity 1] | [Requirement ID] | Yes / No | `[models directory from PIPELINE.md]/[entity file]` or N/A |
 | [Entity 2] | [Requirement ID] | Yes / No | [Path] or N/A |
 
 ### Platforms Affected
-- [ ] Rails (Web Admin)
-- [ ] Rails (API)
-- [ ] iOS
-- [ ] Android
+> One checkbox per active platform from PIPELINE.md Platforms table.
+
+- [ ] [Primary platform from PIPELINE.md]
+- [ ] [Additional platform, if listed in PIPELINE.md Platforms]
 
 ---
 
@@ -45,8 +45,9 @@ pipeline_completed_at: "[ISO 8601 timestamp]"
 
 ```sql
 -- [table_name]
+-- (from schema file: [schema path from PIPELINE.md Directory Structure])
 CREATE TABLE [table_name] (
-  [column definitions from schema.rb]
+  [column definitions from schema file]
 );
 ```
 
@@ -77,8 +78,7 @@ CREATE TABLE [table_name] (
 ### Related Tests
 | Test File | Coverage | Type |
 |-----------|----------|------|
-| [model test directory]/... | [What's tested] | Model/unit test |
-| [request test directory]/... | [What's tested] | Request/integration test |
+| [test directory from PIPELINE.md]/... | [What's tested] | [Test type] |
 
 ### Related Background Jobs
 | Job | File | Purpose |
@@ -87,17 +87,20 @@ CREATE TABLE [table_name] (
 
 ---
 
-## 3. Current State: iOS
+<!-- CONDITIONAL: Repeat the following section for each ADDITIONAL active platform from PIPELINE.md Platforms.
+     If only one active platform exists, omit these sections entirely. -->
+
+## 3. Current State: [Additional Platform Name]
 
 ### Related Code
 | Component | File | Type | Notes |
 |-----------|------|------|-------|
-| [Component] | [Path] | Model / VC / View | [Notes] |
+| [Component] | [Path] | [Component type] | [Notes] |
 
 ### Patterns Used
-- [Architecture pattern: MVC / MVVM / etc.]
+- [Architecture pattern]
 - [Networking pattern: how API calls are made]
-- [Data persistence: Core Data / UserDefaults / etc.]
+- [Data persistence approach]
 
 ### Related Tests
 | Test File | Coverage |
@@ -106,30 +109,14 @@ CREATE TABLE [table_name] (
 
 ---
 
-## 4. Current State: Android
+## 4. Cross-Platform Patterns
 
-### Related Code
-| Component | File | Type | Notes |
-|-----------|------|------|-------|
-| [Component] | [Path] | Model / Activity / Fragment | [Notes] |
-
-### Patterns Used
-- [Architecture pattern: MVVM / Clean Architecture / etc.]
-- [Networking pattern: Retrofit / etc.]
-- [Data persistence: Room / SharedPreferences / etc.]
-
-### Related Tests
-| Test File | Coverage |
-|-----------|----------|
-| [Path] | [What's tested] |
-
----
-
-## 5. Cross-Platform Patterns
+<!-- CONDITIONAL: If PIPELINE.md Platforms has 2+ active platforms, fill this section.
+     If only one active platform, write: "N/A — single-platform project." -->
 
 ### Data Flow
 ```
-[How data currently flows from Rails → API → iOS/Android]
+[How data currently flows between platforms]
 ```
 
 ### Serialization Format
@@ -143,7 +130,7 @@ CREATE TABLE [table_name] (
 
 ---
 
-## 6. Technical Risks
+## 5. Technical Risks
 
 | Risk | Severity | Details | Mitigation |
 |------|----------|---------|------------|
@@ -161,7 +148,7 @@ CREATE TABLE [table_name] (
 
 ---
 
-## 7. Open Questions
+## 6. Open Questions
 
 | # | Question | Source | Blocking? |
 |---|----------|--------|-----------|
@@ -170,7 +157,7 @@ CREATE TABLE [table_name] (
 
 ---
 
-## 8. Recommendations for Architecture Stage
+## 7. Recommendations for Architecture Stage
 
 - [Pattern to follow for the new feature]
 - [Existing code to extend vs replace]

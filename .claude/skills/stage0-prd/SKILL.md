@@ -96,10 +96,17 @@ Generate a metadata table at the top of the PRD:
 | **Level** | [CONFIRM — suggest 1, 2, or 3 based on scope] |
 ```
 
-Level guidance:
-- **Level 1** — Small, self-contained changes. Config tweaks, simple UI additions, backend-only adjustments. One developer, no cross-platform coordination.
-- **Level 2** — Web-only features. New pages, reports, workflows, settings. May involve model + controller + views but stays within one platform.
-- **Level 3** — Cross-platform features. Requires coordinated changes across Rails, iOS, and Android. New API endpoints consumed by mobile clients.
+Level guidance — read the Platforms table in `PIPELINE.md` to determine which definition set applies:
+
+**If PIPELINE.md Platforms lists only ONE active platform:**
+- **Level 1** — Small, self-contained changes. Config tweaks, simple UI additions, backend-only adjustments. 1-2 files.
+- **Level 2** — Medium scope features. New pages, reports, workflows, settings. Multiple files, one milestone.
+- **Level 3** — Large scope features. Significant new capability, multiple milestones.
+
+**If PIPELINE.md Platforms lists MULTIPLE active platforms:**
+- **Level 1** — Small, single-platform only.
+- **Level 2** — Primary platform only (web). New pages, reports, workflows, settings. May involve model + controller + views but stays within one platform.
+- **Level 3** — Cross-platform features. Requires coordinated changes across all active platforms. New API endpoints consumed by other platform clients.
 
 #### Section-by-Section Rules
 

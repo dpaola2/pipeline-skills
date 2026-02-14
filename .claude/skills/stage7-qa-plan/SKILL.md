@@ -75,7 +75,7 @@ Read the "Manual QA" row in the gameplan's Testing Plan table. This is a high-le
 ### 2. Collect Test Data Scenarios
 
 Read the QA Test Data milestone from the progress file. Identify:
-- What rake task was created (name, location)
+- What seed task was created (name, location — per PIPELINE.md Framework & Stack Seed command format)
 - What scenarios it seeds (accounts, permissions, data volumes)
 - What credentials or URLs it produces
 - How to run it (command, prerequisites)
@@ -161,7 +161,7 @@ Commit the QA plan to version control in the projects directory:
 ## What NOT To Do
 
 - **Do not run tests or write code.** This is a document-generation stage.
-- **Do not modify any files in the Rails repo.** You only produce `qa-plan.md` in the agent-pipeline repo.
+- **Do not modify any files in the primary repo.** You only produce `qa-plan.md` in the projects directory.
 - **Do not duplicate automated test coverage.** Focus exclusively on what needs manual verification.
 - **Do not include vague test instructions.** Not "verify the report works" — be specific about what to check.
 - **Do not skip the pre-flight check.** All milestones must be complete before generating the QA plan.
@@ -172,4 +172,4 @@ Tell the user:
 1. The QA plan has been written to `<projects-path>/$ARGUMENTS/qa-plan.md`
 2. Summarize: how many manual test scenarios, key focus areas, known limitations count
 3. Mention whether test data setup instructions are included or manual setup is needed
-4. **Remind them:** "The QA plan is ready for handoff. Next steps: push the implementation branch, create a PR against `staging`, and share this QA plan with the tester."
+4. **Remind them:** "The QA plan is ready for handoff. Next steps: run `/create-pr $ARGUMENTS` to push the branch and create a PR against the default branch (from PIPELINE.md), then share this QA plan with the tester."
