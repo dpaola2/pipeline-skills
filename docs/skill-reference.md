@@ -51,6 +51,22 @@ Skills read from the `## Pipeline Configuration` section of the conventions file
 
 ## Skill Reference
 
+### `/setup [repo-path]`
+
+Auto-detect framework, stack, and directory structure, then write the Pipeline Configuration section into the conventions file.
+
+| | |
+|---|---|
+| **Invocation** | `/setup` or `/setup <repo-path>` |
+| **Arguments** | Optional `repo-path` — defaults to current working directory |
+| **Prerequisites** | Target directory is a git repository with a dependency file (Gemfile, package.json, mix.exs, etc.) |
+| **Reads** | Dependency files, CI config, directory structure, git config |
+| **Produces** | `## Pipeline Configuration` section in the conventions file; creates projects directory |
+| **Side Effects** | Creates or modifies conventions file; creates projects/inbox directories |
+| **Human Action** | Review the generated Pipeline Configuration and adjust any values before running pipeline stages. |
+
+---
+
 ### `/prd`
 
 Generate a structured PRD from raw inbox notes.
@@ -267,6 +283,7 @@ Quick-reference sequence showing the full pipeline with arguments and key gates.
 
 | Step | Command | Arguments | Gate Before | Key Output |
 |------|---------|-----------|-------------|------------|
+| — | `/setup` | `[repo-path]` | Git repo exists | `## Pipeline Configuration` in conventions file |
 | 0 | `/prd` | _(interactive)_ | Inbox has files | `prd.md` |
 | — | _Human reviews PRD_ | | | |
 | 1 | `/discovery` | `<slug>` | `prd.md` exists | `discovery-report.md` |
@@ -282,10 +299,11 @@ Quick-reference sequence showing the full pipeline with arguments and key gates.
 | 7 | `/qa-plan` | `<slug>` | All milestones complete | `qa-plan.md` |
 | PR | `/create-pr` | `<slug>` | All complete; QA plan exists; no open PR | GitHub PR + `metrics.md` |
 
-### Utility Skills (run anytime)
+### Setup & Utility Skills (run anytime)
 
 | Command | Arguments | Purpose |
 |---------|-----------|---------|
+| `/setup` | `[repo-path]` | Auto-detect stack, write Pipeline Configuration |
 | `/metrics` | `<slug>` | Compute timing metrics from frontmatter |
 | `/quality` | `<slug>` | Generate code quality report |
 | `/release-notes` | `<cycle_number>` | Generate release notes from Linear cycle |

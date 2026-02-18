@@ -36,8 +36,8 @@ Skills locate the conventions file in the repo root (first of `CLAUDE.md`, `AGEN
 
 **To add a new product to the pipeline:**
 1. Copy the skills from `.claude/skills/` into the target repo
-2. Add a `## Pipeline Configuration` section to the target repo's conventions file (use an existing repo's section as a template)
-3. Create the projects directory (e.g., `../pipeline-projects/` with an `inbox/` subdirectory)
+2. Run `/setup` from the target repo — it auto-detects framework, stack, and directories, then writes the Pipeline Configuration section
+3. (Or manually: add a `## Pipeline Configuration` section using `docs/examples/pipeline-configuration.md` as a template)
 
 Sections marked REQUIRED apply to every project. Sections marked OPTIONAL can be omitted if they don't apply.
 
@@ -86,6 +86,9 @@ The inbox (raw input notes for Stage 0) also lives externally, at Pipeline Confi
 The pipeline runs manually from the target repo directory, one stage at a time:
 
 ```
+/setup                                            → auto-detects framework/stack, writes Pipeline Configuration
+                                                    (run once per repo, before first project)
+
 /prd                                              → lists inbox files, asks for selection + slug,
                                                     produces prd.md (REVIEW BEFORE CONTINUING)
 
@@ -124,7 +127,7 @@ Review `<projects-path>/<slug>/gameplan.md` and confirm the milestones, acceptan
 ## Working in This Project
 
 ### Current Phase: Operational
-- Skills exist for Stages 0-7, plus create-pr, metrics, quality, release-notes, and backfill-timing (`.claude/skills/`)
+- Skills exist for Stages 0-7, plus setup, create-pr, metrics, quality, release-notes, and backfill-timing (`.claude/skills/`)
 - Each stage runs as a manual Claude Code session from the target repo
 - Skills are self-contained — templates and success criteria are embedded, not external files
 

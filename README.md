@@ -33,84 +33,17 @@ cp -r agent-pipeline/.claude/skills/* /path/to/your-project/.claude/skills/
 
 ### Setup
 
-**1. Add Pipeline Configuration to your conventions file:**
+Run the setup skill from your target repo to auto-detect your framework, stack, and directory structure:
 
-Your repo should have a conventions file (`CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md`). Add a `## Pipeline Configuration` section with the required sub-sections. Use this template:
-
-```markdown
-## Pipeline Configuration
-
-> Pipeline skills read this section to understand how to run the agent pipeline against this repo.
-> Run skills from this repo's root directory.
-
-### Work Directory
-
-| Setting | Path |
-|---------|------|
-| **Projects** | `../pipeline-projects/` |
-| **Inbox** | `../pipeline-projects/inbox/` |
-
-### Project Tracker
-
-| Setting | Value |
-|---------|-------|
-| **Tool** | None |
-
-### Repository Details
-
-| Setting | Value |
-|---------|-------|
-| **Default branch** | `main` |
-| **Test command** | `[your test command]` |
-| **Test directory** | `[your test directory]` |
-| **Branch prefix** | `pipeline/` |
-| **PR base branch** | `main` |
-
-### Platforms
-
-| Platform | Status | Notes |
-|----------|--------|-------|
-| [Your platform] | Active | [description] |
-
-### Framework & Stack
-
-| Setting | Value |
-|---------|-------|
-| **Language** | [language] |
-| **Framework** | [framework] |
-| **Test framework** | [test framework] |
-| [add more as needed] | |
-
-### Directory Structure
-
-| Purpose | Path |
-|---------|------|
-| Models | [path] |
-| Controllers | [path] |
-| Tests | [path] |
-| [add more as needed] | |
-
-### Implementation Order
-
-1. [Your implementation sequence]
-
-### Guardrails
-
-| Guardrail | Rule |
-|-----------|------|
-| **Production access** | Agents NEVER have production access. |
-| **Default branch** | Never commit or merge directly to the default branch. |
-| **Push** | Never push without explicit user request. |
-| **Destructive operations** | No `drop_table`, `reset`, or data deletion without human approval. |
+```
+/setup
 ```
 
-**2. Create the projects directory:**
+This detects your framework, test tools, linters, and directory layout, then writes the `## Pipeline Configuration` section into your conventions file. It also creates the projects directory.
 
-```bash
-mkdir -p ../pipeline-projects/inbox
-```
+If you prefer manual setup, copy the annotated example from [`docs/examples/pipeline-configuration.md`](docs/examples/pipeline-configuration.md) into your conventions file and fill in the values.
 
-**3. Create your first project:**
+**Then create your first project:**
 
 Drop rough notes (feature ideas, requirements, anything) into the inbox directory, then run Claude Code from your repo and:
 
@@ -223,6 +156,7 @@ These checkpoints exist because errors amplify downstream. A wrong data model de
 ├── CLAUDE.md                          # Agent context for working on this repo
 │
 ├── .claude/skills/                    # Pipeline skills (the engine)
+│   ├── setup/SKILL.md                 # /setup [repo-path]
 │   ├── prd/SKILL.md                   # /prd
 │   ├── discovery/SKILL.md             # /discovery <slug>
 │   ├── architecture/SKILL.md          # /architecture <slug>
@@ -278,10 +212,11 @@ Project artifacts (PRDs, gameplans, progress files) live **outside** this repo, 
 | `/qa-plan` | `/qa-plan <slug>` | Generate manual QA testing plan |
 | `/create-pr` | `/create-pr <slug>` | Push branch, create PR with generated summary |
 
-### Utility Skills
+### Setup & Utility Skills
 
 | Skill | Usage | What It Does |
 |-------|-------|-------------|
+| `/setup` | `/setup [repo-path]` | Auto-detect framework/stack, write Pipeline Configuration |
 | `/metrics` | `/metrics <slug>` | Collect timing and quality metrics for a project |
 | `/quality` | `/quality <slug>` | Run post-flight quality checks on a completed project |
 | `/release-notes` | `/release-notes <cycle>` | Generate release notes from Linear cycle data |

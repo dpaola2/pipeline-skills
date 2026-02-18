@@ -86,17 +86,23 @@ git clone <pipeline-repo-url> agent-pipeline
 cp -r agent-pipeline/.claude/skills/* my-app/.claude/skills/
 ```
 
-### Step 3: Add Pipeline Configuration to Your Conventions File
+### Step 3: Run Pipeline Setup
 
-Your target repo should have a conventions file (`CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md`). Add a `## Pipeline Configuration` section to it. See an existing repo's conventions file for the format, or check `README.md` for a template.
+From your target repo directory, run:
 
-The section includes: Work Directory, Project Tracker, Repository Details, Platforms, Framework & Stack, Directory Structure, Implementation Order, and Guardrails.
-
-### Step 4: Create the Projects Directory
-
-```bash
-mkdir -p ~/projects/my-product/pipeline-projects/inbox
 ```
+/setup
+```
+
+This auto-detects your framework, test tools, linters, and directory structure, then writes the `## Pipeline Configuration` section into your conventions file (`CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md`). It also creates the projects directory.
+
+Review the generated configuration and adjust any values before continuing.
+
+**Manual alternative:** If you prefer to set up manually, copy the annotated example from [`docs/examples/pipeline-configuration.md`](examples/pipeline-configuration.md) into your conventions file and fill in the values. The example includes every required and optional section with guidance on when each applies.
+
+**Required sections:** Work Directory, Project Tracker, Repository Details, Platforms, Framework & Stack, Directory Structure, Implementation Order, Guardrails.
+
+**Optional sections** (include only if they apply): Post-Flight Checks, Related Repositories, API Conventions, Multi-Tenant Security, Backwards Compatibility, Complexity Analysis.
 
 ### Step 5: Start a Project
 
