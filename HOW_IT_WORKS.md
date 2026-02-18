@@ -46,7 +46,7 @@ Execution (writes code, creates PRs)
   Stage 4: Test Generation
   Stage 5: Implementation
   Stage 6: Review
-  Stage 7: Validation
+  Stage 7: QA Plan
 ```
 
 Stages 1-2 are safe to run on any PRD with zero risk — they only produce documents. The architecture gets reviewed and locked down before the gameplan is generated, and the gameplan gets reviewed before any code is written. This two-checkpoint approach catches design issues early (when they're cheap to fix) rather than during implementation (when they're expensive).
@@ -241,16 +241,15 @@ These are non-negotiable across all stages:
 
 **The pipeline is operational and has been validated end-to-end on multiple projects.**
 
-Stages 0-5 and 7 have Claude Code skills that run as manual sessions. Stage 6 (Review) is spec'd but not yet automated; code review is currently manual.
+All stages (0-7) have Claude Code skills. Each skill is self-contained — templates and success criteria are embedded directly, with no external file dependencies.
 
 **What's working:**
-- Stage specs, templates, and process documentation
-- Claude Code skills for Stages 0-5 and 7 (run via `/stage0-prd`, `/stage1-discovery`, etc.)
+- Claude Code skills for all stages (run via `/stage0-prd`, `/stage1-discovery`, etc.)
 - Multi-product support (switch between products via pipeline configs)
-- Complete end-to-end runs on real projects
+- Complete end-to-end runs on real projects across multiple products
+- Utility skills for metrics, quality checks, and release notes
 
 **What's next:**
-- Stage 6 (Review) skill — automated code review against repo conventions
 - Orchestration layer — automated stage chaining (currently each stage runs as a manual Claude Code session)
 - Project tracker integration — automated ticket creation and status transitions
 
@@ -264,6 +263,5 @@ See `docs/roadmap.md` for planned improvements.
 |----------|---------------|
 | `docs/pipeline-architecture.md` | Detailed stage specs, error handling, cross-cutting concerns |
 | `docs/current-process.md` | The development process this pipeline automates |
-| `docs/stages/01-07` | Deep specs for each individual stage |
-| `templates/` | Input/output templates used by each stage |
+| `docs/stages/01-07` | Deep specs for each individual stage (design reference) |
 | `docs/roadmap.md` | Planned improvements |

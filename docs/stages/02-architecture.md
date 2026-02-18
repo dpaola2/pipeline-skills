@@ -98,7 +98,7 @@ The agent should flag (not decide) when:
 
 ## Output: Architecture Proposal
 
-Uses template: `templates/architecture-proposal.md`
+Template is embedded in the `/stage2-architecture` skill (`.claude/skills/stage2-architecture/SKILL.md`).
 
 Key sections:
 1. **Data Model Changes** - New/modified tables with full schema

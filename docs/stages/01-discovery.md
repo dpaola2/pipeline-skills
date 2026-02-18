@@ -103,7 +103,7 @@ The agent should search broadly first, then deep-dive into relevant areas:
 
 ## Output: Discovery Report
 
-Uses template: `templates/discovery-report.md`
+Template is embedded in the `/stage1-discovery` skill (`.claude/skills/stage1-discovery/SKILL.md`).
 
 Key sections:
 1. **PRD Summary** - What the agent understood from the PRD

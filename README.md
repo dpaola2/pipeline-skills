@@ -10,7 +10,7 @@ An agent-orchestrated development pipeline that automates the journey from **Pro
 
 The pipeline runs inside [Claude Code](https://docs.anthropic.com/en/docs/claude-code) as a set of custom skills (slash commands). Each stage reads structured inputs and produces structured outputs. Two human checkpoints gate the transition from analysis to execution — you approve the architecture and implementation plan before any code is written.
 
-Originally built for OrangeQC (multi-platform Rails/iOS/Android), the pipeline is product-agnostic. It works with any codebase that has a conventions file and test infrastructure.
+The pipeline is product-agnostic. It works with any codebase that has a conventions file and test infrastructure.
 
 ---
 
@@ -22,18 +22,41 @@ Originally built for OrangeQC (multi-platform Rails/iOS/Android), the pipeline i
 - A git repository you want to run the pipeline against
 - That repo should have a test framework configured (RSpec, Jest, pytest, etc.)
 
-### Setup
+### Installation
 
-**1. Clone this repo:**
+There are two ways to install the pipeline:
+
+**Option A: Clone the full repo (recommended)**
+
+This gives you the complete toolkit — skills, documentation, multi-product config management, and the `/setup-repo` onboarding skill.
 
 ```bash
-git clone <this-repo-url>
+cd ~/projects/my-product/
+git clone <this-repo-url> agent-pipeline
 cd agent-pipeline
 ```
 
-**2. Onboard your repository:**
+Then open Claude Code in the `agent-pipeline/` directory and run `/setup-repo` to onboard your codebase.
 
-Open Claude Code in this directory and run:
+**Option B: Copy just the skills**
+
+Skills are self-contained — each is a single `SKILL.md` file with no external dependencies. If you don't need the full repo, you can copy individual skills into any project's `.claude/skills/` directory:
+
+```bash
+# Copy all pipeline skills into your project
+cp -r agent-pipeline/.claude/skills/* /path/to/your-project/.claude/skills/
+
+# Or copy individual skills
+cp -r agent-pipeline/.claude/skills/stage0-prd /path/to/your-project/.claude/skills/
+```
+
+With Option B, you'll need to manually create `pipeline.md` and `PIPELINE.md` (see [Configuration](#configuration)) since `/setup-repo` won't be in context. Option A with `/setup-repo` handles this automatically.
+
+### Setup
+
+**1. Onboard your repository:**
+
+Open Claude Code in the `agent-pipeline/` directory (or your project directory if you used Option B) and run:
 
 ```
 /setup-repo /path/to/your/repo
@@ -45,7 +68,7 @@ This will:
 - Create a pipeline config in `pipelines/` (maps the pipeline to your repo)
 - Optionally activate it as the current pipeline target
 
-**3. Create your first project:**
+**2. Create your first project:**
 
 Drop rough notes (feature ideas, requirements, anything) into your inbox directory (shown after setup), then:
 
@@ -55,17 +78,18 @@ Drop rough notes (feature ideas, requirements, anything) into your inbox directo
 
 This converts your notes into a structured PRD. Review it before continuing.
 
-**4. Run the pipeline:**
+**3. Run the pipeline:**
 
 ```
 /stage1-discovery my-feature          # Explore codebase, produce discovery report
 /stage2-architecture my-feature       # Propose technical design
-                                      # ← REVIEW AND APPROVE architecture
+                                      # <- REVIEW AND APPROVE architecture
 /stage3-gameplan my-feature           # Break into milestones + acceptance criteria
-                                      # ← REVIEW AND APPROVE gameplan
+                                      # <- REVIEW AND APPROVE gameplan
 /stage4-test-generation my-feature    # Write failing tests (TDD)
 /stage5-implementation my-feature M1  # Implement milestone 1
 /stage5-implementation my-feature M2  # Implement milestone 2 (repeat per milestone)
+/stage6-review my-feature             # Automated code review
 /stage7-qa-plan my-feature            # Generate QA plan for manual testing
 /create-pr my-feature                 # Push branch and create PR
 ```
@@ -82,17 +106,17 @@ The pipeline has two halves separated by two human checkpoints:
 Analysis (produces documents, zero risk)
   Stage 1: Discovery — explores the codebase
   Stage 2: Architecture — proposes data model + API design
-       ↓
-  Checkpoint 1: Architecture Review ← You approve the technical design
-       ↓
+       |
+  Checkpoint 1: Architecture Review <- You approve the technical design
+       |
   Stage 3: Gameplan — breaks PRD into milestones
-       ↓
-  Checkpoint 2: Gameplan Review ← You approve the implementation plan
-       ↓
+       |
+  Checkpoint 2: Gameplan Review <- You approve the implementation plan
+       |
 Execution (writes code)
   Stage 4: Test Generation — writes failing tests (TDD)
   Stage 5: Implementation — makes tests pass, milestone by milestone
-  Stage 6: Review — (not yet automated, currently manual)
+  Stage 6: Review — automated code review against conventions + spec
   Stage 7: QA Plan — generates manual testing checklist
 ```
 
@@ -109,11 +133,11 @@ Six principles govern how the pipeline evolves, ordered by importance — when t
 1. **Correctness over speed.** Human checkpoints exist because agents optimize for measurable signals (tests pass, CI green), and those signals are imperfect proxies for correctness. Don't remove a quality gate to go faster.
 2. **Evolve from working systems.** Every new capability should be an incremental evolution of something that already works. Validate on one project before making it the default.
 3. **Respect existing constraints.** When the pipeline modifies existing code, the default is to adapt to every validation, callback, and guard clause it encounters — not remove them.
-4. **Contracts, not coupling.** Stages communicate through structured artifacts (templates). Produce strict output, tolerate variation in input. If an upstream stage adds a section, downstream stages shouldn't break.
+4. **Contracts, not coupling.** Stages communicate through structured artifacts. Produce strict output, tolerate variation in input. If an upstream stage adds a section, downstream stages shouldn't break.
 5. **Optimize the bottleneck.** Wall-clock time is dominated by human review, not agent execution. Making artifacts easier to review may deliver more speedup than making agents faster.
 6. **The pipeline must improve itself.** Knowledge extracted during each project should flow back into repo conventions and pipeline docs, so future projects start smarter.
 
-Templates are the program — improving a template improves every project that uses it. Agents never touch production. PRD quality is the bottleneck for output quality.
+Skills are the program — each skill embeds its output template directly, so improving a skill improves every project that uses it. Agents never touch production. PRD quality is the bottleneck for output quality.
 
 **Full details:** [`docs/design-priorities.md`](docs/design-priorities.md)
 
@@ -160,26 +184,27 @@ cp pipelines/my-product.md pipeline.md
 │   ├── stage3-gameplan/SKILL.md       # /stage3-gameplan <slug>
 │   ├── stage4-test-generation/SKILL.md # /stage4-test-generation <slug>
 │   ├── stage5-implementation/SKILL.md # /stage5-implementation <slug> <milestone>
+│   ├── stage6-review/SKILL.md         # /stage6-review <slug>
 │   ├── stage7-qa-plan/SKILL.md        # /stage7-qa-plan <slug>
 │   ├── create-pr/SKILL.md             # /create-pr <slug>
-│   └── setup-repo/SKILL.md            # /setup-repo <repo-path> [product-name]
-│
-├── templates/                         # Input/output markdown templates
-│   ├── prd-intake.md                  # Structured PRD format
-│   ├── discovery-report.md            # Stage 1 output
-│   ├── architecture-proposal.md       # Stage 2 output
-│   ├── gameplan.md                    # Stage 3 output
-│   └── qa-plan.md                     # Stage 7 output
+│   ├── setup-repo/SKILL.md            # /setup-repo <repo-path> [product-name]
+│   ├── metrics/SKILL.md               # /metrics <slug>
+│   ├── quality/SKILL.md               # /quality <slug>
+│   ├── release-notes/SKILL.md         # /release-notes <cycle>
+│   └── backfill-timing/SKILL.md       # /backfill-timing <slug>
 │
 └── docs/                              # Architecture and design specs
+    ├── workspace-setup.md             # Setup guide for new adopters
     ├── design-priorities.md           # Core principles governing pipeline evolution
     ├── software-laws.md               # Fundamental software laws applied to the pipeline
     ├── pipeline-architecture.md       # Full pipeline design (7 stages + checkpoints)
     ├── current-process.md             # The development process this automates
-    ├── orangeqc-constraints.md        # OrangeQC-specific platform constraints
     ├── gap-analysis.md                # What's missing, what to build
     ├── roadmap.md                     # Future improvements
-    └── stages/                        # Per-stage detailed specs
+    ├── examples/                      # Product-specific reference material
+    │   └── orangeqc-constraints.md    # Example of product constraints
+    └── stages/                        # Per-stage design specs (reference, not runtime)
+        ├── README.md
         ├── 01-discovery.md
         ├── 02-architecture.md
         ├── 03-gameplan.md
@@ -195,6 +220,8 @@ Project artifacts (PRDs, gameplans, progress files) live **outside** this repo, 
 
 ## Skills Reference
 
+### Pipeline Stages
+
 | Skill | Usage | What It Does |
 |-------|-------|-------------|
 | `/setup-repo` | `/setup-repo <path> [name]` | Onboard a new repo — auto-detect framework, generate configs |
@@ -204,8 +231,18 @@ Project artifacts (PRDs, gameplans, progress files) live **outside** this repo, 
 | `/stage3-gameplan` | `/stage3-gameplan <slug>` | Break PRD into milestones with acceptance criteria |
 | `/stage4-test-generation` | `/stage4-test-generation <slug>` | Write failing tests (TDD) |
 | `/stage5-implementation` | `/stage5-implementation <slug> <M#>` | Implement one milestone, make tests pass |
+| `/stage6-review` | `/stage6-review <slug>` | Automated code review against conventions + spec |
 | `/stage7-qa-plan` | `/stage7-qa-plan <slug>` | Generate manual QA testing plan |
 | `/create-pr` | `/create-pr <slug>` | Push branch, create PR with generated summary |
+
+### Utility Skills
+
+| Skill | Usage | What It Does |
+|-------|-------|-------------|
+| `/metrics` | `/metrics <slug>` | Collect timing and quality metrics for a project |
+| `/quality` | `/quality <slug>` | Run post-flight quality checks on a completed project |
+| `/release-notes` | `/release-notes <cycle>` | Generate release notes from Linear cycle data |
+| `/backfill-timing` | `/backfill-timing <slug>` | Backfill timing data from git history |
 
 ---
 
@@ -225,7 +262,7 @@ These checkpoints exist because errors amplify downstream. A wrong data model de
 
 **Phase: Operational**
 
-The pipeline is running on real projects across multiple products. Stages 0-5 and 7 have Claude Code skills and have been validated end-to-end. Stage 6 (Review) is spec'd but not yet automated — code review is currently manual.
+The pipeline is running on real projects across multiple products. All stages (0-7) have Claude Code skills and have been validated end-to-end.
 
 Each stage runs as a manual Claude Code session. Automated orchestration (stage chaining) is a future phase.
 
@@ -236,10 +273,10 @@ Each stage runs as a manual Claude Code session. Automated orchestration (stage 
 | Document | What It Covers |
 |----------|---------------|
 | `HOW_IT_WORKS.md` | End-to-end walkthrough of what each stage does and why |
+| `docs/workspace-setup.md` | Setup guide for new adopters (workspace layout, design principles) |
 | `docs/pipeline-architecture.md` | Detailed stage specs, error handling, cross-cutting concerns |
 | `docs/current-process.md` | The development process this pipeline automates |
-| `docs/stages/01-07` | Deep specs for each individual stage |
-| `templates/` | Input/output templates used by each stage |
+| `docs/stages/` | Deep specs for each individual stage (design reference, not runtime) |
 | `docs/roadmap.md` | Planned improvements |
 | `pipeline.md.example` | Config format reference |
 | `pipelines/README.md` | How to manage per-product configs |

@@ -100,7 +100,7 @@ Before producing output, the agent should verify:
 
 ## Output: Engineering Gameplan
 
-Uses template: `templates/gameplan.md`
+Template is embedded in the `/stage3-gameplan` skill (`.claude/skills/stage3-gameplan/SKILL.md`).
 
 This is the most important document in the pipeline. It's the contract for everything that follows.
 
