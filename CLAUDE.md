@@ -2,40 +2,14 @@
 
 ## What This Project Is
 
-This is the design and implementation of an agent-orchestrated development pipeline. The pipeline takes a PRD (Product Requirements Document) as input and produces implementation code that is ready for QA. Originally built for OrangeQC (Rails web/API, iOS, Android), the pipeline now supports multiple products via the `pipelines/` directory.
+This is a toolkit for agent-orchestrated software development. The pipeline takes a PRD (Product Requirements Document) as input and produces implementation code that is ready for QA. It works with any codebase — run `/setup-repo` to onboard a new repository.
 
 **Read these files to get oriented:**
-1. `pipeline.md` - Maps this pipeline to target repositories (repo paths, project tracker)
-2. `docs/pipeline-architecture.md` - The full pipeline design
-3. `docs/current-process.md` - The OrangeQC development process this automates
-4. `docs/orangeqc-constraints.md` - Platform, team, and guardrail constraints
-5. `docs/gap-analysis.md` - What's missing and what to build
-6. `docs/roadmap.md` - Future improvements (ROAD-01 through ROAD-13)
-
----
-
-## OrangeQC Context
-
-### The Company
-- **Product:** Quality control software for facilities management
-- **Platforms:** Rails web/API, iOS (Swift), Android (Kotlin)
-- **Architecture:** API-first. Rails backend serves API to mobile clients. Web admin interface also on Rails.
-- **Key constraint:** Old mobile apps in the field. ~75% of users on older versions. Backwards compatibility is critical.
-- **Team:** Small. CTO (Dave), Senior iOS (Chris), Senior Android (Shanitha), Rails agency (Stepwyz, ~7 hrs/week)
-
-### The Development Process (Current)
-```
-Framing → Shaping (PRD) → Gameplanning (Spec) → Building → Testing/QA
-```
-
-This pipeline automates **Gameplanning → Building → pre-QA validation**. Framing and Shaping remain human-driven. Manual/exploratory QA remains human-driven.
-
-### Critical OrangeQC-Specific Concerns
-1. **Multi-platform coordination** - Features touch Web, iOS, Android, and API. Data model and API payloads must be aligned BEFORE platforms build independently.
-2. **Backwards compatibility** - Old mobile apps cannot be force-updated. New API changes must not break old clients. Compatibility matrices are required.
-3. **Export/reporting** - Customers rely on PDF/Excel/CSV exports. Breaking export formats breaks customer workflows.
-4. **Security scoping** - All DB queries must be scoped to account/user (multi-tenant). No cross-tenant data leakage.
-5. **Agentic guardrails** - Agents NEVER have a path to production. No Heroku remotes in dev environments. No production deploy credentials accessible to agents.
+1. `docs/workspace-setup.md` - How the workspace is organized and how to get started
+2. `pipeline.md` - Maps this pipeline to target repositories (repo paths, project tracker)
+3. `docs/pipeline-architecture.md` - The full pipeline design
+4. `docs/gap-analysis.md` - What's missing and what to build
+5. `docs/roadmap.md` - Future improvements
 
 ---
 
@@ -81,10 +55,17 @@ Sections marked REQUIRED apply to every project. Sections marked OPTIONAL can be
 
 ### Project Levels
 
-OrangeQC categorizes projects by scope:
-- **Level 1:** Small projects that Matt and Dave can pull from idea to fruition
-- **Level 2:** Projects involving web only (Rails) — the pipeline's current sweet spot
-- **Level 3:** Projects involving all three platforms (Rails + iOS + Android)
+Projects are categorized by scope. Level definitions adapt based on what `PIPELINE.md` Platforms lists:
+
+**If PIPELINE.md Platforms lists only ONE active platform:**
+- **Level 1:** Small, self-contained changes (1-2 files)
+- **Level 2:** Medium scope features (new pages, reports, workflows)
+- **Level 3:** Large scope features (significant new capability, multiple milestones)
+
+**If PIPELINE.md Platforms lists MULTIPLE active platforms:**
+- **Level 1:** Small, single-platform only
+- **Level 2:** Primary platform only (may involve model + controller + views but stays within one platform)
+- **Level 3:** Cross-platform features (requires coordinated changes across all active platforms)
 
 The PRD header specifies the level. Skills adapt their output accordingly.
 
@@ -93,7 +74,7 @@ The PRD header specifies the level. Skills adapt their output accordingly.
 Project artifacts live **outside this repo**, in a configurable directory per product. The path is set in `pipeline.md` Work Directory → Projects. Each project is a subdirectory named with a kebab-case slug:
 
 ```
-<projects-path>/deficient-line-items-report/
+<projects-path>/my-feature/
   prd.md                        # Input: the structured PRD
   discovery-report.md            # Output of Stage 1
   architecture-proposal.md       # Output of Stage 2 (requires human approval)
@@ -151,25 +132,20 @@ Review `<projects-path>/<slug>/gameplan.md` and confirm the milestones, acceptan
 
 ## Working in This Project
 
-### Current Phase: Operational (Rails-only)
-- Skills exist for Stages 1-5 and 7 (`.claude/skills/`)
+### Current Phase: Operational
+- Skills exist for Stages 0-7, plus create-pr, metrics, quality, and setup-repo (`.claude/skills/`)
 - Each stage runs as a manual Claude Code session
-- First project (deficient-line-items-report) has completed all stages end-to-end
-- Stage 6 (Review) is spec'd but not yet automated — code review is manual
-- Improve skills, templates, and stage specs based on lessons from completed projects
+- Skills are self-contained — templates and success criteria are embedded, not external files
 
 ### Future Phase: Orchestration
 - Build orchestration code in `pipeline/` for automated stage chaining
 - Wire up Linear integration (automated ticket creation, status transitions)
-- Build Stage 6 (Review) skill
-- iOS/Android expansion when their test suites mature
 
 ### Key Principles
-- **Templates are the program.** Agent output quality is determined by template quality.
+- **Skills are self-contained.** Each skill embeds its own template and success criteria. No external file dependencies at runtime.
 - **Each stage has defined inputs and outputs.** Stages are composable and independently testable.
 - **Human checkpoints are architectural, not optional.** Don't try to remove them.
-- **Linear is the coordination layer.** All project state flows through Linear.
-- **Start with Rails.** Rails/API is the first platform to implement. Mobile follows the API contract.
+- **PIPELINE.md is the source of truth** for how a target repo works. Skills read it for all framework-specific details.
 
 ---
 
@@ -183,7 +159,6 @@ The pipeline uses Linear for:
 
 When working with Linear in this project:
 - Use the Linear MCP tools (list_issues, create_issue, update_issue, etc.)
-- OrangeQC's Linear workspace contains the team and project structure
 - Milestone tickets should be tagged with the pipeline stage that created them
 
 ---
@@ -192,10 +167,9 @@ When working with Linear in this project:
 
 - All documentation in Markdown
 - Use Obsidian-compatible wiki-links where helpful: `[[filename]]`
-- Templates use placeholder syntax: `[Description of what goes here]`
 - Checklists use `- [ ]` format
 - Mermaid diagrams for flow visualization
-- Stage docs follow a consistent structure (see any file in `docs/stages/`)
+- Stage design docs in `docs/stages/` are architectural reference only (not runtime dependencies)
 
 ---
 
@@ -205,5 +179,5 @@ When working with Linear in this project:
 - Don't remove human checkpoints from the pipeline
 - Don't assume PRD quality - validate it
 - Don't build platform-specific code without a shared data model/API contract
-- Don't give agents production access (Heroku remotes, App Store credentials, Play Store credentials)
+- Don't give agents production access (no deploy credentials, no production remotes)
 - Don't optimize for speed over correctness in early iterations

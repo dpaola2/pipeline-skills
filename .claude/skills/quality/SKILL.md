@@ -73,12 +73,12 @@ If the command fails or the section doesn't exist, use the stored `pipeline_qual
 Check if the project branch still exists:
 
 ```bash
-cd <primary-repo-path> && git branch --list 'pipeline/$ARGUMENTS'
+cd <primary-repo-path> && git branch --list '<branch-prefix>$ARGUMENTS'
 ```
 
 If the branch exists:
-1. Check out the branch: `git checkout pipeline/$ARGUMENTS`
-2. Get all pipeline-touched files: `git diff --name-only origin/<pr-base-branch>...pipeline/$ARGUMENTS -- '<file-glob>'` (exclude spec/)
+1. Check out the branch: `git checkout <branch-prefix>$ARGUMENTS`
+2. Get all pipeline-touched files: `git diff --name-only origin/<pr-base-branch>...<branch-prefix>$ARGUMENTS -- '<file-glob>'` (exclude spec/)
 3. Run the score command on each file to get fresh per-file scores
 4. Run the per-file command on files with the highest scores to identify current hotspot methods
 5. Check out the previous branch: `git checkout -`

@@ -46,13 +46,13 @@ Parse these fields from each document:
 Check for PR merge data:
 
 ```bash
-cd <primary-repo-path> && gh pr list --head 'pipeline/$ARGUMENTS' --state merged --json mergedAt,createdAt,url --limit 1
+cd <primary-repo-path> && gh pr list --head '<branch-prefix>$ARGUMENTS' --state merged --json mergedAt,createdAt,url --limit 1
 ```
 
 If a merged PR is found, extract `mergedAt` and `createdAt`. If no merged PR, try open PRs:
 
 ```bash
-cd <primary-repo-path> && gh pr list --head 'pipeline/$ARGUMENTS' --state open --json createdAt,url --limit 1
+cd <primary-repo-path> && gh pr list --head '<branch-prefix>$ARGUMENTS' --state open --json createdAt,url --limit 1
 ```
 
 ### 3. Compute Metrics

@@ -42,7 +42,6 @@ If the second argument is missing, **STOP** and tell the user:
 - **Output 1:** Implementation code in the primary repository (path from pipeline.md), committed to the project branch
 - **Output 2:** `<projects-path>/PROJECT_SLUG/progress.md` — updated with milestone completion data (in the agent-pipeline repo)
 - **Output (conditional):** `<projects-path>/PROJECT_SLUG/decisions/ADR-*.md` — written when implementation decisions deviate from or extend the architecture
-- **Stage spec:** `docs/stages/05-implementation.md` (read for full behavioral guidance)
 
 ## Pre-Flight Checks (MANDATORY)
 
@@ -65,15 +64,15 @@ Read the gameplan and verify that the requested MILESTONE exists in the mileston
 
 ### Check 3: Project Branch Exists
 
-In the primary repository (path from pipeline.md), verify the project branch `pipeline/PROJECT_SLUG` exists. This branch was created by Stage 4 and contains the failing tests.
+In the primary repository (path from pipeline.md), verify the project branch `<branch-prefix>PROJECT_SLUG` exists. This branch was created by Stage 4 and contains the failing tests.
 
 ```bash
-cd <primary-repo-path> && git branch --list 'pipeline/PROJECT_SLUG'
+cd <primary-repo-path> && git branch --list '<branch-prefix>PROJECT_SLUG'
 ```
 
 If the branch does not exist, **STOP**:
 
-> "The project branch `pipeline/PROJECT_SLUG` does not exist. Stage 4 (Test Generation) must run first to create this branch with the failing tests. Run `/stage4-test-generation PROJECT_SLUG` first."
+> "The project branch `<branch-prefix>PROJECT_SLUG` does not exist. Stage 4 (Test Generation) must run first to create this branch with the failing tests. Run `/stage4-test-generation PROJECT_SLUG` first."
 
 ### Check 4: Clean Working Tree
 
@@ -129,8 +128,7 @@ After passing all pre-flight checks, read these files:
 3. The gameplan at `<projects-path>/PROJECT_SLUG/gameplan.md` — find the **MILESTONE section** specifically. Read the goals, acceptance criteria, and platform tasks.
 4. The architecture proposal at `<projects-path>/PROJECT_SLUG/architecture-proposal.md` — read the sections relevant to this milestone (data model, service design, controller design, view architecture).
 5. The test-coverage-matrix at `<projects-path>/PROJECT_SLUG/test-coverage-matrix.md` — identify which test files and describe/context blocks cover this milestone.
-6. The stage spec at `docs/stages/05-implementation.md` — understand your role and success criteria.
-7. The conventions file in the primary repository (path from `PIPELINE.md` Repository Details) — **critical**: conventions for the framework's models, controllers, services, views, routes, migrations, and JavaScript.
+6. The conventions file in the primary repository (path from `PIPELINE.md` Repository Details) — **critical**: conventions for the framework's models, controllers, services, views, routes, migrations, and JavaScript.
 
 ## Step-by-Step Procedure
 
@@ -139,7 +137,7 @@ After passing all pre-flight checks, read these files:
 In the primary repository (path from pipeline.md):
 
 1. Fetch latest: `git fetch origin`
-2. Check out the project branch: `git checkout pipeline/PROJECT_SLUG`
+2. Check out the project branch: `git checkout <branch-prefix>PROJECT_SLUG`
 
 This is the branch Stage 4 created. It already contains the failing tests. All milestone implementations are committed to this same branch.
 
@@ -405,7 +403,7 @@ If you have no new insights for this milestone, skip this step and note "No new 
 If you made a technical decision during this milestone that deviates from or fills a gap in the architecture proposal — e.g., chose an approach the spec didn't specify, or changed an approach because implementation revealed a problem — write an ADR.
 
 - Check `<projects-path>/PROJECT_SLUG/decisions/` for existing ADRs to continue the numbering sequence (e.g., if ADR-003 exists, the next is ADR-004)
-- Use `templates/adr.md` as the format
+- Use the ADR Template below as the format
 - Set `Stage: 5` in the metadata
 - If no decisions during this milestone warrant an ADR, skip this step
 
@@ -456,7 +454,7 @@ pipeline_quality_m1_files_analyzed: 6
 
 | Field | Value |
 |-------|-------|
-| **Branch** | `pipeline/PROJECT_SLUG` |
+| **Branch** | `<branch-prefix>PROJECT_SLUG` |
 | **Primary repo** | [path from pipeline.md] |
 | **Milestones** | M0–M_LAST_ |
 
@@ -600,4 +598,44 @@ Tell the user:
 
 If this was the **last milestone**, instead say:
 
-> "All milestones are implemented. The project branch `pipeline/PROJECT_SLUG` is ready for review. Next step: push the branch and create a PR against the default branch."
+> "All milestones are implemented. The project branch `<branch-prefix>PROJECT_SLUG` is ready for review. Next step: push the branch and create a PR against the default branch."
+
+## ADR Template
+
+````markdown
+# ADR-NNN: [Title]
+
+**Date:** [YYYY-MM-DD]
+**Status:** Accepted
+**Project:** [project-slug]
+**Stage:** [2 or 5]
+
+## Context
+
+[What problem or question arose, and why a decision was needed]
+
+## Decision
+
+[What was decided]
+
+## Alternatives Considered
+
+| Approach | Pros | Cons |
+|----------|------|------|
+| **Chosen approach** | ... | ... |
+| Alternative 1 | ... | ... |
+
+## Consequences
+
+[What this enables, constrains, or implies for future work]
+````
+
+## Success Criteria
+
+- [ ] All milestone tests pass
+- [ ] No existing tests broken (regression-free)
+- [ ] Code follows the conventions file
+- [ ] Migrations run cleanly
+- [ ] API endpoints match architecture proposal exactly (if applicable)
+- [ ] Security scoping in place (if PIPELINE.md has Multi-Tenant Security)
+- [ ] No dead code, TODOs, or debugging artifacts

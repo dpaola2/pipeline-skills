@@ -27,7 +27,6 @@ You are a **test writer**. You write comprehensive, failing test suites BEFORE a
 - **Input 4:** `<projects-path>/$ARGUMENTS/discovery-report.md` — existing codebase context
 - **Output 1:** Test files in the primary repository's test directory (path from the repo's `PIPELINE.md`)
 - **Output 2:** `<projects-path>/$ARGUMENTS/test-coverage-matrix.md` — maps acceptance criteria to test locations
-- **Stage spec:** `docs/stages/04-test-generation.md` (read for full behavioral guidance)
 
 ## Pre-Flight Check (MANDATORY)
 
@@ -61,8 +60,7 @@ After passing the pre-flight check, read these files:
 3. The approved gameplan at `<projects-path>/$ARGUMENTS/gameplan.md` — your primary input (milestones, acceptance criteria, platform tasks)
 4. The architecture proposal at `<projects-path>/$ARGUMENTS/architecture-proposal.md` — data model, query patterns, serialization, security scoping
 5. The PRD at `<projects-path>/$ARGUMENTS/prd.md` — edge cases (Section 10), detailed requirement descriptions
-6. The stage spec at `docs/stages/04-test-generation.md` — your role and success criteria
-7. The conventions file in the primary repository (path from `PIPELINE.md` Repository Details) — **critical**: test conventions, directory structure, factory patterns, test framework configuration
+6. The conventions file in the primary repository (path from `PIPELINE.md` Repository Details) — **critical**: test conventions, directory structure, factory patterns, test framework configuration
 
 ### Commit Pending Pipeline Changes
 
@@ -268,12 +266,12 @@ The primary repository path is specified in pipeline.md Target Repositories.
 3. Fetch the latest from origin: `git fetch origin`
 4. Create and check out a new branch: `git checkout -b <branch-prefix>$ARGUMENTS origin/<default-branch>` (branch prefix and default branch from PIPELINE.md Repository Details)
 
-If the branch `pipeline/$ARGUMENTS` already exists, **STOP** and ask the user whether to overwrite it or use a different name. Do not delete existing branches without explicit approval.
+If the branch `<branch-prefix>$ARGUMENTS` already exists, **STOP** and ask the user whether to overwrite it or use a different name. Do not delete existing branches without explicit approval.
 
 ### Pre-Write Verification
 
 **Before writing any files**, verify:
-1. You're on the correct branch (`pipeline/$ARGUMENTS`)
+1. You're on the correct branch (`<branch-prefix>$ARGUMENTS`)
 2. You're writing to the correct test directories (from PIPELINE.md Directory Structure — use `ls` and `Glob` to check structure)
 3. No existing file will be overwritten (use `Glob` to check)
 4. New test data files don't conflict with existing ones
@@ -295,7 +293,7 @@ If the branch `pipeline/$ARGUMENTS` already exists, **STOP** and ask the user wh
 
 ### Commit the Test Files
 
-In the primary repository, commit all new files on the `pipeline/$ARGUMENTS` branch:
+In the primary repository, commit all new files on the `<branch-prefix>$ARGUMENTS` branch:
 
 1. `git add` each new file by name (do NOT use `git add .` or `git add -A`)
 2. Commit with message: `Add Stage 4 test suite for $ARGUMENTS`
@@ -320,10 +318,21 @@ Commit the test-coverage-matrix (and any gameplan frontmatter updates) to versio
 ### Report to User
 
 Tell the user:
-1. The branch name: `pipeline/$ARGUMENTS` in the primary repo
+1. The branch name: `<branch-prefix>$ARGUMENTS` in the primary repo
 2. List every file created with a brief description of what it tests
 3. The coverage matrix has been written to `<projects-path>/$ARGUMENTS/test-coverage-matrix.md`
 4. How many acceptance criteria are covered and by how many test cases total
 5. Any acceptance criteria that couldn't be fully tested (and why)
 6. Results of the syntax check (syntax check command from PIPELINE.md)
 7. **Remind them:** "All tests are expected to FAIL — they're written before implementation (TDD). You can verify they parse with `[syntax check command from PIPELINE.md] [test file path]`. Next step: review the tests, then run `/stage5-implementation $ARGUMENTS` to make them pass."
+
+## Success Criteria
+
+- [ ] Every acceptance criterion has at least one test per affected platform
+- [ ] Security tests exist (auth, scoping, permissions)
+- [ ] Edge case tests exist
+- [ ] Tests follow existing project patterns exactly
+- [ ] Tests use exact API payloads from architecture proposal
+- [ ] All tests FAIL (no implementation yet — TDD)
+- [ ] Tests are deterministic (no flakiness)
+- [ ] Coverage matrix is complete — every criterion mapped to a test location
