@@ -24,53 +24,95 @@ The pipeline is product-agnostic. It works with any codebase that has a conventi
 
 ### Installation
 
-There are two ways to install the pipeline:
-
-**Option A: Clone the full repo (recommended)**
-
-This gives you the complete toolkit — skills, documentation, multi-product config management, and the `/setup-repo` onboarding skill.
+Copy the pipeline skills into your project's `.claude/skills/` directory:
 
 ```bash
-cd ~/projects/my-product/
-git clone <this-repo-url> agent-pipeline
-cd agent-pipeline
-```
-
-Then open Claude Code in the `agent-pipeline/` directory and run `/setup-repo` to onboard your codebase.
-
-**Option B: Copy just the skills**
-
-Skills are self-contained — each is a single `SKILL.md` file with no external dependencies. If you don't need the full repo, you can copy individual skills into any project's `.claude/skills/` directory:
-
-```bash
-# Copy all pipeline skills into your project
+# Copy all pipeline skills
 cp -r agent-pipeline/.claude/skills/* /path/to/your-project/.claude/skills/
-
-# Or copy individual skills
-cp -r agent-pipeline/.claude/skills/stage0-prd /path/to/your-project/.claude/skills/
 ```
-
-With Option B, you'll need to manually create `pipeline.md` and `PIPELINE.md` (see [Configuration](#configuration)) since `/setup-repo` won't be in context. Option A with `/setup-repo` handles this automatically.
 
 ### Setup
 
-**1. Onboard your repository:**
+**1. Add Pipeline Configuration to your conventions file:**
 
-Open Claude Code in the `agent-pipeline/` directory (or your project directory if you used Option B) and run:
+Your repo should have a conventions file (`CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md`). Add a `## Pipeline Configuration` section with the required sub-sections. Use this template:
 
+```markdown
+## Pipeline Configuration
+
+> Pipeline skills read this section to understand how to run the agent pipeline against this repo.
+> Run skills from this repo's root directory.
+
+### Work Directory
+
+| Setting | Path |
+|---------|------|
+| **Projects** | `../pipeline-projects/` |
+| **Inbox** | `../pipeline-projects/inbox/` |
+
+### Project Tracker
+
+| Setting | Value |
+|---------|-------|
+| **Tool** | None |
+
+### Repository Details
+
+| Setting | Value |
+|---------|-------|
+| **Default branch** | `main` |
+| **Test command** | `[your test command]` |
+| **Test directory** | `[your test directory]` |
+| **Branch prefix** | `pipeline/` |
+| **PR base branch** | `main` |
+
+### Platforms
+
+| Platform | Status | Notes |
+|----------|--------|-------|
+| [Your platform] | Active | [description] |
+
+### Framework & Stack
+
+| Setting | Value |
+|---------|-------|
+| **Language** | [language] |
+| **Framework** | [framework] |
+| **Test framework** | [test framework] |
+| [add more as needed] | |
+
+### Directory Structure
+
+| Purpose | Path |
+|---------|------|
+| Models | [path] |
+| Controllers | [path] |
+| Tests | [path] |
+| [add more as needed] | |
+
+### Implementation Order
+
+1. [Your implementation sequence]
+
+### Guardrails
+
+| Guardrail | Rule |
+|-----------|------|
+| **Production access** | Agents NEVER have production access. |
+| **Default branch** | Never commit or merge directly to the default branch. |
+| **Push** | Never push without explicit user request. |
+| **Destructive operations** | No `drop_table`, `reset`, or data deletion without human approval. |
 ```
-/setup-repo /path/to/your/repo
+
+**2. Create the projects directory:**
+
+```bash
+mkdir -p ../pipeline-projects/inbox
 ```
 
-This will:
-- Auto-detect your framework, test setup, directory structure, and CI config
-- Generate a `PIPELINE.md` in your target repo (repo-specific config)
-- Create a pipeline config in `pipelines/` (maps the pipeline to your repo)
-- Optionally activate it as the current pipeline target
+**3. Create your first project:**
 
-**2. Create your first project:**
-
-Drop rough notes (feature ideas, requirements, anything) into your inbox directory (shown after setup), then:
+Drop rough notes (feature ideas, requirements, anything) into the inbox directory, then run Claude Code from your repo and:
 
 ```
 /stage0-prd
@@ -78,7 +120,7 @@ Drop rough notes (feature ideas, requirements, anything) into your inbox directo
 
 This converts your notes into a structured PRD. Review it before continuing.
 
-**3. Run the pipeline:**
+**4. Run the pipeline:**
 
 ```
 /stage1-discovery my-feature          # Explore codebase, produce discovery report
@@ -145,23 +187,30 @@ Skills are the program — each skill embeds its output template directly, so im
 
 ## Configuration
 
-The pipeline uses a three-layer configuration:
+Skills read all configuration from the target repo's **conventions file** (`CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md`). The `## Pipeline Configuration` section contains:
 
-| Layer | File | What It Contains | Checked In? |
-|-------|------|-----------------|-------------|
-| **Active config** | `pipeline.md` | Points pipeline at a product (repo paths, work directory) | No (gitignored) |
-| **Product library** | `pipelines/<product>.md` | Named configs per product | No (gitignored) |
-| **Repo config** | `PIPELINE.md` (in target repo) | How the repo works (framework, tests, directories) | Yes (per repo) |
+- **Work Directory** — where project artifacts and inbox files live (typically `../pipeline-projects/`)
+- **Project Tracker** — Linear, GitHub Issues, or none
+- **Related Repositories** — paths to API docs, mobile repos, etc. (optional)
+- **Repository Details** — default branch, test command, branch prefix
+- **Framework & Stack** — language, test framework, database, frontend tools
+- **Directory Structure** — where models, controllers, tests live
+- **Implementation Order** — build sequence for milestones
+- **Optional sections** — API conventions, multi-tenant security, post-flight checks, guardrails
 
-Pipeline configs (`pipeline.md`, `pipelines/*.md`) contain machine-specific paths and are gitignored — like `.env` files. Each person generates their own via `/setup-repo`.
+There's no separate config file in the pipeline repo. Skills run from the target repo and read its conventions file directly.
 
-See `pipeline.md.example` for the config format and `pipelines/README.md` for how to manage configs.
+---
 
-**Switching products:**
+## Human Checkpoints
 
-```bash
-cp pipelines/my-product.md pipeline.md
-```
+The pipeline has two mandatory review gates:
+
+**After Stage 2 (Architecture Review):** Open `architecture-proposal.md` in the project directory, find the Approval Checklist, set Status to "Approved", and fill in the reviewer checklist. Stage 3 refuses to run until this is done.
+
+**After Stage 3 (Gameplan Review):** Review `gameplan.md` — verify milestones, acceptance criteria, and sequencing before any code is generated.
+
+These checkpoints exist because errors amplify downstream. A wrong data model decision in Stage 2 propagates through the gameplan, tests, and implementation. Catching it before Stage 3 is dramatically cheaper than catching it during Stage 5.
 
 ---
 
@@ -172,10 +221,6 @@ cp pipelines/my-product.md pipeline.md
 ├── README.md                          # You are here
 ├── HOW_IT_WORKS.md                    # End-to-end pipeline walkthrough
 ├── CLAUDE.md                          # Agent context for working on this repo
-├── pipeline.md.example                # Config format reference (with placeholder paths)
-│
-├── pipelines/                         # Per-product configs (gitignored *.md)
-│   └── README.md                      # How to create and manage configs
 │
 ├── .claude/skills/                    # Pipeline skills (the engine)
 │   ├── stage0-prd/SKILL.md            # /stage0-prd
@@ -187,7 +232,6 @@ cp pipelines/my-product.md pipeline.md
 │   ├── stage6-review/SKILL.md         # /stage6-review <slug>
 │   ├── stage7-qa-plan/SKILL.md        # /stage7-qa-plan <slug>
 │   ├── create-pr/SKILL.md             # /create-pr <slug>
-│   ├── setup-repo/SKILL.md            # /setup-repo <repo-path> [product-name]
 │   ├── metrics/SKILL.md               # /metrics <slug>
 │   ├── quality/SKILL.md               # /quality <slug>
 │   ├── release-notes/SKILL.md         # /release-notes <cycle>
@@ -214,7 +258,7 @@ cp pipelines/my-product.md pipeline.md
         └── 07-validation.md
 ```
 
-Project artifacts (PRDs, gameplans, progress files) live **outside** this repo, in a per-product work directory configured in `pipeline.md`. This keeps the pipeline repo as a pure engine with no product-specific data.
+Project artifacts (PRDs, gameplans, progress files) live **outside** this repo, in a per-product work directory configured in the target repo's conventions file. This keeps the pipeline repo as a pure skill source with no product-specific data.
 
 ---
 
@@ -224,7 +268,6 @@ Project artifacts (PRDs, gameplans, progress files) live **outside** this repo, 
 
 | Skill | Usage | What It Does |
 |-------|-------|-------------|
-| `/setup-repo` | `/setup-repo <path> [name]` | Onboard a new repo — auto-detect framework, generate configs |
 | `/stage0-prd` | `/stage0-prd` | Convert inbox notes into a structured PRD |
 | `/stage1-discovery` | `/stage1-discovery <slug>` | Explore codebase, produce discovery report |
 | `/stage2-architecture` | `/stage2-architecture <slug>` | Propose technical design (data model, API, migrations) |
@@ -243,18 +286,6 @@ Project artifacts (PRDs, gameplans, progress files) live **outside** this repo, 
 | `/quality` | `/quality <slug>` | Run post-flight quality checks on a completed project |
 | `/release-notes` | `/release-notes <cycle>` | Generate release notes from Linear cycle data |
 | `/backfill-timing` | `/backfill-timing <slug>` | Backfill timing data from git history |
-
----
-
-## Human Checkpoints
-
-The pipeline has two mandatory review gates:
-
-**After Stage 2 (Architecture Review):** Open `architecture-proposal.md` in the project directory, find the Approval Checklist, set Status to "Approved", and fill in the reviewer checklist. Stage 3 refuses to run until this is done.
-
-**After Stage 3 (Gameplan Review):** Review `gameplan.md` — verify milestones, acceptance criteria, and sequencing before any code is generated.
-
-These checkpoints exist because errors amplify downstream. A wrong data model decision in Stage 2 propagates through the gameplan, tests, and implementation. Catching it before Stage 3 is dramatically cheaper than catching it during Stage 5.
 
 ---
 
@@ -278,5 +309,3 @@ Each stage runs as a manual Claude Code session. Automated orchestration (stage 
 | `docs/current-process.md` | The development process this pipeline automates |
 | `docs/stages/` | Deep specs for each individual stage (design reference, not runtime) |
 | `docs/roadmap.md` | Planned improvements |
-| `pipeline.md.example` | Config format reference |
-| `pipelines/README.md` | How to manage per-product configs |

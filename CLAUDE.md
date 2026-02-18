@@ -2,52 +2,46 @@
 
 ## What This Project Is
 
-This is a toolkit for agent-orchestrated software development. The pipeline takes a PRD (Product Requirements Document) as input and produces implementation code that is ready for QA. It works with any codebase — run `/setup-repo` to onboard a new repository.
+This is a toolkit for agent-orchestrated software development. The pipeline takes a PRD (Product Requirements Document) as input and produces implementation code that is ready for QA. It works with any codebase that has a conventions file with a `## Pipeline Configuration` section.
+
+**This repo is the skill source.** Skills are copied into target repos and run from there — Claude Code sessions happen in the target repo directory, not here.
 
 **Read these files to get oriented:**
 1. `docs/workspace-setup.md` - How the workspace is organized and how to get started
-2. `pipeline.md` - Maps this pipeline to target repositories (repo paths, project tracker)
-3. `docs/pipeline-architecture.md` - The full pipeline design
-4. `docs/gap-analysis.md` - What's missing and what to build
-5. `docs/roadmap.md` - Future improvements
+2. `docs/pipeline-architecture.md` - The full pipeline design
+3. `docs/gap-analysis.md` - What's missing and what to build
+4. `docs/roadmap.md` - Future improvements
 
 ---
 
 ## Pipeline Configuration
 
-Configuration has three layers:
+Configuration lives in a single place: the **conventions file** in each target repo.
 
-### `pipeline.md` (this repo, root — the active pointer)
-The **active** pipeline config. Skills read this file to find repo paths and work directory. Contains:
-- **Target repository paths** (primary repo, API docs, mobile repos)
-- **Project tracker** (Linear, GitHub Issues, or none)
-- **Work directory** (projects path, inbox path — where project artifacts live externally)
+### Conventions File (each target repo)
 
-This is always the file skills read. To switch products, copy the right config from `pipelines/`.
+Each target repo has a conventions file (`CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md`) with a `## Pipeline Configuration` section. This section contains everything skills need:
 
-### `pipelines/` (this repo — the product library)
-Named pipeline configs per product. Each file has the same format as `pipeline.md`. These are gitignored (machine-specific paths) — see `pipelines/README.md` for how to create and manage them.
+- **Work Directory** — projects path, inbox path (where project artifacts live)
+- **Project Tracker** — Linear, GitHub Issues, or none
+- **Related Repositories** — paths to API docs, mobile repos, etc. (optional)
+- **Repository Details** — default branch, test command, branch prefix, PR base branch
+- **Platforms** — which platforms this project targets
+- **Framework & Stack** — language, test framework, database, frontend
+- **Directory Structure** — where models, controllers, tests, etc. live
+- **Implementation Order** — natural build sequence for milestones
+- **Optional sections** — API conventions, multi-tenant security, backwards compat, feature flags, post-flight checks, complexity analysis, guardrails
 
-**To switch products:** `cp pipelines/<product>.md pipeline.md`
-
-### `PIPELINE.md` (each target repo)
-Describes how the target repo works. Contains:
-- **Repository details** (default branch, branch prefix, test command, conventions file)
-- **Platforms** (which platforms this project targets)
-- **Framework & stack** (language, test framework, serialization, database)
-- **Directory structure** (where models, controllers, tests, etc. live)
-- **Implementation order** (natural build sequence for milestones)
-- **Optional sections** (API conventions, multi-tenant security, backwards compat, feature flags, guardrails)
-
-Skills read `pipeline.md` first to find repo paths, then read `PIPELINE.md` from the primary repo for all framework-specific details.
+Skills locate the conventions file in the repo root (first of `CLAUDE.md`, `AGENTS.md`, `CONVENTIONS.md` found) and read the `## Pipeline Configuration` section for all config.
 
 **To add a new product to the pipeline:**
-1. Run `/setup-repo <repo-path> [product-name]` — auto-detects framework, generates `PIPELINE.md` + pipeline config
-2. Or manually: create `PIPELINE.md` in the target repo, create `pipelines/<product>.md`, copy to `pipeline.md`
+1. Copy the skills from `.claude/skills/` into the target repo
+2. Add a `## Pipeline Configuration` section to the target repo's conventions file (use an existing repo's section as a template)
+3. Create the projects directory (e.g., `../pipeline-projects/` with an `inbox/` subdirectory)
 
-Sections marked REQUIRED apply to every project. Sections marked OPTIONAL can be omitted if they don't apply (e.g., a personal project with no API, no multi-tenancy, no mobile).
+Sections marked REQUIRED apply to every project. Sections marked OPTIONAL can be omitted if they don't apply.
 
-**Why project artifacts live outside the pipeline repo:** Project artifacts (PRDs, gameplans, progress files) are *pipeline-scoped*, not *repo-scoped*. A multi-platform project may touch several repos simultaneously — its artifacts can't live inside any single target repo. Placing them in a per-product work directory lets project work span multiple repos while keeping products isolated from each other.
+**Why project artifacts live outside the target repo:** Project artifacts (PRDs, gameplans, progress files) are *pipeline-scoped*, not *repo-scoped*. A multi-platform project may touch several repos simultaneously — its artifacts can't live inside any single target repo.
 
 ---
 
@@ -55,14 +49,14 @@ Sections marked REQUIRED apply to every project. Sections marked OPTIONAL can be
 
 ### Project Levels
 
-Projects are categorized by scope. Level definitions adapt based on what `PIPELINE.md` Platforms lists:
+Projects are categorized by scope. Level definitions adapt based on what Pipeline Configuration → Platforms lists:
 
-**If PIPELINE.md Platforms lists only ONE active platform:**
+**If Platforms lists only ONE active platform:**
 - **Level 1:** Small, self-contained changes (1-2 files)
 - **Level 2:** Medium scope features (new pages, reports, workflows)
 - **Level 3:** Large scope features (significant new capability, multiple milestones)
 
-**If PIPELINE.md Platforms lists MULTIPLE active platforms:**
+**If Platforms lists MULTIPLE active platforms:**
 - **Level 1:** Small, single-platform only
 - **Level 2:** Primary platform only (may involve model + controller + views but stays within one platform)
 - **Level 3:** Cross-platform features (requires coordinated changes across all active platforms)
@@ -71,7 +65,7 @@ The PRD header specifies the level. Skills adapt their output accordingly.
 
 ### Project Directory Convention
 
-Project artifacts live **outside this repo**, in a configurable directory per product. The path is set in `pipeline.md` Work Directory → Projects. Each project is a subdirectory named with a kebab-case slug:
+Project artifacts live **outside the target repo**, in a configurable directory. The path is set in Pipeline Configuration → Work Directory → Projects. Each project is a subdirectory named with a kebab-case slug:
 
 ```
 <projects-path>/my-feature/
@@ -85,11 +79,11 @@ Project artifacts live **outside this repo**, in a configurable directory per pr
   decisions/                     # ADRs — significant technical decisions (Stages 2, 5)
 ```
 
-The inbox (raw input notes for Stage 0) also lives externally, at `pipeline.md` Work Directory → Inbox.
+The inbox (raw input notes for Stage 0) also lives externally, at Pipeline Configuration → Work Directory → Inbox.
 
 ### Running the Pipeline
 
-The pipeline runs manually, one stage at a time:
+The pipeline runs manually from the target repo directory, one stage at a time:
 
 ```
 /stage0-prd                                       → lists inbox files, asks for selection + slug,
@@ -104,17 +98,14 @@ The pipeline runs manually, one stage at a time:
 /stage3-gameplan <project-slug>                   → produces gameplan.md (checks for approval first)
                                                     REQUIRED: review and approve gameplan
 
-/stage4-test-generation <project-slug>            → produces failing tests in target repo + test-coverage-matrix.md
+/stage4-test-generation <project-slug>            → produces failing tests + test-coverage-matrix.md
 
 /stage5-implementation <project-slug> <milestone> → implements one milestone, updates progress.md
                                                     (run once per milestone: M1, M2, ...)
 
 /stage7-qa-plan <project-slug>                    → produces qa-plan.md (checks all milestones complete)
 
-/create-pr <project-slug>                         → pushes branch, creates PR against default branch with generated summary
-
-/setup-repo <repo-path> [product-name]            → explores repo, generates PIPELINE.md + pipeline config,
-                                                    optionally activates the product
+/create-pr <project-slug>                         → pushes branch, creates PR against default branch
 
 /release-notes <cycle_number>                     → generates release notes from Linear cycle data
                                                     (standalone utility, not a pipeline stage)
@@ -133,8 +124,8 @@ Review `<projects-path>/<slug>/gameplan.md` and confirm the milestones, acceptan
 ## Working in This Project
 
 ### Current Phase: Operational
-- Skills exist for Stages 0-7, plus create-pr, metrics, quality, and setup-repo (`.claude/skills/`)
-- Each stage runs as a manual Claude Code session
+- Skills exist for Stages 0-7, plus create-pr, metrics, quality, release-notes, and backfill-timing (`.claude/skills/`)
+- Each stage runs as a manual Claude Code session from the target repo
 - Skills are self-contained — templates and success criteria are embedded, not external files
 
 ### Future Phase: Orchestration
@@ -145,7 +136,7 @@ Review `<projects-path>/<slug>/gameplan.md` and confirm the milestones, acceptan
 - **Skills are self-contained.** Each skill embeds its own template and success criteria. No external file dependencies at runtime.
 - **Each stage has defined inputs and outputs.** Stages are composable and independently testable.
 - **Human checkpoints are architectural, not optional.** Don't try to remove them.
-- **PIPELINE.md is the source of truth** for how a target repo works. Skills read it for all framework-specific details.
+- **The conventions file is the source of truth** for how a target repo works. Skills read it for all framework-specific details.
 
 ---
 

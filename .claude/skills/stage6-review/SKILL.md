@@ -22,14 +22,12 @@ You are a **code reviewer**. You examine the full branch diff for a completed pr
 
 ## Inputs & Outputs
 
-- **Input 1:** `pipeline.md` — repo paths, projects path
-- **Input 2:** `PIPELINE.md` (in primary repo) — framework, directory structure, conventions file, test command, security config
-- **Input 3:** `<projects-path>/$ARGUMENTS/architecture-proposal.md` — approved design
-- **Input 4:** `<projects-path>/$ARGUMENTS/gameplan.md` — acceptance criteria, milestone breakdown
-- **Input 5:** `<projects-path>/$ARGUMENTS/progress.md` — milestone completion data, spec gaps, notes
-- **Input 6:** `<projects-path>/$ARGUMENTS/test-coverage-matrix.md` — what should be tested
-- **Input 7:** Conventions file (e.g., `AGENTS.md`) — convention standard
-- **Input 8:** Branch diff files — the actual code to review
+- **Input 1:** Conventions file (`CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` in repo root) — framework, directory structure, test command, security config, convention standard
+- **Input 2:** `<projects-path>/$ARGUMENTS/architecture-proposal.md` — approved design
+- **Input 3:** `<projects-path>/$ARGUMENTS/gameplan.md` — acceptance criteria, milestone breakdown
+- **Input 4:** `<projects-path>/$ARGUMENTS/progress.md` — milestone completion data, spec gaps, notes
+- **Input 5:** `<projects-path>/$ARGUMENTS/test-coverage-matrix.md` — what should be tested
+- **Input 6:** Branch diff files — the actual code to review
 - **Output:** `<projects-path>/$ARGUMENTS/review-report.md`
 
 ## Pre-Flight Check (MANDATORY)
@@ -45,25 +43,25 @@ Read `<projects-path>/$ARGUMENTS/progress.md` and check the **Milestone Status**
 
 ### 2. Project branch exists
 
-Check that the project branch exists in the primary repo:
+Check that the project branch exists in the repo:
 
 ```bash
-cd <primary-repo-path> && git branch --list '<branch-prefix><slug>'
+git branch --list '<branch-prefix><slug>'
 ```
 
 If the branch doesn't exist, **STOP**:
 
-> "Branch `<branch-prefix>$ARGUMENTS` not found in the primary repo. Has Stage 5 been run?"
+> "Branch `<branch-prefix>$ARGUMENTS` not found. Has Stage 5 been run?"
 
 ### 3. Clean working tree
 
 ```bash
-cd <primary-repo-path> && git status --porcelain
+git status --porcelain
 ```
 
 If there are uncommitted changes on the project branch, **STOP**:
 
-> "Working tree is not clean in the primary repo. Please commit or stash changes before running the review."
+> "Working tree is not clean. Please commit or stash changes before running the review."
 
 ## Before You Start
 
@@ -75,13 +73,11 @@ date +"%Y-%m-%dT%H:%M:%S%z"
 
 After passing all pre-flight checks, read ALL of these files:
 
-1. The pipeline config at `pipeline.md` — get the primary repository path, the **projects path** (from Work Directory → Projects), the **branch prefix** (from the primary repo's PIPELINE.md), and other repo locations
-2. The repo config at `PIPELINE.md` in the primary repository — understand framework, directory structure, conventions file path, test command, and security config sections
-3. The conventions file (path from PIPELINE.md, e.g., `AGENTS.md`) — this is the convention standard you review against
-4. The architecture proposal at `<projects-path>/$ARGUMENTS/architecture-proposal.md` — the approved design
-5. The gameplan at `<projects-path>/$ARGUMENTS/gameplan.md` — acceptance criteria, milestone breakdown
-6. The progress file at `<projects-path>/$ARGUMENTS/progress.md` — spec gaps, implementation notes, test results
-7. The test-coverage-matrix at `<projects-path>/$ARGUMENTS/test-coverage-matrix.md` — what should be tested
+1. Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full. From the `## Pipeline Configuration` section, extract: **Work Directory** (projects path), **Repository Details** (default branch, branch prefix, test command), **Framework & Stack**, **Directory Structure**, **Multi-Tenant Security** (if present), **API Conventions** (if present), and **Platforms**.
+2. The architecture proposal at `<projects-path>/$ARGUMENTS/architecture-proposal.md` — the approved design
+3. The gameplan at `<projects-path>/$ARGUMENTS/gameplan.md` — acceptance criteria, milestone breakdown
+4. The progress file at `<projects-path>/$ARGUMENTS/progress.md` — spec gaps, implementation notes, test results
+5. The test-coverage-matrix at `<projects-path>/$ARGUMENTS/test-coverage-matrix.md` — what should be tested
 
 ## Step-by-Step Procedure
 
@@ -90,40 +86,40 @@ After passing all pre-flight checks, read ALL of these files:
 Get the list of changed files:
 
 ```bash
-cd <primary-repo-path> && git diff --name-only origin/<base-branch>...<branch-prefix><slug>
+git diff --name-only origin/<base-branch>...<branch-prefix><slug>
 ```
 
 Get the commit count:
 
 ```bash
-cd <primary-repo-path> && git log --oneline origin/<base-branch>...<branch-prefix><slug> | wc -l
+git log --oneline origin/<base-branch>...<branch-prefix><slug> | wc -l
 ```
 
-Categorize the changed files into groups based on the directory structure in PIPELINE.md. Map each file to its purpose category (Models, Controllers, Services, Views, Migrations, Frontend JS, Routes, Tests, Other) using the paths from PIPELINE.md Directory Structure.
+Categorize the changed files into groups based on Pipeline Configuration → Directory Structure. Map each file to its purpose category (Models, Controllers, Services, Views, Migrations, Frontend JS, Routes, Tests, Other) using the paths from that section.
 
 ### Step 2: Read all changed files
 
 Read every changed file in full. You need to see the actual code to review it.
 
-For each file, use the Read tool with the full path in the primary repo (on the project branch). If a file is very large (>500 lines), still read it completely — you need full context for the review.
+For each file, use the Read tool with the full path (on the project branch). If a file is very large (>500 lines), still read it completely — you need full context for the review.
 
 ### Step 3: Review Dimension 1 — Convention Compliance
 
-Compare each non-test file against the conventions file (AGENTS.md or equivalent):
+Compare each non-test file against the conventions file:
 
 - **Naming conventions** — models, controllers, methods, variables follow repo patterns
-- **File organization** — files are in the correct directories per PIPELINE.md
+- **File organization** — files are in the correct directories per Pipeline Configuration → Directory Structure
 - **Architecture patterns** — correct use of service objects, concerns, inheritance, serializers per conventions
 - **Code style** — formatting, structure consistent with existing code and conventions
-- **Framework idioms** — proper use of framework features (e.g., scopes, callbacks, validations — per the conventions file and PIPELINE.md Framework & Stack)
+- **Framework idioms** — proper use of framework features (e.g., scopes, callbacks, validations — per the conventions file and Pipeline Configuration → Framework & Stack)
 
 Record findings with specific file:line references and what the convention says.
 
 ### Step 4: Review Dimension 2 — Security
 
-**If PIPELINE.md has NO "Multi-Tenant Security" section:** Skip tenant-scoping checks. Still check for injection vulnerabilities, secrets, and authentication.
+**If Pipeline Configuration has NO "Multi-Tenant Security" section:** Skip tenant-scoping checks. Still check for injection vulnerabilities, secrets, and authentication.
 
-**If PIPELINE.md HAS a "Multi-Tenant Security" section:** Check all of the following:
+**If Pipeline Configuration HAS a "Multi-Tenant Security" section:** Check all of the following:
 
 - **Unscoped queries** — all DB queries must be scoped to account/user (per the Multi-Tenant Security section)
 - **Controller/handler authorization** — framework authorization patterns (per conventions file) in place before data access
@@ -147,13 +143,13 @@ Compare the implementation against the architecture proposal and gameplan:
 
 ### Step 6: Review Dimension 4 — Cross-Platform Consistency
 
-**If PIPELINE.md Platforms has only ONE active platform**, this dimension is a limited check.
+**If Pipeline Configuration → Platforms has only ONE active platform**, this dimension is a limited check.
 
-**If PIPELINE.md Platforms has 2+ active platforms**, check:
+**If Pipeline Configuration → Platforms has 2+ active platforms**, check:
 - API response format consistency across platform implementations
 - Data model assumptions are consistent
 
-**If PIPELINE.md has an "API Conventions" section**, also check:
+**If Pipeline Configuration has an "API Conventions" section**, also check:
 - API response format consistency with existing endpoints documented in the conventions
 - Error response format matches the documented pattern
 
@@ -163,7 +159,7 @@ Compare the implementation against the architecture proposal and gameplan:
 
 Check all changed files (both test and non-test) for:
 
-- **Debugging artifacts** — check for patterns from PIPELINE.md Framework & Stack "Debug patterns" (e.g., `puts`, `binding.pry`, `console.log`, `IO.inspect` — varies by language)
+- **Debugging artifacts** — check for patterns from Pipeline Configuration → Framework & Stack "Debug patterns" (e.g., `puts`, `binding.pry`, `console.log`, `IO.inspect` — varies by language)
 - **TODO/FIXME comments** — these should be spec items or Linear tickets, not code comments
 - **Commented-out code** — dead code that should be removed
 - **Dead code** — unused methods, unreachable branches, unused variables
@@ -411,11 +407,11 @@ A dimension **Fails** if it has any Blocker or Major findings. **Pass** means Mi
 
 ### Files Reviewed
 
-[List all reviewed files, grouped by category. Derive categories from PIPELINE.md Directory Structure
+[List all reviewed files, grouped by category. Derive categories from Pipeline Configuration → Directory Structure
 — use the Purpose column as the group heading. Example categories: Models, Controllers, Services,
 Views, Migrations, Frontend JS, Routes, Tests, Other.]
 
-**[Category from PIPELINE.md Directory Structure]:**
+**[Category from Pipeline Configuration → Directory Structure]:**
 - `[file_path]`
 
 **Tests:**

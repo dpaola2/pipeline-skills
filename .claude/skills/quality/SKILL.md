@@ -18,14 +18,13 @@ You **generate a code quality report** for a pipeline project by reading the `pi
 ## Inputs
 
 - `<projects-path>/$ARGUMENTS/progress.md` — quality frontmatter from Stage 5 implementation milestones
-- The primary repository (path from `pipeline.md`) — for running fresh baseline and per-file analysis
-- `PIPELINE.md` in the primary repository — for Complexity Analysis tool configuration
+- The current repository — for running fresh baseline and per-file analysis
+- The conventions file — for Complexity Analysis tool configuration
 
 ## Before You Start
 
-1. Read `pipeline.md` to get the primary repository path and the **projects path** (from Work Directory → Projects).
+1. Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full. From the `## Pipeline Configuration` section, extract the **projects path** (from Work Directory → Projects), **Repository Details** (default branch, branch prefix, etc.), and look for a **Complexity Analysis** section.
 2. Verify `<projects-path>/$ARGUMENTS/` exists and contains `progress.md`.
-3. Read `PIPELINE.md` in the primary repository and look for a **Complexity Analysis** section.
 
 If `progress.md` does not exist, **STOP**:
 
@@ -52,16 +51,16 @@ Read `<projects-path>/$ARGUMENTS/progress.md` and extract YAML frontmatter. Pars
 
 If **no** `pipeline_quality_*` fields exist in the frontmatter, **STOP** with a helpful message:
 
-> "No quality data found in progress.md for `$ARGUMENTS`. Quality metrics are captured during Stage 5 implementation when `PIPELINE.md` has a Complexity Analysis section.
+> "No quality data found in progress.md for `$ARGUMENTS`. Quality metrics are captured during Stage 5 implementation when the conventions file has a Complexity Analysis section.
 >
 > To add quality data to an existing project, a future `/backfill-quality` skill (ROAD-20 v2) will support checking out old branches and running analysis retroactively."
 
 ### 2. Run Current Repo Baseline
 
-If `PIPELINE.md` has a Complexity Analysis section, run the repo baseline command for a fresh comparison:
+If the conventions file has a Complexity Analysis section, run the repo baseline command for a fresh comparison:
 
 ```bash
-cd <primary-repo-path> && <repo-baseline-command>
+<repo-baseline-command>
 ```
 
 Parse the output to extract the current repo-wide flog/method average. Store as `current_baseline`.
@@ -73,12 +72,12 @@ If the command fails or the section doesn't exist, use the stored `pipeline_qual
 Check if the project branch still exists:
 
 ```bash
-cd <primary-repo-path> && git branch --list '<branch-prefix>$ARGUMENTS'
+git branch --list '<branch-prefix>$ARGUMENTS'
 ```
 
 If the branch exists:
 1. Check out the branch: `git checkout <branch-prefix>$ARGUMENTS`
-2. Get all pipeline-touched files: `git diff --name-only origin/<pr-base-branch>...<branch-prefix>$ARGUMENTS -- '<file-glob>'` (exclude spec/)
+2. Get all pipeline-touched files: `git diff --name-only origin/<default-branch>...<branch-prefix>$ARGUMENTS -- '<file-glob>'` (exclude spec/)
 3. Run the score command on each file to get fresh per-file scores
 4. Run the per-file command on files with the highest scores to identify current hotspot methods
 5. Check out the previous branch: `git checkout -`
@@ -95,8 +94,8 @@ Write to `<projects-path>/$ARGUMENTS/quality.md`:
 # Code Quality Report — $ARGUMENTS
 
 > Generated: <current date/time>
-> Tool: [tool name from PIPELINE.md, or from frontmatter context]
-> Hotspot threshold: [threshold from PIPELINE.md, or "unknown"]
+> Tool: [tool name from Pipeline Configuration, or from frontmatter context]
+> Hotspot threshold: [threshold from Pipeline Configuration, or "unknown"]
 
 ## Quality Scorecard
 

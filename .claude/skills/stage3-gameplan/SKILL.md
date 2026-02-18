@@ -43,8 +43,8 @@ date +"%Y-%m-%dT%H:%M:%S%z"
 
 After passing the pre-flight check, read these files:
 
-1. The pipeline config at `pipeline.md` — get the primary repository path, the **projects path** (from Work Directory → Projects), and other repo locations
-2. The repo config at `PIPELINE.md` in the primary repository (path from `pipeline.md`) — understand platforms, framework, and which optional concerns apply (multi-tenant, feature flags, exports, backwards compat)
+1. Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full.
+2. From the `## Pipeline Configuration` section, extract: **Work Directory** (projects path, inbox path), **Repository Details** (default branch, test command, branch prefix, etc.), **Platforms**, **Framework & Stack**, and all other pipeline config sub-sections. Understand which optional concerns apply (multi-tenant, feature flags, exports, backwards compat).
 3. The PRD at `<projects-path>/$ARGUMENTS/prd.md`
 4. The Discovery Report at `<projects-path>/$ARGUMENTS/discovery-report.md`
 5. The APPROVED Architecture Proposal at `<projects-path>/$ARGUMENTS/architecture-proposal.md`
@@ -78,7 +78,7 @@ Organize by **feature area**, not by platform:
 - **M0: Discovery & Alignment** — Always complete (Stages 1-2 did this). Mark as done.
 - **M1** typically: Data model, core backend, foundational API
 - **M2+**: Progressive feature areas building on M1
-- **Penultimate milestone (always):** QA Test Data — a seed task (per PIPELINE.md Framework & Stack Seed command format) that seeds realistic data for manual QA. Comes after all feature implementation milestones and before the final polish/edge-cases milestone. See the gameplan template for the standard structure and acceptance criteria.
+- **Penultimate milestone (always):** QA Test Data — a seed task (per Pipeline Configuration → Framework & Stack Seed command format) that seeds realistic data for manual QA. Comes after all feature implementation milestones and before the final polish/edge-cases milestone. See the gameplan template for the standard structure and acceptance criteria.
 - **Final milestone:** Empty states, edge cases, polish
 
 Guidelines:
@@ -98,9 +98,9 @@ For each milestone:
 
 ### 3. Map Platform Tasks Within Each Milestone
 
-For each milestone, create one task section per **active platform** from PIPELINE.md Platforms table:
+For each milestone, create one task section per **active platform** from Pipeline Configuration → Platforms table:
 - **Primary platform tasks:** Specific files to create/modify, endpoints, views, controllers, tests
-- **Additional platform tasks:** One section per additional active platform from PIPELINE.md. Mark "N/A" for platforms not in scope for this project level.
+- **Additional platform tasks:** One section per additional active platform from Pipeline Configuration → Platforms. Mark "N/A" for platforms not in scope for this project level.
 
 Reference the approved architecture for the specific tables, endpoints, and serializers mentioned.
 
@@ -112,10 +112,10 @@ Complete every section of the non-functional checklist in the template:
 - **Security & Access Control:** Scoping, authorization, permissions from the architecture
 - **Performance:** Query patterns, indexing strategy, N+1 risks, caching needs
 - **Observability:** Logging plan, debug path, alerts
-- **Analytics & Instrumentation:** Success metrics from the PRD, specific events to track (with names, triggers, and properties), and what framework/approach to use. If the target repo has no analytics infrastructure, note that and skip the events table. Check `PIPELINE.md` and the discovery report for existing analytics patterns.
+- **Analytics & Instrumentation:** Success metrics from the PRD, specific events to track (with names, triggers, and properties), and what framework/approach to use. If the target repo has no analytics infrastructure, note that and skip the events table. Check Pipeline Configuration and the discovery report for existing analytics patterns.
 - **Testing Plan:** What types of tests per platform, coverage expectations
 - **Feature Flags & Rollout:** Flag name, default state, rollout plan
-- **Mobile-Specific:** Mark N/A if PIPELINE.md Platforms does not list mobile platforms
+- **Mobile-Specific:** Mark N/A if Pipeline Configuration → Platforms does not list mobile platforms
 - **Legacy & Migration:** Backwards compatibility from the architecture
 - **Export/Reporting:** Export requirements from the PRD
 
@@ -288,13 +288,13 @@ pipeline_approved_at: "[ISO 8601 timestamp — filled by Stage 4]"
 
 | Ticket | Description | Platform |
 |--------|-------------|----------|
-| [LIN-XXX] | [Brief description] | [Platform from PIPELINE.md] |
+| [LIN-XXX] | [Brief description] | [Platform from Pipeline Configuration] |
 
 ### Out of Scope
 - [Explicitly what we're NOT doing]
 
 ### Constraints & Conventions
-- Conventions file: [Link to conventions file from PIPELINE.md Repository Details]
+- Conventions file: [Link to conventions file from Pipeline Configuration → Repository Details]
 - [Any project-specific constraints]
 
 ---
@@ -331,14 +331,14 @@ pipeline_approved_at: "[ISO 8601 timestamp — filled by Stage 4]"
 - [ ] [XX-002]: [Specific, testable criterion]
 - [ ] [XX-003]: [Specific, testable criterion]
 
-**[Primary platform from PIPELINE.md]:**
+**[Primary platform from Pipeline Configuration]:**
 - [ ] Migration: [create/alter table]
 - [ ] Model: [Model with validations, associations, scopes/queries]
 - [ ] Controller/handler: [Endpoints/routes]
-- [ ] Serializer: [if applicable per PIPELINE.md]
+- [ ] Serializer: [if applicable per Pipeline Configuration]
 - [ ] Tests: [test types per framework]
 
-<!-- Include one task section per additional active platform from PIPELINE.md Platforms.
+<!-- Include one task section per additional active platform from Pipeline Configuration → Platforms.
      Mark "N/A" for platforms not in scope for this project level. -->
 
 **Dependencies:** None (first milestone)
@@ -353,7 +353,7 @@ pipeline_approved_at: "[ISO 8601 timestamp — filled by Stage 4]"
 - [ ] [XX-010]: [Criterion]
 - [ ] [XX-011]: [Criterion]
 
-**[Primary platform from PIPELINE.md]:**
+**[Primary platform from Pipeline Configuration]:**
 - [ ] [Specific tasks]
 
 **Dependencies:** M1 (needs data model)
@@ -367,7 +367,7 @@ pipeline_approved_at: "[ISO 8601 timestamp — filled by Stage 4]"
 **Acceptance Criteria:**
 - [ ] [XX-020]: [Criterion]
 
-**[Primary platform from PIPELINE.md]:**
+**[Primary platform from Pipeline Configuration]:**
 - [ ] [Specific tasks]
 
 **Dependencies:** M1 (needs core implementation)
@@ -379,18 +379,18 @@ pipeline_approved_at: "[ISO 8601 timestamp — filled by Stage 4]"
 ---
 
 ### M_PENULTIMATE_: QA Test Data
-**What:** Create a seed task that populates realistic test data covering all feature scenarios. This enables manual QA without requiring testers to construct their own data. (Task format per `PIPELINE.md` Framework & Stack — e.g., rake task, management command, script.)
+**What:** Create a seed task that populates realistic test data covering all feature scenarios. This enables manual QA without requiring testers to construct their own data. (Task format per Pipeline Configuration → Framework & Stack — e.g., rake task, management command, script.)
 
 **Acceptance Criteria:**
-- [ ] Seed task exists in the appropriate location (per `PIPELINE.md` Directory Structure, e.g., seed tasks directory)
+- [ ] Seed task exists in the appropriate location (per Pipeline Configuration → Directory Structure, e.g., seed tasks directory)
 - [ ] Task creates test account(s) with appropriate permissions and roles
 - [ ] Task seeds data covering: happy path, empty states, edge cases, threshold boundaries
 - [ ] Task is idempotent (can re-run without duplicating data)
 - [ ] Task prints a summary of what was created (account credentials, key IDs, URLs to test)
 - [ ] All scenarios from the manual QA checklist have supporting test data
 
-**[Primary platform from PIPELINE.md]:**
-- [ ] Seed task file — idempotent (per PIPELINE.md Framework & Stack Seed command format)
+**[Primary platform from Pipeline Configuration]:**
+- [ ] Seed task file — idempotent (per Pipeline Configuration → Framework & Stack Seed command format)
 - [ ] Uses existing test data helpers where available
 - [ ] No production-unsafe operations (dev/staging only)
 
@@ -406,7 +406,7 @@ pipeline_approved_at: "[ISO 8601 timestamp — filled by Stage 4]"
 - [ ] [Edge case handling]
 - [ ] [Print styles, responsive behavior]
 
-**[Primary platform from PIPELINE.md]:**
+**[Primary platform from Pipeline Configuration]:**
 - [ ] [View/UI updates]
 
 **Dependencies:** All prior milestones
@@ -469,12 +469,12 @@ _If the product has no event tracking infrastructure, note that here and skip th
 
 | Type | Coverage | Platform | Owner |
 |------|----------|----------|-------|
-| Model/unit tests | [What's covered] | [Primary platform from PIPELINE.md] | Pipeline |
-| Request/integration tests | [What's covered] | [Primary platform from PIPELINE.md] | Pipeline |
-| System/E2E tests | [What's covered] | [Primary platform from PIPELINE.md] | Pipeline |
+| Model/unit tests | [What's covered] | [Primary platform from Pipeline Configuration] | Pipeline |
+| Request/integration tests | [What's covered] | [Primary platform from Pipeline Configuration] | Pipeline |
+| System/E2E tests | [What's covered] | [Primary platform from Pipeline Configuration] | Pipeline |
 | Manual QA | [Key scenarios] | All | Human |
 
-> Add rows for additional active platforms from PIPELINE.md Platforms if Level 3.
+> Add rows for additional active platforms from Pipeline Configuration → Platforms if Level 3.
 
 ### Feature Flags & Rollout
 - [ ] Feature flag: `[flag_name]`
@@ -483,7 +483,7 @@ _If the product has no event tracking infrastructure, note that here and skip th
 - [ ] Rollout plan: [phases]
 
 ### Mobile-Specific
-<!-- CONDITIONAL: Include only if PIPELINE.md Platforms lists mobile platforms (iOS, Android). Otherwise omit. -->
+<!-- CONDITIONAL: Include only if Pipeline Configuration → Platforms lists mobile platforms (iOS, Android). Otherwise omit. -->
 - [ ] Mobile analytics events planned
 - [ ] Crash reporting considerations
 - [ ] Offline behavior defined (if applicable)

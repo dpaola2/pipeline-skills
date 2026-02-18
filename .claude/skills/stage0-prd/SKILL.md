@@ -17,9 +17,8 @@ You **generate a structured PRD** from raw input notes (feature descriptions, Sl
 
 ## Inputs
 
-- Inbox directory (path from `pipeline.md` Work Directory → Inbox) — contains one or more raw input files
-- `pipeline.md` — target repository paths and work directory paths
-- `PIPELINE.md` in primary repo — framework, platforms, directory structure
+- Inbox directory (from Pipeline Configuration → Work Directory → Inbox) — contains one or more raw input files
+- The conventions file (`CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` in the repo root) — pipeline configuration, framework, platforms, directory structure
 
 ## Step-by-Step Procedure
 
@@ -33,12 +32,15 @@ date +"%Y-%m-%dT%H:%M:%S%z"
 
 You will use this timestamp in the output frontmatter.
 
-### Step 1: Read Pipeline Config and List Inbox
+### Step 1: Read Conventions File and List Inbox
 
-First, read `pipeline.md` to extract:
-- The **primary repository path** (from Target Repositories)
+Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full.
+
+From the `## Pipeline Configuration` section, extract:
 - The **projects path** (from Work Directory → Projects)
 - The **inbox path** (from Work Directory → Inbox)
+- **Repository Details** (default branch, test command, branch prefix, etc.)
+- All other pipeline config sub-sections (Framework & Stack, Platforms, Directory Structure, etc.)
 
 List all files in the **inbox path** directory, excluding `.gitkeep`.
 
@@ -66,11 +68,7 @@ Read the selected inbox file.
 
 ### Step 3: Read Context
 
-Read these files to understand the target format and project context:
-
-1. **`PIPELINE.md`** from the primary repository (path from `pipeline.md`) — framework, platforms, directory structure, API conventions, security model
-
-(You already read `pipeline.md` in Step 1.)
+You already read the conventions file in Step 1. Review the Pipeline Configuration sections for framework, platforms, directory structure, API conventions, and security model.
 
 ### Step 4: Generate PRD
 
@@ -85,7 +83,7 @@ Generate a metadata table at the top of the PRD:
 
 |  |  |
 | -- | -- |
-| **Product** | [Product name from PIPELINE.md or raw input] |
+| **Product** | [Product name from Pipeline Configuration or raw input] |
 | **Version** | 1 |
 | **Author** | Stage 0 (Pipeline) |
 | **Date** | [Today's date] |
@@ -94,14 +92,14 @@ Generate a metadata table at the top of the PRD:
 | **Level** | [CONFIRM — suggest 1, 2, or 3 based on scope] |
 ```
 
-Level guidance — read the Platforms table in `PIPELINE.md` to determine which definition set applies:
+Level guidance — read the Platforms table in Pipeline Configuration to determine which definition set applies:
 
-**If PIPELINE.md Platforms lists only ONE active platform:**
+**If Pipeline Configuration → Platforms lists only ONE active platform:**
 - **Level 1** — Small, self-contained changes. Config tweaks, simple UI additions, backend-only adjustments. 1-2 files.
 - **Level 2** — Medium scope features. New pages, reports, workflows, settings. Multiple files, one milestone.
 - **Level 3** — Large scope features. Significant new capability, multiple milestones.
 
-**If PIPELINE.md Platforms lists MULTIPLE active platforms:**
+**If Pipeline Configuration → Platforms lists MULTIPLE active platforms:**
 - **Level 1** — Small, single-platform only.
 - **Level 2** — Primary platform only (web). New pages, reports, workflows, settings. May involve model + controller + views but stays within one platform.
 - **Level 3** — Cross-platform features. Requires coordinated changes across all active platforms. New API endpoints consumed by other platform clients.
@@ -282,7 +280,7 @@ pipeline_completed_at: "[ISO 8601 timestamp]"
 
 | ID | Requirement | Platform | Priority |
 |----|------------|----------|----------|
-| [XX-001] | [Specific, testable requirement] | [Platform from PIPELINE.md] / All | Must / Should / Nice |
+| [XX-001] | [Specific, testable requirement] | [Platform from Pipeline Configuration] / All | Must / Should / Nice |
 | [XX-002] | [Specific, testable requirement] | [Platform] | [Priority] |
 
 ### [Functional Area 2]
@@ -295,18 +293,18 @@ pipeline_completed_at: "[ISO 8601 timestamp]"
 
 ## 4. Platform-Specific Requirements
 
-> Include one subsection per active platform from PIPELINE.md Platforms table.
+> Include one subsection per active platform from Pipeline Configuration → Platforms table.
 > Mark platforms not in scope as "No changes required — Level [N] project."
 
-### [Primary Platform from PIPELINE.md]
+### [Primary Platform from Pipeline Configuration]
 - [Platform-specific requirements, UI expectations, workflows]
 
-<!-- CONDITIONAL: Include one subsection per additional active platform from PIPELINE.md Platforms -->
+<!-- CONDITIONAL: Include one subsection per additional active platform from Pipeline Configuration → Platforms -->
 ### [Additional Platform]
 - [Platform-specific requirements, UI patterns, device considerations]
-- **Old app compatibility:** [What old versions see/don't see — if PIPELINE.md has Backwards Compatibility section]
+- **Old app compatibility:** [What old versions see/don't see — if Pipeline Configuration has Backwards Compatibility section]
 
-<!-- CONDITIONAL: Include only if PIPELINE.md has API Conventions section -->
+<!-- CONDITIONAL: Include only if Pipeline Configuration has API Conventions section -->
 ### API
 - [API requirements that serve all platforms]
 - [Authentication/authorization requirements]
@@ -343,12 +341,12 @@ pipeline_completed_at: "[ISO 8601 timestamp]"
 
 ## 7. Backwards Compatibility
 
-<!-- CONDITIONAL: Include this section only if PIPELINE.md has a Backwards Compatibility section.
+<!-- CONDITIONAL: Include this section only if Pipeline Configuration has a Backwards Compatibility section.
      Otherwise write: "N/A — no backwards compatibility concerns for this project." -->
 
 ### Compatibility Matrix
 
-| Feature | [Column per active platform and old version from PIPELINE.md Platforms] |
+| Feature | [Column per active platform and old version from Pipeline Configuration → Platforms] |
 |---------|:---:|
 | [Feature aspect 1] | [Full/Partial/None per platform] |
 

@@ -3,11 +3,9 @@
 projects/
 inbox/
 
-# Pipeline configs contain machine-specific paths (like .env files)
-# Use /setup-repo to generate yours, or copy from pipeline.md.example
+# Pipeline configs — obsolete (skills now run from target repo)
+# Kept for safety in case any local copies still exist
 pipeline.md
-pipelines/*.md
-!pipelines/README.md
 
 # Dashboard
 dashboard/node_modules/

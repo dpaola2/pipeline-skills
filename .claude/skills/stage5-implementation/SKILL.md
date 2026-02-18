@@ -38,8 +38,8 @@ If the second argument is missing, **STOP** and tell the user:
 - **Input 3:** `<projects-path>/PROJECT_SLUG/test-coverage-matrix.md` — maps acceptance criteria to test file locations
 - **Input 4:** `<projects-path>/PROJECT_SLUG/discovery-report.md` — existing codebase context
 - **Input 5:** `<projects-path>/PROJECT_SLUG/prd.md` — requirement details and edge cases
-- **Input 6:** Test files in the primary repository's test directory (path from pipeline.md) — the failing tests you must make pass
-- **Output 1:** Implementation code in the primary repository (path from pipeline.md), committed to the project branch
+- **Input 6:** Test files in the repo's test directory (from Pipeline Configuration → Directory Structure) — the failing tests you must make pass
+- **Output 1:** Implementation code in the repo, committed to the project branch
 - **Output 2:** `<projects-path>/PROJECT_SLUG/progress.md` — updated with milestone completion data (in the agent-pipeline repo)
 - **Output (conditional):** `<projects-path>/PROJECT_SLUG/decisions/ADR-*.md` — written when implementation decisions deviate from or extend the architecture
 
@@ -64,10 +64,10 @@ Read the gameplan and verify that the requested MILESTONE exists in the mileston
 
 ### Check 3: Project Branch Exists
 
-In the primary repository (path from pipeline.md), verify the project branch `<branch-prefix>PROJECT_SLUG` exists. This branch was created by Stage 4 and contains the failing tests.
+Verify the project branch `<branch-prefix>PROJECT_SLUG` exists. This branch was created by Stage 4 and contains the failing tests.
 
 ```bash
-cd <primary-repo-path> && git branch --list '<branch-prefix>PROJECT_SLUG'
+git branch --list '<branch-prefix>PROJECT_SLUG'
 ```
 
 If the branch does not exist, **STOP**:
@@ -77,12 +77,12 @@ If the branch does not exist, **STOP**:
 ### Check 4: Clean Working Tree
 
 ```bash
-cd <primary-repo-path> && git status --porcelain
+git status --porcelain
 ```
 
 If there are uncommitted changes, **STOP**:
 
-> "The primary repository has uncommitted changes. Please commit or stash them before running Stage 5."
+> "The repo has uncommitted changes. Please commit or stash them before running Stage 5."
 
 ### Check 5: Prior Milestone Tests Pass (for M2+)
 
@@ -95,7 +95,7 @@ For example, if implementing M3, use the test-coverage-matrix to identify test f
 Run those tests:
 
 ```bash
-cd <primary-repo-path> && <test-command> <prior-milestone-test-files> --format documentation 2>&1
+<test-command> <prior-milestone-test-files> --format documentation 2>&1
 ```
 
 If prior milestone tests FAIL, they haven't been implemented yet. **STOP**:
@@ -123,18 +123,15 @@ date +"%Y-%m-%dT%H:%M:%S%z"
 
 After passing all pre-flight checks, read these files:
 
-1. The pipeline config at `pipeline.md` — get the primary repository path, the **projects path** (from Work Directory → Projects), and other repo locations
-2. The repo config at `PIPELINE.md` in the primary repository (path from `pipeline.md`) — understand branch conventions, framework, directory structure, test commands, implementation order, and all repo-specific details
+1. Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full.
+2. From the `## Pipeline Configuration` section, extract: **Work Directory** (projects path, inbox path), **Repository Details** (default branch, test command, branch prefix, etc.), **Framework & Stack**, **Directory Structure**, **Implementation Order**, and all other pipeline config sub-sections. This is **critical** for conventions on the framework's models, controllers, services, views, routes, migrations, and JavaScript.
 3. The gameplan at `<projects-path>/PROJECT_SLUG/gameplan.md` — find the **MILESTONE section** specifically. Read the goals, acceptance criteria, and platform tasks.
 4. The architecture proposal at `<projects-path>/PROJECT_SLUG/architecture-proposal.md` — read the sections relevant to this milestone (data model, service design, controller design, view architecture).
 5. The test-coverage-matrix at `<projects-path>/PROJECT_SLUG/test-coverage-matrix.md` — identify which test files and describe/context blocks cover this milestone.
-6. The conventions file in the primary repository (path from `PIPELINE.md` Repository Details) — **critical**: conventions for the framework's models, controllers, services, views, routes, migrations, and JavaScript.
 
 ## Step-by-Step Procedure
 
 ### 1. Check Out the Project Branch
-
-In the primary repository (path from pipeline.md):
 
 1. Fetch latest: `git fetch origin`
 2. Check out the project branch: `git checkout <branch-prefix>PROJECT_SLUG`
@@ -157,18 +154,18 @@ For each test file:
 
 **Use Task agents for parallel exploration.** Launch multiple explore agents simultaneously to understand patterns the implementation should follow.
 
-Search the primary repository (path from pipeline.md) for:
+Search the repo for:
 
 **If this milestone creates a migration:**
-- Find 2-3 existing migration examples in the migrations directory (from PIPELINE.md Directory Structure) — study the style, naming, index creation patterns
+- Find 2-3 existing migration examples in the migrations directory (from Pipeline Configuration → Directory Structure) — study the style, naming, index creation patterns
 - Read the schema file for related tables mentioned in the architecture
 
 **If this milestone creates a model:**
-- Find the most similar existing model in the models directory (from PIPELINE.md Directory Structure) — study validations, associations, scopes, class methods
+- Find the most similar existing model in the models directory (from Pipeline Configuration → Directory Structure) — study validations, associations, scopes, class methods
 - Check for concerns referenced in the architecture
 
 **If this milestone creates a service:**
-- Find existing services in the services directory (from PIPELINE.md Directory Structure) that follow the same pattern referenced in the architecture
+- Find existing services in the services directory (from Pipeline Configuration → Directory Structure) that follow the same pattern referenced in the architecture
 - Study how they are initialized, what modules they include, how they are tested
 
 **If this milestone creates a controller:**
@@ -177,20 +174,20 @@ Search the primary repository (path from pipeline.md) for:
 - Look at the parent class referenced in the architecture
 
 **If this milestone creates views:**
-- Find the most similar existing views in the views directory (from PIPELINE.md Directory Structure)
+- Find the most similar existing views in the views directory (from Pipeline Configuration → Directory Structure)
 - Study layout, partial structure, template patterns
 - Look at how JavaScript controllers are connected in the markup
 
 **If this milestone creates JavaScript controllers:**
-- Find existing JavaScript controllers in the JS controllers directory (from PIPELINE.md Directory Structure)
+- Find existing JavaScript controllers in the JS controllers directory (from Pipeline Configuration → Directory Structure)
 - Study the naming convention, lifecycle methods, patterns
 
 **If this milestone modifies routes:**
-- Read the routes file (from PIPELINE.md Directory Structure) — find the relevant namespace block where new routes should go
+- Read the routes file (from Pipeline Configuration → Directory Structure) — find the relevant namespace block where new routes should go
 
 ### 4. Plan the Implementation Order
 
-Based on the tests and the gameplan's platform tasks, follow the **Implementation Order from PIPELINE.md**. This ensures dependencies are satisfied as you build. The order varies by framework — PIPELINE.md defines the canonical sequence for this repo.
+Based on the tests and the gameplan's platform tasks, follow the **Implementation Order from Pipeline Configuration**. This ensures dependencies are satisfied as you build. The order varies by framework — Pipeline Configuration defines the canonical sequence for this repo.
 
 ### 5. Implement the Code
 
@@ -198,9 +195,9 @@ Write each file following these rules:
 
 **General rules:**
 - Follow existing patterns from the codebase exactly. Match style, naming, indentation.
-- Follow AGENTS.md conventions explicitly.
+- Follow the conventions file explicitly.
 - Write the minimum viable code that makes the tests pass. No gold-plating.
-- No dead code, no TODO comments, no debugging artifacts (see PIPELINE.md Framework & Stack "Debug patterns" for the language-specific list).
+- No dead code, no TODO comments, no debugging artifacts (see Pipeline Configuration → Framework & Stack "Debug patterns" for the language-specific list).
 - No commented-out code.
 
 **Migrations:**
@@ -225,24 +222,24 @@ Write each file following these rules:
 **Views/Templates:**
 - Follow the view structure from the architecture proposal.
 - Use existing CSS classes and HTML patterns from similar views in the codebase.
-- Follow the view/template and frontend conventions from PIPELINE.md Framework & Stack and the conventions file.
+- Follow the view/template and frontend conventions from Pipeline Configuration → Framework & Stack and the conventions file.
 
 **Routes:**
 - Add routes inside the correct namespace block.
 - Match the exact route definitions from the architecture.
 
 **Frontend JavaScript/controllers:**
-- Follow existing frontend controller/component patterns from the codebase (e.g., Stimulus, React, LiveView — per PIPELINE.md Framework & Stack).
+- Follow existing frontend controller/component patterns from the codebase (e.g., Stimulus, React, LiveView — per Pipeline Configuration → Framework & Stack).
 
 ### 6. Run Milestone Tests
 
 After implementing all files for this milestone, run the relevant test files:
 
 ```bash
-cd <primary-repo-path> && <test-command> <test-files-for-this-milestone> --format documentation 2>&1
+<test-command> <test-files-for-this-milestone> --format documentation 2>&1
 ```
 
-(The repo path comes from pipeline.md Target Repositories; the test command comes from PIPELINE.md Repository Details.)
+(The test command comes from Pipeline Configuration → Repository Details.)
 
 Identify the specific test files from the test-coverage-matrix.
 
@@ -264,10 +261,10 @@ Identify the specific test files from the test-coverage-matrix.
 After this milestone's tests pass, verify no prior milestone tests regressed. Run all feature test files:
 
 ```bash
-cd <primary-repo-path> && <test-command> <all-feature-test-files> --format documentation 2>&1
+<test-command> <all-feature-test-files> --format documentation 2>&1
 ```
 
-(The repo path comes from pipeline.md Target Repositories; the test command comes from PIPELINE.md Repository Details.)
+(The test command comes from Pipeline Configuration → Repository Details.)
 
 Check the results:
 - **Prior milestone tests** should still pass. If any regressed, fix the regression.
@@ -278,12 +275,12 @@ Check the results:
 
 Before committing, verify:
 
-- No debug artifacts (check for patterns from PIPELINE.md Framework & Stack "Debug patterns")
+- No debug artifacts (check for patterns from Pipeline Configuration → Framework & Stack "Debug patterns")
 - No TODO or FIXME comments
 - No commented-out code
 - No dead code (unused methods, unreachable branches)
 - All files follow existing code style
-- Security: all queries follow the scoping rules from PIPELINE.md (if Multi-Tenant Security section exists)
+- Security: all queries follow the scoping rules from Pipeline Configuration (if Multi-Tenant Security section exists)
 - No files created outside the scope of this milestone
 
 ### 9. Commit
@@ -294,14 +291,14 @@ Commit all new and modified files on the project branch:
 2. Commit with the following message format:
 
 ```
-[MILESTONE][<platform label from PIPELINE.md>] Brief description of what was implemented
+[MILESTONE][<platform label from Pipeline Configuration>] Brief description of what was implemented
 
 - Bullet point summary of key changes
 
 Pipeline: PROJECT_SLUG | Stage: implementation | Milestone: MILESTONE
 ```
 
-Example (for a Rails project where PIPELINE.md Platform label is "Rails"):
+Example (for a Rails project where Pipeline Configuration platform label is "Rails"):
 
 ```
 [M1][Rails] Add ReportSetting model and Analytics::DeficientLineItems service
@@ -321,7 +318,7 @@ After committing, capture code complexity metrics for the files touched in this 
 
 **Step A: Check for Complexity Analysis configuration**
 
-Read `PIPELINE.md` in the primary repository and look for a **Complexity Analysis** section.
+Read Pipeline Configuration (in the conventions file) and look for a **Complexity Analysis** section.
 
 - If the section **does not exist** → skip this entire step silently. Do not warn, do not log. Proceed to Step 11.
 - If the section **exists** → extract: tool name, per-file command, score command, hotspot threshold, file glob, and exclude pattern.
@@ -329,7 +326,7 @@ Read `PIPELINE.md` in the primary repository and look for a **Complexity Analysi
 **Step B: Get files from the milestone commit**
 
 ```bash
-cd <primary-repo-path> && git diff-tree --no-commit-id --name-only -r HEAD -- '<file-glob>'
+git diff-tree --no-commit-id --name-only -r HEAD -- '<file-glob>'
 ```
 
 Filter out any files matching the exclude pattern (e.g., files under `spec/`). If no files remain after filtering, set all quality fields to `—` and skip to Step C.
@@ -339,7 +336,7 @@ Filter out any files matching the exclude pattern (e.g., files under `spec/`). I
 For each file from Step B, run the score command (replacing `{file}` with the file path):
 
 ```bash
-cd <primary-repo-path> && <score-command>
+<score-command>
 ```
 
 Parse the output to extract the flog average (avg) per file. Flog score output format is: `N: flog total, N: flog/method average`. Collect all per-file averages.
@@ -351,7 +348,7 @@ Compute:
 To find `flog_max` and `flog_max_method`, run the per-file command on the file with the highest average:
 
 ```bash
-cd <primary-repo-path> && <per-file-command>
+<per-file-command>
 ```
 
 Parse the output to identify the highest-scoring method and its score. Flog per-file output lists methods as `score: ClassName#method_name`.
@@ -366,7 +363,7 @@ After committing, review what you learned during this milestone. Route insights 
 
 **Step A: Repo-scoped insights → target repo conventions file**
 
-The conventions file name comes from `PIPELINE.md` Repository Details → Conventions file (e.g., `AGENTS.md`, `CLAUDE.md`). These insights help anyone working in this specific repo.
+The conventions file is the one found during setup (e.g., `CLAUDE.md`, `AGENTS.md`, `CONVENTIONS.md`). These insights help anyone working in this specific repo.
 
 **What qualifies as repo-scoped:**
 - Codebase patterns discovered by reading existing code (e.g., "Reports::BaseController provides `require_read_reports_permission` and `set_default_date_range`")
@@ -409,9 +406,9 @@ If you made a technical decision during this milestone that deviates from or fil
 
 ### 13. Update Progress File
 
-After committing to the primary repository, capture the completion timestamp via Bash: `date +"%Y-%m-%dT%H:%M:%S%z"` — save as COMPLETED_AT.
+After committing, capture the completion timestamp via Bash: `date +"%Y-%m-%dT%H:%M:%S%z"` — save as COMPLETED_AT.
 
-Update the progress file in the **projects directory** (from `pipeline.md` Work Directory — NOT the primary repository).
+Update the progress file in the **projects directory** (from Pipeline Configuration → Work Directory — NOT the repo itself).
 
 **File:** `<projects-path>/PROJECT_SLUG/progress.md`
 
@@ -455,7 +452,7 @@ pipeline_quality_m1_files_analyzed: 6
 | Field | Value |
 |-------|-------|
 | **Branch** | `<branch-prefix>PROJECT_SLUG` |
-| **Primary repo** | [path from pipeline.md] |
+| **Repo** | [current repo path] |
 | **Milestones** | M0–M_LAST_ |
 
 ## Milestone Status
@@ -511,7 +508,7 @@ Any implementation notes, gotchas, or lessons learned
 - Include the actual commit SHA from the commit you just made
 - List ALL acceptance criteria from the gameplan with checked/unchecked status
 - Record any spec gaps or implementation notes
-- Do NOT commit this file to the primary repository — it lives in the projects directory (from `pipeline.md` Work Directory), not the primary repo
+- Do NOT commit this file to the repo — it lives in the projects directory (from Pipeline Configuration → Work Directory), not the repo itself
 
 ### 14. Commit Pipeline Artifacts
 
@@ -551,13 +548,13 @@ If you discover that the architecture proposal or gameplan is incomplete, ambigu
 - **Do not implement multiple milestones.** One milestone per invocation.
 - **Do not commit or merge directly to the default branch.** All work stays on the project branch.
 
-## Working in the Primary Repository
+## Working in the Repository
 
-The primary repository path and default branch are specified in PIPELINE.md Repository Details.
+The default branch is specified in Pipeline Configuration → Repository Details.
 
 ### Files You MAY Create or Modify
 
-Only files in directories listed in PIPELINE.md Directory Structure that this milestone's gameplan tasks reference:
+Only files in directories listed in Pipeline Configuration → Directory Structure that this milestone's gameplan tasks reference:
 
 - Migration files
 - Model files
@@ -575,13 +572,13 @@ Only files in directories listed in PIPELINE.md Directory Structure that this mi
 - Database configuration or other infrastructure config
 - Deployment scripts or CI configuration
 - `.env` or any credentials files
-- The default branch (from PIPELINE.md) — never commit directly to it
+- The default branch (from Pipeline Configuration) — never commit directly to it
 
 ## When You're Done
 
 Tell the user:
 
-1. **Branch:** `<branch-prefix>PROJECT_SLUG` in the primary repository
+1. **Branch:** `<branch-prefix>PROJECT_SLUG`
 2. **Files created/modified:** List every file with a brief description
 3. **Test results:**
    - This milestone's tests: X passing, Y failing
@@ -637,5 +634,5 @@ If this was the **last milestone**, instead say:
 - [ ] Code follows the conventions file
 - [ ] Migrations run cleanly
 - [ ] API endpoints match architecture proposal exactly (if applicable)
-- [ ] Security scoping in place (if PIPELINE.md has Multi-Tenant Security)
+- [ ] Security scoping in place (if Pipeline Configuration has Multi-Tenant Security)
 - [ ] No dead code, TODOs, or debugging artifacts

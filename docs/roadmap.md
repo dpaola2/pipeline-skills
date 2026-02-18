@@ -31,7 +31,7 @@
 | ROAD-21 | Pipeline Dashboard (Factorio Theme) | Visibility | Planned |
 | ROAD-22 | Pipeline Status MCP Server | Visibility | Planned |
 | ROAD-23 | Stage 4 Test Quality Heuristics | Quality assurance | **Done** |
-| ROAD-24 | Merge PIPELINE.md into Conventions Files | Portability | Planned |
+| ROAD-24 | Merge PIPELINE.md into Conventions Files | Portability | **Done** |
 | ROAD-25 | Multi-Runtime Support (Claude Code + Codex) | Portability | Planned |
 | ROAD-26 | Release Notes Skill | Developer experience | **Done** |
 | ROAD-27 | Weekly Pipeline Digest | Visibility | Planned |
@@ -346,18 +346,18 @@ Add a "ludicrous speed" mode that auto-approves human checkpoints when there are
 **Status:** Done
 **Theme:** Portability
 
-Added support for running the pipeline against multiple products (repos), with separate pipeline configs per product and a `/setup-repo` skill for automated repo onboarding.
+Added support for running the pipeline against multiple products (repos), with separate pipeline configs per product and a `/setup-pipeline-repo` skill for automated repo onboarding.
 
 **What was built:**
 - **`pipelines/` directory** — named pipeline configs per product (e.g., `pipelines/orangeqc.md`, `pipelines/show-notes.md`)
 - **Active pointer pattern** — `pipeline.md` at repo root is always the active config; switch products by copying from `pipelines/`
-- **`/setup-repo` skill** — explores a new repo, detects framework/tests/CI/structure, auto-generates `PIPELINE.md` in the target repo and a pipeline config in `pipelines/`, optionally activates it
+- **`/setup-pipeline-repo` skill** — explores a new repo, detects framework/tests/CI/structure, auto-generates `PIPELINE.md` in the target repo and a pipeline config in `pipelines/`, optionally activates it
 - **Show Notes onboarded** — first non-OrangeQC product added to the pipeline (Rails 8.1 web app)
 
 **Design decisions:**
 - Active pointer over per-command product argument — matches session-based workflow, zero existing skill changes (all 8 skills still read `pipeline.md`)
 - Product configs stored in `pipelines/` as reference copies; `pipeline.md` is the canonical active file
-- `setup-repo` uses detect → confirm → generate pattern to avoid silent misconfigurations
+- `setup-pipeline-repo` uses detect → confirm → generate pattern to avoid silent misconfigurations
 - OPTIONAL sections in PIPELINE.md are omitted for simpler projects (no API, no multi-tenancy, etc.)
 - To switch products: `cp pipelines/<product>.md pipeline.md`
 
@@ -376,7 +376,7 @@ Externalized project artifacts (`projects/`) and inbox (`inbox/`) from the pipel
 - **External project directories** — each product has its own git repo for project artifacts:
   - OrangeQC: `~/projects/orangeqc/pipeline-projects/`
   - Show Notes: `~/projects/show-notes/pipeline-projects/`
-- **`/setup-repo` skill updated** — generates Work Directory section in new pipeline configs, asks user for projects path
+- **`/setup-pipeline-repo` skill updated** — generates Work Directory section in new pipeline configs, asks user for projects path
 - **Migration** — 6 OrangeQC projects and 1 Show Notes project moved to external directories
 
 **Why:** Two problems solved:
@@ -534,7 +534,7 @@ Two possible modes:
 
 Allow each project to specify a custom base branch instead of always branching from the default branch declared in `PIPELINE.md`. Currently Stage 4 creates `pipeline/<slug>` from `origin/<default-branch>`. This would allow branching from another project's branch or a feature branch.
 
-**Why:** Enables dependent projects (Project B needs Project A's unreleased changes) and post-QA follow-up projects. The `/setup-repo` skill already derives the default branch from git and sets it as `PR base branch` in `PIPELINE.md`, but per-project overrides aren't supported yet.
+**Why:** Enables dependent projects (Project B needs Project A's unreleased changes) and post-QA follow-up projects. The `/setup-pipeline-repo` skill already derives the default branch from git and sets it as `PR base branch` in `PIPELINE.md`, but per-project overrides aren't supported yet.
 
 **How:** A `base_branch` field in the project's `prd.md` header or a project-level config file. Stage 4 reads it when creating the branch. If not specified, falls back to `PIPELINE.md`'s `PR base branch`.
 
@@ -707,7 +707,7 @@ The two skills are independent — you can run either without the other. ROAD-27
 
 **Critical design requirement: Platform-agnostic via repo config.**
 
-The skill must NOT hardcode any language-specific tools. Each target repo declares its own complexity analysis tools in its config (currently `PIPELINE.md`, or the conventions file after ROAD-24), following the same pattern as post-flight checks. The skill reads the config and runs whatever the repo declares. `/setup-repo` (ROAD-12) detects available tools during onboarding and writes them into the config.
+The skill must NOT hardcode any language-specific tools. Each target repo declares its own complexity analysis tools in its conventions file (Pipeline Configuration → Complexity Analysis section), following the same pattern as post-flight checks. The skill reads the config and runs whatever the repo declares.
 
 **Repo config section (new — added to PIPELINE.md / conventions file):**
 
@@ -835,9 +835,9 @@ The tool/metric names come from the repo's Complexity Analysis config, so they'r
 - [Which tools ran, which were skipped]
 ```
 
-**setup-repo integration:**
+**setup-pipeline-repo integration:**
 
-Add a new step to `/setup-repo` (after Step 4: Detect Post-Flight Checks):
+Add a new step to `/setup-pipeline-repo` (after Step 4: Detect Post-Flight Checks):
 
 > **Step 4b: Detect Complexity Analysis Tools**
 >
@@ -862,7 +862,7 @@ Add a new step to `/setup-repo` (after Step 4: Detect Post-Flight Checks):
 - Repos with no Complexity Analysis section in their config simply skip quality capture — graceful degradation, not a hard requirement
 - The backfill skill is more resource-intensive than `/backfill-timing` — it needs to check out branches and run tools, not just read timestamps. Consider caching baseline scores per-repo so the baseline doesn't need to be recomputed for every backfilled project.
 
-**Related:** ROAD-19 (DORA Metrics — same infrastructure pattern, complementary measurement), ROAD-09 (Code Review — reviewer should consider complexity), ROAD-15 (Knowledge Extraction — complexity patterns are learnable), ROAD-04 (Post-Flight Checks — same config-driven pattern), ROAD-12 (setup-repo — detects and writes the config), ROAD-27 (Weekly Digest — consumes quality data for the scorecard, shows speed-vs-quality tradeoff alongside ROAD-19 timing data)
+**Related:** ROAD-19 (DORA Metrics — same infrastructure pattern, complementary measurement), ROAD-09 (Code Review — reviewer should consider complexity), ROAD-15 (Knowledge Extraction — complexity patterns are learnable), ROAD-04 (Post-Flight Checks — same config-driven pattern), ROAD-12 (setup-pipeline-repo — detects and writes the config), ROAD-27 (Weekly Digest — consumes quality data for the scorecard, shows speed-vs-quality tradeoff alongside ROAD-19 timing data)
 
 ---
 
@@ -1154,7 +1154,7 @@ Add a "Test Quality Heuristics" section to the Stage 4 skill, referenced during 
 
 ### ROAD-24: Merge PIPELINE.md into Conventions Files
 
-**Status:** Planned
+**Status:** Done
 **Theme:** Portability
 **Supersedes:** ROAD-05 (two-file architecture becomes a one-file-per-repo architecture)
 
@@ -1227,7 +1227,7 @@ Mechanical find-and-replace across all skills:
 - `.claude/skills/stage5-implementation/SKILL.md`
 - `.claude/skills/stage7-qa-plan/SKILL.md`
 - `.claude/skills/create-pr/SKILL.md`
-- `.claude/skills/setup-repo/SKILL.md` — biggest change: generates a "Pipeline Configuration" section in the existing conventions file (or creates one if none exists) instead of generating a standalone `PIPELINE.md`
+- `.claude/skills/setup-pipeline-repo/SKILL.md` — biggest change: generates a "Pipeline Configuration" section in the existing conventions file (or creates one if none exists) instead of generating a standalone `PIPELINE.md`
 
 #### 4. Update pipeline repo docs
 
@@ -1256,7 +1256,7 @@ Reflect the new two-layer architecture. Remove references to PIPELINE.md as a se
 **Verification:**
 
 After all changes:
-1. `grep -r "PIPELINE.md" .claude/skills/` → zero results (except possibly setup-repo explaining the migration)
+1. `grep -r "PIPELINE.md" .claude/skills/` → zero results (except possibly setup-pipeline-repo explaining the migration)
 2. Activate OrangeQC config, verify pipeline.md has conventions file column
 3. Activate Show Notes config, verify same
 4. Verify PIPELINE.md is gone from both repos
@@ -1273,10 +1273,10 @@ After all changes:
 **Considerations:**
 - This is a zero-behavior-change refactor — skills read the same information, just from one file instead of two
 - The conventions file grows, but most of the added content is structured tables that are easy to skip when reading for other purposes
-- `/setup-repo` becomes simpler to explain to users: "it adds a section to your conventions file" vs. "it creates a separate PIPELINE.md file"
-- Future products onboarded via `/setup-repo` only need one file created, not two
+- `/setup-pipeline-repo` becomes simpler to explain to users: "it adds a section to your conventions file" vs. "it creates a separate PIPELINE.md file"
+- Future products onboarded via `/setup-pipeline-repo` only need one file created, not two
 
-**Related:** ROAD-05 (superseded), ROAD-12 (Multi-Product — setup-repo changes), ROAD-15 (Knowledge Extraction — conventions file is now the single target for repo-scoped knowledge)
+**Related:** ROAD-05 (superseded), ROAD-12 (Multi-Product — setup-pipeline-repo changes), ROAD-15 (Knowledge Extraction — conventions file is now the single target for repo-scoped knowledge)
 
 ---
 
@@ -1390,7 +1390,7 @@ skills/                              # NEW — runtime-agnostic prompt bodies
   stage5-implementation/prompt.md
   stage7-qa-plan/prompt.md
   create-pr/prompt.md
-  setup-repo/prompt.md
+  setup-pipeline-repo/prompt.md
 
 .claude/skills/                      # EXISTING — Claude Code adapters (thin wrappers)
   stage0-prd/SKILL.md               # YAML front matter + `{% include skills/stage0-prd/prompt.md %}`
@@ -1636,7 +1636,7 @@ Move metrics collection and code quality analysis logic out of pipeline skills a
 
 **Design approach:**
 
-Add a `## Metrics & Quality` section to `PIPELINE.md` (or the conventions file, post-ROAD-24) that declares:
+Add a `### Metrics & Quality` sub-section to Pipeline Configuration in the conventions file that declares:
 
 1. **Timing capture points** — which events to timestamp and where to write them
 2. **Quality tools** — commands to run, expected output format, comparison strategy (extends ROAD-20's complexity analysis table)
@@ -1648,7 +1648,7 @@ Skills become thinner — they read the repo config for _what_ to measure and _h
 **Migration path:**
 1. Define the `## Metrics & Quality` schema in `PIPELINE.md`
 2. Populate it for OrangeQC and Show Notes repos
-3. Update `/setup-repo` to detect and generate this section for new repos
+3. Update `/setup-pipeline-repo` to detect and generate this section for new repos
 4. Refactor skills to read metrics config from repo instead of inline logic
 5. Verify that a standalone Claude Code session in a target repo (without pipeline skills) still captures metrics when following the repo's conventions
 

@@ -1,7 +1,7 @@
 # ADR-012: Multi-Product Pipeline Support
 
 **Date:** 2026-02-07
-**Status:** Accepted
+**Status:** Superseded by ROAD-24 (skills now run from target repo; `pipeline.md` and `pipelines/` eliminated)
 **Related:** ROAD-12, ROAD-05
 
 ---
@@ -44,9 +44,9 @@ This is the same tradeoff as `git HEAD` — git could require you to specify the
 
 OrangeQC's `PIPELINE.md` has 10 sections including API Conventions, Multi-Tenant Security, Backwards Compatibility, and Feature Flags. Show Notes' `PIPELINE.md` has 7 sections — three OPTIONAL sections don't apply (no API versioning, no multi-tenancy, no old clients). Skills already check for section existence before acting on them, so omitting sections is safe and keeps simple products simple.
 
-### The detect → confirm → generate pattern in setup-repo
+### The detect → confirm → generate pattern in setup-pipeline-repo
 
-Auto-detection of framework details is valuable (nobody wants to hand-type every Gemfile dependency), but silent misdetection is dangerous — a wrong test command in `PIPELINE.md` would cascade through Stages 4, 5, and create-pr. The `/setup-repo` skill detects everything it can, then presents findings via `AskUserQuestion` for human confirmation before generating any files. This catches cases like a Gemfile with both `pg` and `sqlite3` (different environments use different adapters).
+Auto-detection of framework details is valuable (nobody wants to hand-type every Gemfile dependency), but silent misdetection is dangerous — a wrong test command in `PIPELINE.md` would cascade through Stages 4, 5, and create-pr. The `/setup-pipeline-repo` skill detects everything it can, then presents findings via `AskUserQuestion` for human confirmation before generating any files. This catches cases like a Gemfile with both `pg` and `sqlite3` (different environments use different adapters).
 
 ### The pipeline config is tiny by design
 

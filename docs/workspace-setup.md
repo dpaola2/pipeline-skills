@@ -6,13 +6,15 @@ This guide explains how to set up the agent pipeline for a new product. After fo
 
 ## The Workspace Concept
 
-The pipeline expects a **workspace** — an umbrella directory where your target repository, the pipeline toolkit, and project artifacts all live together:
+The pipeline expects a **workspace** — an umbrella directory where your target repository, the pipeline toolkit (as a skill source), and project artifacts all live together:
 
 ```
 ~/projects/my-product/              ← The workspace
-  my-app/                           ← Target repo (will get PIPELINE.md)
+  my-app/                           ← Target repo (has conventions file with Pipeline Configuration)
+    .claude/skills/                 ← Pipeline skills (copied from agent-pipeline)
+    CLAUDE.md                       ← Conventions file with ## Pipeline Configuration section
   my-api/                           ← Another target repo (optional)
-  agent-pipeline/                   ← This toolkit (cloned)
+  agent-pipeline/                   ← This toolkit (skill source, cloned)
   pipeline-projects/                ← Project artifacts directory
     inbox/                          ← Raw input notes for Stage 0
     my-first-feature/               ← PRD, gameplan, progress, etc.
@@ -47,21 +49,17 @@ All milestones for a project are committed to one branch (`<branch-prefix><slug>
 
 Project artifacts live outside both the pipeline repo and the target repos:
 
-- **Pipeline repo** (`agent-pipeline/`) — skills, docs, configuration. Shared across all products.
-- **Target repo** (`my-app/`) — source code. Has `PIPELINE.md` describing how it works.
+- **Pipeline repo** (`agent-pipeline/`) — skills source, docs, design specs. Shared across all products.
+- **Target repo** (`my-app/`) — source code, skills (copied in), conventions file with Pipeline Configuration.
 - **Projects directory** (`pipeline-projects/`) — PRDs, gameplans, progress files. Per-product, per-project.
 
 **Why?** A feature may span multiple repos. Artifacts belong to the pipeline run, not to any single codebase.
 
-### Active Pointer Pattern
+### Skills Run From the Target Repo
 
-`pipeline.md` is always the active config — skills read it to find repo paths and work directories. Named configs live in `pipelines/` and can be swapped in:
+Skills are self-contained files that get copied into each target repo's `.claude/skills/` directory. Claude Code sessions happen in the target repo directory. Skills read the repo's conventions file (with `## Pipeline Configuration` section) for all configuration.
 
-```bash
-cp pipelines/my-product.md pipeline.md
-```
-
-**Why?** One pipeline installation supports multiple products. Switching is a single file copy.
+**Why?** One less layer of indirection. No switching between products. The target repo is both the code and the config.
 
 ### Templates as the Program
 
@@ -75,39 +73,29 @@ The architecture review and gameplan review aren't optional process overhead —
 
 ## Getting Started
 
-### Step 1: Clone the Pipeline
+### Step 1: Clone the Pipeline (Skill Source)
 
 ```bash
 cd ~/projects/my-product/
 git clone <pipeline-repo-url> agent-pipeline
 ```
 
-### Step 2: Set Up Your Target Repo
+### Step 2: Copy Skills Into Your Target Repo
 
-Run the setup skill from within Claude Code (in the `agent-pipeline/` directory):
-
-```
-/setup-repo ~/projects/my-product/my-app my-product
+```bash
+cp -r agent-pipeline/.claude/skills/* my-app/.claude/skills/
 ```
 
-This will:
-- Explore your codebase and detect framework, test tools, directory structure
-- Generate `PIPELINE.md` in your target repo (describes how the repo works)
-- Create `pipelines/my-product.md` in the pipeline repo (points to your repo paths)
-- Optionally activate the product as the current pipeline target
+### Step 3: Add Pipeline Configuration to Your Conventions File
 
-### Step 3: Create the Projects Directory
+Your target repo should have a conventions file (`CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md`). Add a `## Pipeline Configuration` section to it. See an existing repo's conventions file for the format, or check `README.md` for a template.
+
+The section includes: Work Directory, Project Tracker, Repository Details, Platforms, Framework & Stack, Directory Structure, Implementation Order, and Guardrails.
+
+### Step 4: Create the Projects Directory
 
 ```bash
 mkdir -p ~/projects/my-product/pipeline-projects/inbox
-```
-
-### Step 4: Verify the Setup
-
-Check that `pipeline.md` points to the right places:
-
-```
-/setup-repo  # with no arguments — shows current config
 ```
 
 ### Step 5: Start a Project
@@ -118,7 +106,7 @@ Drop raw notes (feature descriptions, Slack exports, meeting notes) into the inb
 cp my-feature-notes.md ~/projects/my-product/pipeline-projects/inbox/
 ```
 
-Then run:
+Then open Claude Code in your target repo (`my-app/`) and run:
 
 ```
 /stage0-prd
@@ -144,24 +132,16 @@ This generates a structured PRD from your notes. Review it, then proceed through
 
 ## Configuration Reference
 
-### `pipeline.md` (this repo, root)
+### Conventions File (target repo)
 
-The active pipeline config. Points to repo paths and work directories. Skills read this file first.
+The conventions file (`CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md`) in the target repo root contains a `## Pipeline Configuration` section with all pipeline config. Skills locate this file automatically (first found wins).
 
-### `pipelines/` (this repo)
-
-Named configs per product. Gitignored (machine-specific paths). See `pipelines/README.md`.
-
-### `PIPELINE.md` (each target repo)
-
-Describes how the target repo works — framework, directory structure, test commands, branch conventions, and optional sections for API conventions, multi-tenant security, backwards compatibility, feature flags, etc.
-
-Skills read `pipeline.md` to find repos, then read `PIPELINE.md` from the target repo for all framework-specific details.
+The Pipeline Configuration section includes sub-sections for Work Directory, Project Tracker, Related Repositories (optional), Repository Details, Platforms, Framework & Stack, Directory Structure, Implementation Order, Post-Flight Checks (optional), Complexity Analysis (optional), and Guardrails.
 
 ---
 
 ## Adding Product-Specific Constraints
 
-If your product has constraints that go beyond what `PIPELINE.md` captures (e.g., detailed API conventions, export requirements, team context), put them in the target repo's conventions file (e.g., `AGENTS.md`, `CLAUDE.md`). That's where pipeline skills look for codebase-specific guidance.
+If your product has constraints that go beyond what the Pipeline Configuration section captures (e.g., detailed API conventions, export requirements, team context), put them in the conventions file itself — that's already where pipeline skills look for codebase-specific guidance.
 
 See `docs/examples/orangeqc-constraints.md` for an example of what product-specific constraints look like.

@@ -1,6 +1,6 @@
 ---
 name: stage2-architecture
-description: "Run pipeline Stage 2 (Architecture) for a project. Designs data model, API endpoints, migrations, and security scoping based on the target repo's PIPELINE.md configuration."
+description: "Run pipeline Stage 2 (Architecture) for a project. Designs data model, API endpoints, migrations, and security scoping based on Pipeline Configuration in the conventions file."
 disable-model-invocation: true
 argument-hint: "<project-slug>"
 allowed-tools:
@@ -34,11 +34,9 @@ date +"%Y-%m-%dT%H:%M:%S%z"
 
 Then read these files in order:
 
-1. The pipeline config at `pipeline.md` — get the primary repository path, the **projects path** (from Work Directory → Projects), and other repo locations
-2. The repo config at `PIPELINE.md` in the primary repository (path from `pipeline.md`) — understand framework, directory structure, API conventions, security model, and all repo-specific details
-3. The PRD at `<projects-path>/$ARGUMENTS/prd.md` — understand what we're building
-4. The Discovery Report at `<projects-path>/$ARGUMENTS/discovery-report.md` — understand what exists today
-5. The conventions file in the primary repository (path and filename from `PIPELINE.md` Repository Details) — **critical**: pay special attention to database conventions, serialization patterns, API response structure, security scoping patterns, and API versioning. Cross-reference with the API Conventions and Multi-Tenant Security sections in `PIPELINE.md`.
+1. Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full. From the `## Pipeline Configuration` section, extract: **Work Directory** (projects path), **Repository Details** (default branch, test command, branch prefix, etc.), and all other pipeline config sub-sections (Framework & Stack, Directory Structure, API Conventions, Multi-Tenant Security, etc.). **Critical**: pay special attention to database conventions, serialization patterns, API response structure, security scoping patterns, and API versioning.
+2. The PRD at `<projects-path>/$ARGUMENTS/prd.md` — understand what we're building
+3. The Discovery Report at `<projects-path>/$ARGUMENTS/discovery-report.md` — understand what exists today
 
 ## Step-by-Step Procedure
 
@@ -54,7 +52,7 @@ Build on what exists. Do not reinvent. Note:
 ### 2. Design Data Model Changes
 
 For new tables:
-- Full schema following the primary key convention from `PIPELINE.md` API Conventions and the conventions file
+- Full schema following the primary key convention from Pipeline Configuration → API Conventions and the conventions file
 - All columns with types, constraints, defaults, nullability
 - Foreign keys with references
 - Indexes (following the migration conventions from the conventions file)
@@ -66,7 +64,7 @@ For modified tables:
 - New indexes
 
 Include:
-- Model code following the framework conventions from PIPELINE.md and the conventions file (associations, validations, scopes/queries)
+- Model code following the framework conventions from Pipeline Configuration and the conventions file (associations, validations, scopes/queries)
 - Associations map (visual representation of relationships)
 - Expected data volumes and growth rates
 
@@ -81,22 +79,22 @@ For each migration:
 
 ### 4. Design API Endpoints
 
-**If PIPELINE.md has an "API Conventions" section**, design the endpoints below. **Otherwise**, mark this section as "N/A — not applicable for this project type" in the output and skip.
+**If Pipeline Configuration has an "API Conventions" section**, design the endpoints below. **Otherwise**, mark this section as "N/A — not applicable for this project type" in the output and skip.
 
 For each endpoint:
 - HTTP method, path, purpose
 - Full example request JSON (with all fields, realistic values)
 - Full example response JSON (with all fields, realistic values)
-- Error response examples following the error format from `PIPELINE.md` API Conventions
+- Error response examples following the error format from Pipeline Configuration → API Conventions
 - Authorization requirements
-- Scoping chain (following the security model from `PIPELINE.md` Multi-Tenant Security, if applicable)
-- Serializer design following the serialization framework from `PIPELINE.md` Framework & Stack
+- Scoping chain (following the security model from Pipeline Configuration → Multi-Tenant Security, if applicable)
+- Serializer design following the serialization framework from Pipeline Configuration → Framework & Stack
 
-**Important:** Follow the response envelope convention from `PIPELINE.md` API Conventions.
+**Important:** Follow the response envelope convention from Pipeline Configuration → API Conventions.
 
 ### 5. Analyze Backwards Compatibility
 
-**If PIPELINE.md has a "Backwards Compatibility" section**, generate the compatibility matrix below. **Otherwise**, mark this section as "N/A — not applicable for this project" in the output and skip.
+**If Pipeline Configuration has a "Backwards Compatibility" section**, generate the compatibility matrix below. **Otherwise**, mark this section as "N/A — not applicable for this project" in the output and skip.
 
 Generate the compatibility matrix:
 - What each platform version sees
@@ -106,17 +104,17 @@ Generate the compatibility matrix:
 
 ### 6. Design Security Model
 
-**If PIPELINE.md has a "Multi-Tenant Security" section**, follow its scoping and authorization rules for every new data access path. **Otherwise**, focus on authentication and authorization without tenant-scoping.
+**If Pipeline Configuration has a "Multi-Tenant Security" section**, follow its scoping and authorization rules for every new data access path. **Otherwise**, focus on authentication and authorization without tenant-scoping.
 
 For every new data access path:
-- Query scoping chain (per the scoping rules in `PIPELINE.md`)
+- Query scoping chain (per the scoping rules in Pipeline Configuration)
 - Authorization model (who can do what, which roles/permissions)
 - Permission requirements
 - New attack surface analysis
 
 ### 7. Assess Export Impact
 
-**If the PRD mentions exports or PIPELINE.md has export-related features**, assess the impact below. **Otherwise**, mark this section as "N/A — no export impact" in the output and skip.
+**If the PRD mentions exports or Pipeline Configuration has export-related features**, assess the impact below. **Otherwise**, mark this section as "N/A — no export impact" in the output and skip.
 
 - How new data appears in existing exports (PDF, CSV, email reports)
 - New export requirements from the PRD
@@ -186,22 +184,22 @@ Commit the architecture proposal and any ADRs to version control in the projects
 
 ## Referencing the Codebase
 
-The primary repository path is in `pipeline.md` Target Repositories. When you need to:
-- Verify existing patterns: search the codebase using the directories from `PIPELINE.md` Directory Structure
+When you need to:
+- Verify existing patterns: search the codebase using the directories from Pipeline Configuration → Directory Structure
 - Check naming conventions: look at existing code in the relevant directories
 - Understand auth patterns: look at existing controllers
-- See serialization examples: look at the serializer directory from `PIPELINE.md`
+- See serialization examples: look at the serializer directory from Pipeline Configuration
 
-If `pipeline.md` lists an API docs repository, reference it for existing response shapes, pagination patterns, error format examples, and sync patterns.
+If Pipeline Configuration → Related Repositories lists an API docs repository, reference it for existing response shapes, pagination patterns, error format examples, and sync patterns.
 
-**Do NOT modify any files in these repos.** Read only.
+**Do NOT modify any files.** Read only.
 
 ## What NOT To Do
 
 - **Do not leave any section as "TBD."** Complete every section or flag it as an open question with options.
-- **Do not skip the backwards compatibility matrix** if PIPELINE.md has a Backwards Compatibility section.
-- **Do not skip security design.** Every new data access path needs authentication and authorization. If PIPELINE.md has Multi-Tenant Security, also include tenant scoping chains.
-- **Do not modify any files in the target repos.**
+- **Do not skip the backwards compatibility matrix** if Pipeline Configuration has a Backwards Compatibility section.
+- **Do not skip security design.** Every new data access path needs authentication and authorization. If Pipeline Configuration has Multi-Tenant Security, also include tenant scoping chains.
+- **Do not modify any files in the repo.**
 - **Do not generate the gameplan.** That is Stage 3, and it requires approved architecture first.
 - **Do not invent new patterns** when existing codebase patterns will work. Follow what exists.
 
@@ -272,7 +270,7 @@ pipeline_approved_at: "[ISO 8601 timestamp — filled by Stage 3]"
 
 ```sql
 CREATE TABLE [table_name] (
-  id [primary key type per PIPELINE.md API Conventions],
+  id [primary key type per Pipeline Configuration → API Conventions],
   [column_name] [type] [constraints],
   [foreign_key]_id uuid NOT NULL REFERENCES [parent_table](id),
   created_at timestamptz NOT NULL DEFAULT NOW(),
@@ -295,10 +293,10 @@ ALTER TABLE [existing_table]
 ### Models
 
 ```
-[Model code following framework conventions from PIPELINE.md and the conventions file.
+[Model code following framework conventions from Pipeline Configuration and the conventions file.
 Include: associations/relationships, validations/constraints, scopes/queries, class methods.
-If PIPELINE.md has Multi-Tenant Security, include the tenant-scoping scope/query.
-Use the language and framework idioms from PIPELINE.md Framework & Stack.]
+If Pipeline Configuration has Multi-Tenant Security, include the tenant-scoping scope/query.
+Use the language and framework idioms from Pipeline Configuration → Framework & Stack.]
 ```
 
 ### Associations Map
@@ -327,7 +325,7 @@ Use the language and framework idioms from PIPELINE.md Framework & Stack.]
 
 ## 2. API Endpoints
 
-<!-- CONDITIONAL: Include this section only if PIPELINE.md has an "API Conventions" section.
+<!-- CONDITIONAL: Include this section only if Pipeline Configuration has an "API Conventions" section.
      Otherwise write: "N/A — this project does not expose an API." -->
 
 ### New Endpoints
@@ -338,7 +336,7 @@ Use the language and framework idioms from PIPELINE.md Framework & Stack.]
 
 **Authorization:** [Who can call this, what permissions needed]
 
-**Scoping:** [per PIPELINE.md Multi-Tenant Security, if applicable]
+**Scoping:** [per Pipeline Configuration → Multi-Tenant Security, if applicable]
 
 **Request:**
 ```json
@@ -365,12 +363,12 @@ Use the language and framework idioms from PIPELINE.md Framework & Stack.]
 
 **Error Response (422):**
 ```json
-[Error format per PIPELINE.md API Conventions]
+[Error format per Pipeline Configuration → API Conventions]
 ```
 
 **Error Response (401):**
 ```json
-[Error format per PIPELINE.md API Conventions]
+[Error format per Pipeline Configuration → API Conventions]
 ```
 
 ---
@@ -390,8 +388,8 @@ Use the language and framework idioms from PIPELINE.md Framework & Stack.]
 ### Serializers
 
 ```
-[Serializer code following the serialization framework from PIPELINE.md Framework & Stack
-and patterns from the conventions file in the primary repository.
+[Serializer code following the serialization framework from Pipeline Configuration → Framework & Stack
+and patterns from the conventions file.
 Include fields, associations, and custom formatting.]
 ```
 
@@ -399,19 +397,19 @@ Include fields, associations, and custom formatting.]
 
 ## 3. Backwards Compatibility
 
-<!-- CONDITIONAL: Include this section only if PIPELINE.md has a "Backwards Compatibility" section.
+<!-- CONDITIONAL: Include this section only if Pipeline Configuration has a "Backwards Compatibility" section.
      Otherwise write: "N/A — no backwards compatibility concerns for this project." -->
 
 ### Compatibility Matrix
 
-| Feature / Behavior | [Column per active platform and old version from PIPELINE.md Platforms] |
+| Feature / Behavior | [Column per active platform and old version from Pipeline Configuration → Platforms] |
 |-------------------|:---:|
 | [Behavior 1] | [Full/Partial/None per platform] |
 | [Behavior 2] | [Full/Partial/None per platform] |
 
 ### Old Client Behavior
 
-> One subsection per platform with old versions (from PIPELINE.md Backwards Compatibility).
+> One subsection per platform with old versions (from Pipeline Configuration → Backwards Compatibility).
 
 **[Platform] v[old]:**
 - [What old client sees/doesn't see]
@@ -434,12 +432,12 @@ Include fields, associations, and custom formatting.]
 
 ### Query Scoping
 
-<!-- CONDITIONAL: Include scoping chains only if PIPELINE.md has a "Multi-Tenant Security" section.
+<!-- CONDITIONAL: Include scoping chains only if Pipeline Configuration has a "Multi-Tenant Security" section.
      Otherwise focus on authentication and authorization only. -->
 
 | Resource | Scoping Chain |
 |----------|--------------|
-| [Resource] | [Scoping chain per PIPELINE.md Multi-Tenant Security, if applicable] |
+| [Resource] | [Scoping chain per Pipeline Configuration → Multi-Tenant Security, if applicable] |
 | [Nested resource] | [Scoping chain, if applicable] |
 
 ### Authorization
@@ -505,16 +503,16 @@ Include fields, associations, and custom formatting.]
 ### Files to Create
 | File | Purpose |
 |------|---------|
-| `[models dir from PIPELINE.md]/[model file]` | [Purpose] |
-| `[controllers dir from PIPELINE.md]/[controller file]` | [Purpose] |
-| `[serializers dir from PIPELINE.md]/[serializer file]` | [Purpose — if applicable] |
-| `[migrations dir from PIPELINE.md]/[migration file]` | [Purpose] |
+| `[models dir from Pipeline Configuration]/[model file]` | [Purpose] |
+| `[controllers dir from Pipeline Configuration]/[controller file]` | [Purpose] |
+| `[serializers dir from Pipeline Configuration]/[serializer file]` | [Purpose — if applicable] |
+| `[migrations dir from Pipeline Configuration]/[migration file]` | [Purpose] |
 
 ### Files to Modify
 | File | Changes |
 |------|---------|
-| `[models dir from PIPELINE.md]/[existing_model file]` | Add association |
-| `[routes path from PIPELINE.md]` | Add new routes |
+| `[models dir from Pipeline Configuration]/[existing_model file]` | Add association |
+| `[routes path from Pipeline Configuration]` | Add new routes |
 
 ---
 
@@ -548,7 +546,7 @@ Include fields, associations, and custom formatting.]
 
 - [ ] Data model complete (no "TBD" fields)
 - [ ] Every API endpoint has full request AND response JSON examples
-- [ ] Backwards compatibility matrix filled out (if PIPELINE.md has that section)
+- [ ] Backwards compatibility matrix filled out (if Pipeline Configuration has that section)
 - [ ] Migrations specified (not just "we'll need a migration")
 - [ ] Security scoping explicit for every new data access path
 - [ ] Proposal follows existing codebase patterns

@@ -18,11 +18,11 @@ You **compute pipeline timing metrics** for a project by reading the YAML frontm
 ## Inputs
 
 - `<projects-path>/$ARGUMENTS/` — the project directory containing pipeline documents with frontmatter
-- The primary repository (path from `pipeline.md`) — for git and PR data
+- The current repository — for git and PR data
 
 ## Before You Start
 
-1. Read `pipeline.md` to get the primary repository path and the **projects path** (from Work Directory → Projects).
+1. Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full. From the `## Pipeline Configuration` section, extract the **projects path** (from Work Directory → Projects) and **Repository Details** (default branch, branch prefix, etc.).
 2. Verify `<projects-path>/$ARGUMENTS/` exists.
 
 ## Step-by-Step Procedure
@@ -46,13 +46,13 @@ Parse these fields from each document:
 Check for PR merge data:
 
 ```bash
-cd <primary-repo-path> && gh pr list --head '<branch-prefix>$ARGUMENTS' --state merged --json mergedAt,createdAt,url --limit 1
+gh pr list --head '<branch-prefix>$ARGUMENTS' --state merged --json mergedAt,createdAt,url --limit 1
 ```
 
 If a merged PR is found, extract `mergedAt` and `createdAt`. If no merged PR, try open PRs:
 
 ```bash
-cd <primary-repo-path> && gh pr list --head '<branch-prefix>$ARGUMENTS' --state open --json createdAt,url --limit 1
+gh pr list --head '<branch-prefix>$ARGUMENTS' --state open --json createdAt,url --limit 1
 ```
 
 ### 3. Compute Metrics

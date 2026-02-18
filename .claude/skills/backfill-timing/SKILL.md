@@ -18,11 +18,11 @@ You **retrofit YAML frontmatter** with pipeline timing metadata onto existing pr
 ## Inputs
 
 - `<projects-path>/$ARGUMENTS/` — the project directory containing pipeline documents
-- The primary repository (path from `pipeline.md`) — for git commit timestamps
+- The current repository — for git commit timestamps
 
 ## Before You Start
 
-1. Read `pipeline.md` to get the primary repository path and the **projects path** (from Work Directory → Projects).
+1. Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full. From the `## Pipeline Configuration` section, extract the **projects path** (from Work Directory → Projects).
 2. Verify `<projects-path>/$ARGUMENTS/` exists and contains pipeline documents.
 
 ## Document-to-Stage Mapping
@@ -57,7 +57,7 @@ For each document that needs backfilling, try these data sources in priority ord
 For `progress.md`, read its milestone sections. Each milestone section has a `**Commit:** \`SHORT_SHA\`` field. For each commit SHA found:
 
 ```bash
-cd <primary-repo-path> && git log -1 --format='%aI' <sha>
+git log -1 --format='%aI' <sha>
 ```
 
 This gives the commit's author date in ISO 8601 format. Use this as `pipeline_mN_completed_at` for the corresponding milestone.

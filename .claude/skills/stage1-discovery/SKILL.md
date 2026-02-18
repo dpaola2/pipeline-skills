@@ -32,10 +32,8 @@ date +"%Y-%m-%dT%H:%M:%S%z"
 
 Then read these files in order:
 
-1. The pipeline config at `pipeline.md` — get the primary repository path, the **projects path** (from Work Directory → Projects), and other repo locations
-2. The repo config at `PIPELINE.md` in the primary repository (path from `pipeline.md`) — understand branch conventions, framework, directory structure, test commands, and all repo-specific details
-3. The PRD at `<projects-path>/$ARGUMENTS/prd.md` — understand what we're building
-4. The conventions file in the primary repository (path and filename from `PIPELINE.md` Repository Details) — understand codebase conventions
+1. Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full. From the `## Pipeline Configuration` section, extract: **Work Directory** (projects path, inbox path), **Repository Details** (default branch, test command, branch prefix, etc.), and all other pipeline config sub-sections (Framework & Stack, Platforms, Directory Structure, etc.)
+2. The PRD at `<projects-path>/$ARGUMENTS/prd.md` — understand what we're building
 
 ## Step-by-Step Procedure
 
@@ -49,11 +47,9 @@ Extract:
 - Platform designation (check the PRD header — Level 1, 2, or 3)
 - Permissions and access control requirements
 
-### 2. Search the Primary Codebase
+### 2. Search the Codebase
 
-The primary repository path is specified in `pipeline.md` Target Repositories.
-
-For each entity/keyword extracted from the PRD, search the directories listed in the primary repo's `PIPELINE.md` Directory Structure. For each directory purpose (Models, Controllers, Views, etc.), search the corresponding path for related code.
+For each entity/keyword extracted from the PRD, search the directories listed in Pipeline Configuration → Directory Structure. For each directory purpose (Models, Controllers, Views, etc.), search the corresponding path for related code.
 
 For each finding, record:
 - File path with line numbers
@@ -62,7 +58,7 @@ For each finding, record:
 
 ### 3. Search the API Documentation
 
-If `pipeline.md` Target Repositories lists an API docs repository, search it. (If that repo has its own `PIPELINE.md`, read it for repo-specific details.)
+If Pipeline Configuration → Related Repositories lists an API docs repository, search it.
 
 Look for:
 - Existing endpoint documentation for related resources
@@ -76,7 +72,7 @@ Check the PRD header for the project level:
 
 - **Level 1** (small project): Focus on the primary platform. Lightweight discovery.
 - **Level 2** (primary platform only): Focus on the primary platform. Mark other platform sections as "N/A — Level 2 (primary platform only) project."
-- **Level 3** (all platforms): Search all repositories listed in `pipeline.md` Target Repositories that have Active status in the primary repo's `PIPELINE.md` Platforms table.
+- **Level 3** (all platforms): Search all repositories listed in Pipeline Configuration → Related Repositories that have Active status in Pipeline Configuration → Platforms table.
 
 ### 5. Document Cross-Platform Patterns
 
@@ -142,7 +138,7 @@ Commit the discovery report to version control in the projects directory:
 - **Do not give opinions on code quality** unless it represents a technical risk.
 - **Do not explore unrelated code.** Stay focused on entities and patterns relevant to the PRD.
 - **Do not modify any files in the target repos.** Read only.
-- **Do not skip the schema lookup.** The current table/schema definitions (schema file path from PIPELINE.md Directory Structure) are critical for the Architecture stage.
+- **Do not skip the schema lookup.** The current table/schema definitions (schema file path from Pipeline Configuration → Directory Structure) are critical for the Architecture stage.
 
 ## Output Template
 
@@ -172,14 +168,14 @@ pipeline_completed_at: "[ISO 8601 timestamp]"
 ### Entities Identified
 | Entity | PRD Reference | Existing? | Current Location |
 |--------|--------------|-----------|-----------------|
-| [Entity 1] | [Requirement ID] | Yes / No | `[models directory from PIPELINE.md]/[entity file]` or N/A |
+| [Entity 1] | [Requirement ID] | Yes / No | `[models directory from Pipeline Configuration]/[entity file]` or N/A |
 | [Entity 2] | [Requirement ID] | Yes / No | [Path] or N/A |
 
 ### Platforms Affected
-> One checkbox per active platform from PIPELINE.md Platforms table.
+> One checkbox per active platform from Pipeline Configuration → Platforms table.
 
-- [ ] [Primary platform from PIPELINE.md]
-- [ ] [Additional platform, if listed in PIPELINE.md Platforms]
+- [ ] [Primary platform from Pipeline Configuration]
+- [ ] [Additional platform, if listed in Pipeline Configuration → Platforms]
 
 ---
 
@@ -188,13 +184,13 @@ pipeline_completed_at: "[ISO 8601 timestamp]"
 ### Related Models
 | Model | File | Key Associations | Notes |
 |-------|------|------------------|-------|
-| [Model] | [models directory from PIPELINE.md]/model.[ext] | [associations] | [Relevant notes] |
+| [Model] | [models directory from Pipeline Configuration]/model.[ext] | [associations] | [Relevant notes] |
 
 ### Current Schema (Related Tables)
 
 ```sql
 -- [table_name]
--- (from schema file: [schema path from PIPELINE.md Directory Structure])
+-- (from schema file: [schema path from Pipeline Configuration → Directory Structure])
 CREATE TABLE [table_name] (
   [column definitions from schema file]
 );
@@ -203,12 +199,12 @@ CREATE TABLE [table_name] (
 ### Related Controllers
 | Controller | File | Actions | Auth Pattern |
 |-----------|------|---------|--------------|
-| [Controller] | [controllers directory from PIPELINE.md]/... | index, show, create | [How auth works] |
+| [Controller] | [controllers directory from Pipeline Configuration]/... | index, show, create | [How auth works] |
 
 ### Related Serializers
 | Serializer | File | Fields Exposed |
 |-----------|------|----------------|
-| [Serializer] | [serializers directory from PIPELINE.md]/... | [List of fields] |
+| [Serializer] | [serializers directory from Pipeline Configuration]/... | [List of fields] |
 
 ### Related API Endpoints (Current)
 | Method | Path | Purpose | Response Shape |
@@ -227,16 +223,16 @@ CREATE TABLE [table_name] (
 ### Related Tests
 | Test File | Coverage | Type |
 |-----------|----------|------|
-| [test directory from PIPELINE.md]/... | [What's tested] | [Test type] |
+| [test directory from Pipeline Configuration]/... | [What's tested] | [Test type] |
 
 ### Related Background Jobs
 | Job | File | Purpose |
 |-----|------|---------|
-| [Job] | [jobs directory from PIPELINE.md]/... | [Purpose] |
+| [Job] | [jobs directory from Pipeline Configuration]/... | [Purpose] |
 
 ---
 
-<!-- CONDITIONAL: Repeat the following section for each ADDITIONAL active platform from PIPELINE.md Platforms.
+<!-- CONDITIONAL: Repeat the following section for each ADDITIONAL active platform from Pipeline Configuration → Platforms.
      If only one active platform exists, omit these sections entirely. -->
 
 ## 3. Current State: [Additional Platform Name]
@@ -260,7 +256,7 @@ CREATE TABLE [table_name] (
 
 ## 4. Cross-Platform Patterns
 
-<!-- CONDITIONAL: If PIPELINE.md Platforms has 2+ active platforms, fill this section.
+<!-- CONDITIONAL: If Pipeline Configuration → Platforms has 2+ active platforms, fill this section.
      If only one active platform, write: "N/A — single-platform project." -->
 
 ### Data Flow

@@ -14,9 +14,9 @@ allowed-tools:
 
 # Create PR
 
-You **push the implementation branch and create a GitHub pull request** against the default branch (from the target repo's `PIPELINE.md`) with a summary generated from the project's pipeline artifacts. This is the delivery step after all pipeline stages are complete.
+You **push the implementation branch and create a GitHub pull request** against the default branch (from Pipeline Configuration) with a summary generated from the project's pipeline artifacts. This is the delivery step after all pipeline stages are complete.
 
-This skill runs post-flight checks (if configured in `PIPELINE.md`), reads project artifacts, generates a PR summary, and runs git/gh commands.
+This skill runs post-flight checks (if configured in the conventions file), reads project artifacts, generates a PR summary, and runs git/gh commands.
 
 ## Inputs
 
@@ -29,7 +29,7 @@ This skill runs post-flight checks (if configured in `PIPELINE.md`), reads proje
 
 Run ALL of these checks before doing anything else. If any check fails, **STOP** and report the issue to the user.
 
-First, read `pipeline.md` to determine the primary repository path and the **projects path** (from Work Directory → Projects), then read `PIPELINE.md` in that repo to determine the branch prefix and PR base branch.
+First, locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full. From the `## Pipeline Configuration` section, extract: **Work Directory** (projects path), **Repository Details** (default branch, branch prefix, test command), **Post-Flight Checks** (if present), and **Complexity Analysis** (if present).
 
 ### Check 1: All Milestones Complete
 
@@ -49,34 +49,34 @@ Verify `<projects-path>/$ARGUMENTS/qa-plan.md` exists.
 
 > "No QA plan found. Run `/stage7-qa-plan $ARGUMENTS` first."
 
-### Check 3: Branch Exists in Primary Repo
+### Check 3: Branch Exists
 
-In the primary repository (path from `pipeline.md`), verify the project branch exists:
+Verify the project branch exists:
 
 ```bash
-cd <primary-repo-path> && git branch --list '<branch-prefix>$ARGUMENTS'
+git branch --list '<branch-prefix>$ARGUMENTS'
 ```
 
 If the branch does not exist, **STOP**:
 
-> "The branch `<branch-prefix>$ARGUMENTS` does not exist in the primary repository."
+> "The branch `<branch-prefix>$ARGUMENTS` does not exist."
 
 ### Check 4: Clean Working Tree
 
 ```bash
-cd <primary-repo-path> && git status --porcelain
+git status --porcelain
 ```
 
 If there are uncommitted changes, **STOP**:
 
-> "The primary repository has uncommitted changes. Please commit or stash them before creating a PR."
+> "The repo has uncommitted changes. Please commit or stash them before creating a PR."
 
 ### Check 5: No Existing PR
 
 Check whether a PR already exists for this branch:
 
 ```bash
-cd <primary-repo-path> && gh pr list --head '<branch-prefix>$ARGUMENTS' --state open --json number,url
+gh pr list --head '<branch-prefix>$ARGUMENTS' --state open --json number,url
 ```
 
 If a PR already exists, **STOP** and show its URL:
@@ -87,12 +87,12 @@ If a PR already exists, **STOP** and show its URL:
 
 ### 1. Run Post-Flight Checks
 
-Read the `PIPELINE.md` from the primary repository. If it has a **Post-Flight Checks** section, run them now. If the section doesn't exist, skip to step 2.
+Check the conventions file. If Pipeline Configuration has a **Post-Flight Checks** section, run them now. If the section doesn't exist, skip to step 2.
 
-**Ensure you're on the project branch** in the primary repo before running checks:
+**Ensure you're on the project branch** before running checks:
 
 ```bash
-cd <primary-repo-path> && git checkout <branch-prefix>$ARGUMENTS
+git checkout <branch-prefix>$ARGUMENTS
 ```
 
 **Phase A: Auto-fix checks**
@@ -100,7 +100,7 @@ cd <primary-repo-path> && git checkout <branch-prefix>$ARGUMENTS
 Run each check marked "Auto-fix? Yes" in the table. For example:
 
 ```bash
-cd <primary-repo-path> && <auto-fix-command>
+<auto-fix-command>
 ```
 
 After each auto-fix command, check `git status --porcelain` for changes. If files were modified:
@@ -109,7 +109,7 @@ After each auto-fix command, check `git status --porcelain` for changes. If file
 2. Stage and commit them:
 
 ```bash
-cd <primary-repo-path> && git add $(git diff --name-only) && git commit -m "Post-flight: auto-fix style issues"
+git add $(git diff --name-only) && git commit -m "Post-flight: auto-fix style issues"
 ```
 
 3. Re-run the same check without the fix flag to confirm it's clean. If it still reports issues, **STOP** and report them to the user.
@@ -119,7 +119,7 @@ cd <primary-repo-path> && git add $(git diff --name-only) && git commit -m "Post
 Run each check marked "Auto-fix? No" in the table:
 
 ```bash
-cd <primary-repo-path> && <check-command>
+<check-command>
 ```
 
 For each check:
@@ -164,7 +164,7 @@ Capture code complexity metrics for the project branch. This data populates the 
 
 **Step A: Check for Complexity Analysis configuration**
 
-Read `PIPELINE.md` in the primary repository and look for a **Complexity Analysis** section.
+Check the conventions file and look for a Pipeline Configuration → **Complexity Analysis** section.
 
 - If the section **does not exist** → skip this entire step silently. Set `HAS_QUALITY_DATA` to false. Proceed to Step 4.
 - If the section **exists** → extract: tool name, score command, per-file command, repo baseline command, hotspot threshold, file glob, and exclude pattern.
@@ -172,7 +172,7 @@ Read `PIPELINE.md` in the primary repository and look for a **Complexity Analysi
 **Step B: Run repo baseline**
 
 ```bash
-cd <primary-repo-path> && <repo-baseline-command>
+<repo-baseline-command>
 ```
 
 Parse the output to extract the repo-wide flog/method average. Store as `repo_baseline_flog_avg`.
@@ -180,7 +180,7 @@ Parse the output to extract the repo-wide flog/method average. Store as `repo_ba
 **Step C: Get all pipeline-touched files**
 
 ```bash
-cd <primary-repo-path> && git diff --name-only origin/<pr-base-branch>...<branch-prefix>$ARGUMENTS -- '<file-glob>'
+git diff --name-only origin/<pr-base-branch>...<branch-prefix>$ARGUMENTS -- '<file-glob>'
 ```
 
 Filter out any files matching the exclude pattern (e.g., files under `spec/`). If no files remain after filtering, set `HAS_QUALITY_DATA` to false and skip to Step 4.
@@ -190,7 +190,7 @@ Filter out any files matching the exclude pattern (e.g., files under `spec/`). I
 For each file from Step C, run the score command (replacing `{file}` with the file path):
 
 ```bash
-cd <primary-repo-path> && <score-command>
+<score-command>
 ```
 
 Parse the output. Flog score output format is: `N: flog total, N: flog/method average`. Collect all per-file averages.
@@ -213,7 +213,7 @@ Compute:
 For each file from Step C, run the per-file command:
 
 ```bash
-cd <primary-repo-path> && <per-file-command>
+<per-file-command>
 ```
 
 Collect all methods scoring above the hotspot threshold. Keep the top 5 by score. Store as `hotspots` list with: score, method name, file path.
@@ -259,7 +259,7 @@ Assemble the PR body using this structure:
 |-------|--------|
 | [Check name] | Passed / Auto-fixed (commit `SHA`) / [N] non-blocking findings |
 
-[If no Post-Flight Checks section in PIPELINE.md, omit this section entirely.]
+[If no Post-Flight Checks section in Pipeline Configuration, omit this section entirely.]
 
 ### Code Quality
 
@@ -315,7 +315,7 @@ Generated by the Agent Pipeline
 ### 6. Push the Branch
 
 ```bash
-cd <primary-repo-path> && git push -u origin <branch-prefix>$ARGUMENTS
+git push -u origin <branch-prefix>$ARGUMENTS
 ```
 
 If the push fails, **STOP** and report the error to the user.
@@ -323,7 +323,7 @@ If the push fails, **STOP** and report the error to the user.
 ### 7. Create the PR
 
 ```bash
-cd <primary-repo-path> && gh pr create \
+gh pr create \
   --base <pr-base-branch> \
   --head "<branch-prefix>$ARGUMENTS" \
   --title "[title]" \
@@ -369,7 +369,7 @@ After updating the PR timing, generate the project metrics report. This provides
 2. Enrich with git data — get PR merge status:
 
 ```bash
-cd <primary-repo-path> && gh pr list --head '<branch-prefix>$ARGUMENTS' --state all --json mergedAt,createdAt,url --limit 1
+gh pr list --head '<branch-prefix>$ARGUMENTS' --state all --json mergedAt,createdAt,url --limit 1
 ```
 
 3. Compute metrics:
@@ -392,7 +392,7 @@ Format durations as: `Xm` (under 1h), `Xh Ym` (1-24h), `Xd Yh` (over 24h). Use `
 
 After the per-project metrics report, update the product-level aggregate metrics file. This step is **non-blocking** — if it fails (e.g., can't parse a progress file), log a warning and continue. Never block PR creation on aggregate metrics.
 
-1. Read `pipeline.md` to get the projects path (`<projects-path>`).
+1. Use the projects path from Pipeline Configuration (`<projects-path>`).
 
 2. Scan all subdirectories in `<projects-path>/` for `progress.md` files.
 

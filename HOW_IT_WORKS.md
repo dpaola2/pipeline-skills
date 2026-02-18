@@ -145,7 +145,7 @@ Test types depend on the framework (e.g., request specs, model specs, system spe
 
 ### Stage 5: Implementation
 
-**What it does:** A builder agent works milestone-by-milestone, writing code to make the failing tests pass. It follows the implementation order defined in the repo's `PIPELINE.md` (e.g., migrations → models → controllers → views) and the conventions in the repo's conventions file (e.g., `AGENTS.md`, `CLAUDE.md`).
+**What it does:** A builder agent works milestone-by-milestone, writing code to make the failing tests pass. It follows the implementation order and conventions defined in the repo's conventions file (e.g., `AGENTS.md`, `CLAUDE.md`) — including the `## Pipeline Configuration` section for framework details, directory structure, and test commands.
 
 For multi-platform products, the primary platform (typically the API backend) is implemented first so other platforms can build against it.
 
@@ -245,7 +245,7 @@ All stages (0-7) have Claude Code skills. Each skill is self-contained — templ
 
 **What's working:**
 - Claude Code skills for all stages (run via `/stage0-prd`, `/stage1-discovery`, etc.)
-- Multi-product support (switch between products via pipeline configs)
+- Multi-product support (copy skills into any repo with a conventions file)
 - Complete end-to-end runs on real projects across multiple products
 - Utility skills for metrics, quality checks, and release notes
 

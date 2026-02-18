@@ -45,13 +45,12 @@ date +"%Y-%m-%dT%H:%M:%S%z"
 
 After passing the pre-flight check, read ALL of these files:
 
-1. The pipeline config at `pipeline.md` — get the primary repository path, the **projects path** (from Work Directory → Projects), and other repo locations
-2. The repo config at `PIPELINE.md` in the primary repository (path from `pipeline.md`) — understand framework, platform details, and repo-specific config
-3. The PRD at `<projects-path>/$ARGUMENTS/prd.md` — requirements, edge cases, user scenarios
-4. The gameplan at `<projects-path>/$ARGUMENTS/gameplan.md` — acceptance criteria, testing plan, non-functional requirements
-5. The architecture proposal at `<projects-path>/$ARGUMENTS/architecture-proposal.md` — data model, security scoping, performance considerations
-6. The test-coverage-matrix at `<projects-path>/$ARGUMENTS/test-coverage-matrix.md` — **especially** the "Criteria Not Directly Testable" section
-7. The progress file at `<projects-path>/$ARGUMENTS/progress.md` — **especially** the "Spec Gaps" and "Notes" sections from each milestone
+1. Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full. From the `## Pipeline Configuration` section, extract: **Work Directory** (projects path), **Repository Details** (default branch, branch prefix), **Framework & Stack**, and **Platforms**.
+2. The PRD at `<projects-path>/$ARGUMENTS/prd.md` — requirements, edge cases, user scenarios
+3. The gameplan at `<projects-path>/$ARGUMENTS/gameplan.md` — acceptance criteria, testing plan, non-functional requirements
+4. The architecture proposal at `<projects-path>/$ARGUMENTS/architecture-proposal.md` — data model, security scoping, performance considerations
+5. The test-coverage-matrix at `<projects-path>/$ARGUMENTS/test-coverage-matrix.md` — **especially** the "Criteria Not Directly Testable" section
+6. The progress file at `<projects-path>/$ARGUMENTS/progress.md` — **especially** the "Spec Gaps" and "Notes" sections from each milestone
 
 ## Step-by-Step Procedure
 
@@ -71,7 +70,7 @@ Read the "Manual QA" row in the gameplan's Testing Plan table. This is a high-le
 ### 2. Collect Test Data Scenarios
 
 Read the QA Test Data milestone from the progress file. Identify:
-- What seed task was created (name, location — per PIPELINE.md Framework & Stack Seed command format)
+- What seed task was created (name, location — per Pipeline Configuration → Framework & Stack Seed command format)
 - What scenarios it seeds (accounts, permissions, data volumes)
 - What credentials or URLs it produces
 - How to run it (command, prerequisites)
@@ -157,7 +156,7 @@ Commit the QA plan to version control in the projects directory:
 ## What NOT To Do
 
 - **Do not run tests or write code.** This is a document-generation stage.
-- **Do not modify any files in the primary repo.** You only produce `qa-plan.md` in the projects directory.
+- **Do not modify any files in the repo.** You only produce `qa-plan.md` in the projects directory.
 - **Do not duplicate automated test coverage.** Focus exclusively on what needs manual verification.
 - **Do not include vague test instructions.** Not "verify the report works" — be specific about what to check.
 - **Do not skip the pre-flight check.** All milestones must be complete before generating the QA plan.
@@ -168,7 +167,7 @@ Tell the user:
 1. The QA plan has been written to `<projects-path>/$ARGUMENTS/qa-plan.md`
 2. Summarize: how many manual test scenarios, key focus areas, known limitations count
 3. Mention whether test data setup instructions are included or manual setup is needed
-4. **Remind them:** "The QA plan is ready for handoff. Next steps: run `/create-pr $ARGUMENTS` to push the branch and create a PR against the default branch (from PIPELINE.md), then share this QA plan with the tester."
+4. **Remind them:** "The QA plan is ready for handoff. Next steps: run `/create-pr $ARGUMENTS` to push the branch and create a PR against the default branch (from Pipeline Configuration), then share this QA plan with the tester."
 
 ## Output Template
 
@@ -219,9 +218,9 @@ pipeline_completed_at: "[ISO 8601 timestamp]"
 
 | Type | File | Count | Covers |
 |------|------|-------|--------|
-| [Test type] | `[test dir from PIPELINE.md]/...` | [N] | [What's covered] |
+| [Test type] | `[test dir from Pipeline Configuration]/...` | [N] | [What's covered] |
 
-> One row per test type, using directory paths from PIPELINE.md Directory Structure.
+> One row per test type, using directory paths from Pipeline Configuration → Directory Structure.
 
 ### What Automated Tests Verify
 - [Bullet list of key behaviors verified by automated tests]
@@ -233,8 +232,7 @@ pipeline_completed_at: "[ISO 8601 timestamp]"
 ### Test Data Setup
 
 ```bash
-cd [primary repo path from pipeline.md Target Repositories]
-[seed command from PIPELINE.md Framework & Stack, e.g., bundle exec rake pipeline:seed_[slug]]
+[seed command from Pipeline Configuration → Framework & Stack, e.g., bundle exec rake pipeline:seed_[slug]]
 ```
 
 [If no seed task exists: "No seed task was created for this project. Test data must be set up manually — see scenarios below."]

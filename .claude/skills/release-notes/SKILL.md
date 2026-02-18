@@ -22,7 +22,7 @@ You **generate release notes from a Linear cycle** — pulling completed issues 
 ## Inputs
 
 - `$ARGUMENTS` — the cycle number (integer, e.g., `47`)
-- `pipeline.md` — projects path (from Work Directory → Projects) and project tracker config
+- The conventions file — projects path (from Pipeline Configuration → Work Directory → Projects) and project tracker config
 - `<projects-path>/release-notes/*.md` — previous release notes (for format reference)
 
 ## Pre-Flight Checks (MANDATORY)
@@ -37,13 +37,13 @@ Run ALL checks before doing anything else. If any check fails, **STOP** and repo
 
 ### Check 2: Pipeline Config Exists
 
-Read `pipeline.md` in the pipeline repo root. Extract:
+Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full. From the `## Pipeline Configuration` section, extract:
 - **Projects path** from Work Directory → Projects
 - **Project Tracker → Tool** — must be "Linear"
 
-If `pipeline.md` doesn't exist, **STOP**:
+If no conventions file is found, **STOP**:
 
-> "No `pipeline.md` found. This skill requires an active pipeline config with Linear as the project tracker."
+> "No conventions file found (`CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md`). This skill requires Pipeline Configuration with Linear as the project tracker."
 
 If the project tracker is not Linear, **STOP**:
 
