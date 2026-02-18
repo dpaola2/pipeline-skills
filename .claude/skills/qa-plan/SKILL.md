@@ -1,5 +1,5 @@
 ---
-name: stage7-qa-plan
+name: qa-plan
 description: "Run pipeline Stage 7 (QA Plan) for a project. Generates a comprehensive QA plan from all project artifacts after implementation is complete."
 disable-model-invocation: true
 argument-hint: "<project-slug>"
@@ -33,7 +33,7 @@ Read `<projects-path>/$ARGUMENTS/progress.md` and check the **Milestone Status**
 - If ALL milestones are marked **Complete** → proceed.
 - If ANY milestone is still **Pending** or **In Progress** → **STOP**:
 
-> "Not all milestones are complete. Stage 7 runs after all implementation is done. Remaining milestones: [list pending milestones]. Run `/stage5-implementation $ARGUMENTS <milestone>` to complete them first."
+> "Not all milestones are complete. Stage 7 runs after all implementation is done. Remaining milestones: [list pending milestones]. Run `/implementation $ARGUMENTS <milestone>` to complete them first."
 
 ## Before You Start
 

@@ -244,7 +244,7 @@ These are non-negotiable across all stages:
 All stages (0-7) have Claude Code skills. Each skill is self-contained — templates and success criteria are embedded directly, with no external file dependencies.
 
 **What's working:**
-- Claude Code skills for all stages (run via `/stage0-prd`, `/stage1-discovery`, etc.)
+- Claude Code skills for all stages (run via `/prd`, `/discovery`, etc.)
 - Multi-product support (copy skills into any repo with a conventions file)
 - Complete end-to-end runs on real projects across multiple products
 - Utility skills for metrics, quality checks, and release notes

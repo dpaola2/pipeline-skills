@@ -47,7 +47,7 @@ Verify `<projects-path>/$ARGUMENTS/qa-plan.md` exists.
 - If it exists → proceed.
 - If missing → **STOP**:
 
-> "No QA plan found. Run `/stage7-qa-plan $ARGUMENTS` first."
+> "No QA plan found. Run `/qa-plan $ARGUMENTS` first."
 
 ### Check 3: Branch Exists
 

@@ -1,5 +1,5 @@
 ---
-name: stage2-architecture
+name: architecture
 description: "Run pipeline Stage 2 (Architecture) for a project. Designs data model, API endpoints, migrations, and security scoping based on Pipeline Configuration in the conventions file."
 disable-model-invocation: true
 argument-hint: "<project-slug>"
@@ -210,7 +210,7 @@ Tell the user:
 2. Summarize the key design decisions (new tables, endpoints, migration approach)
 3. List ADRs generated (with titles), or "None" if no decisions warranted an ADR
 4. List the open questions that need human input
-5. **Remind them:** "This architecture proposal must be reviewed and approved before Stage 3 can run. To approve: edit `<projects-path>/$ARGUMENTS/architecture-proposal.md`, find the Approval Checklist at the bottom, and set Status to 'Approved' (or 'Approved with Modifications'). Then run `/stage3-gameplan $ARGUMENTS`."
+5. **Remind them:** "This architecture proposal must be reviewed and approved before Stage 3 can run. To approve: edit `<projects-path>/$ARGUMENTS/architecture-proposal.md`, find the Approval Checklist at the bottom, and set Status to 'Approved' (or 'Approved with Modifications'). Then run `/gameplan $ARGUMENTS`."
 
 ## ADR Template
 

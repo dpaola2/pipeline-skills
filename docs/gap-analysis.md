@@ -60,7 +60,7 @@ The pipeline shifts the constraint from execution to clarity. Everything in this
 **Status:** First PRD converted and validated. Pipeline intake template exists and works.
 
 **What's needed:**
-- [x] PRD intake template (embedded in `/stage0-prd` skill)
+- [x] PRD intake template (embedded in `/prd` skill)
 - [x] Process for converting existing PRDs to structured markdown — validated on deficient-line-items-report
 - [ ] Or: agent that converts Google Doc PRDs to structured markdown (Stage 0)
 - [x] PRDs stored in a repo or accessible location — `projects/<slug>/prd.md`
@@ -113,12 +113,12 @@ The pipeline shifts the constraint from execution to clarity. Everything in this
 ## Priority 3: Stage-Specific Gaps
 
 ### 3.1 Discovery Stage Gaps
-- [x] ~~No standardized "discovery report" format~~ — template embedded in `/stage1-discovery` skill, validated on first project
+- [x] ~~No standardized "discovery report" format~~ — template embedded in `/discovery` skill, validated on first project
 - [x] ~~No automated way to map "PRD concept" → "existing code locations"~~ — Stage 1 skill does this
 - [x] Need few-shot examples of good discovery reports — `projects/deficient-line-items-report/discovery-report.md`
 
 ### 3.2 Architecture Stage Gaps
-- [x] ~~No codified data model conventions~~ — architecture template (embedded in `/stage2-architecture` skill) covers schema, migrations, API design
+- [x] ~~No codified data model conventions~~ — architecture template (embedded in `/architecture` skill) covers schema, migrations, API design
 - [x] Example payloads from past features — first project provides reference output
 - [x] ~~Backwards compatibility matrix pattern not templated~~ — included in architecture template
 - [x] ~~Migration planning conventions not documented~~ — included in architecture template
@@ -145,10 +145,10 @@ The pipeline shifts the constraint from execution to clarity. Everything in this
 - [x] ~~Review criteria not formalized beyond AGENTS.md~~ — Stage 6 skill checks 6 dimensions with defined severity levels
 - [ ] No automated way to check cross-platform payload consistency (V1 is Rails-only; dimension 4 is a no-op)
 - [x] ~~Escalation criteria (when does review escalate to human?) not defined~~ — Blocker/Major findings → CHANGES REQUESTED; human decides next steps
-- [x] ~~**Stage 6 skill not yet built**~~ — `/stage6-review <slug>` implemented
+- [x] ~~**Stage 6 skill not yet built**~~ — `/review <slug>` implemented
 
 ### 3.7 QA Plan Stage Gaps
-- [x] ~~QA plan format not defined~~ — QA plan template embedded in `/stage7-qa-plan` skill, validated on first project
+- [x] ~~QA plan format not defined~~ — QA plan template embedded in `/qa-plan` skill, validated on first project
 - [x] ~~No automated acceptance criteria → test coverage mapping~~ — test-coverage-matrix.md + qa-plan.md
 - [ ] Feature flag validation not automated
 - [ ] Linear ticket transitions not automated
@@ -200,7 +200,7 @@ This means:
 1. ~~Prototype Stage 4 (Test Generation)~~ — Done. 7 test files, 123 test cases.
 2. ~~Prototype Stage 5 (Implementation)~~ — Done. 8 milestones, 17 new files, all tests passing.
 3. ~~Prototype Stage 7 (QA Plan)~~ — Done. 40 manual test scenarios.
-4. ~~Stage 6 (Review)~~ — Done. `/stage6-review <slug>` produces `review-report.md`.
+4. ~~Stage 6 (Review)~~ — Done. `/review <slug>` produces `review-report.md`.
 
 ### Phase 3: Orchestration (Current)
 

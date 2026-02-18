@@ -195,7 +195,7 @@ The implementation agent works milestone-by-milestone, writing code to make the 
 
 ### Stage 6: Review *(Implemented)*
 **Agent Type:** Code reviewer
-**Skill:** `/stage6-review <project-slug>`
+**Skill:** `/review <project-slug>`
 **Input:** Branch diff + conventions file + architecture proposal + gameplan + progress + test-coverage-matrix
 **Output:** Review Report (`projects/<slug>/review-report.md`)
 
@@ -216,7 +216,7 @@ The review agent examines the full branch diff against conventions, security req
 
 ### Stage 7: QA Plan *(Implemented)*
 **Agent Type:** QA planner
-**Skill:** `/stage7-qa-plan <project-slug>`
+**Skill:** `/qa-plan <project-slug>`
 **Input:** All project artifacts (PRD, gameplan, test-coverage-matrix, progress file, architecture)
 **Output:** QA Plan (`projects/<slug>/qa-plan.md`)
 

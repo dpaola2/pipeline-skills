@@ -1,5 +1,5 @@
 ---
-name: stage3-gameplan
+name: gameplan
 description: "Run pipeline Stage 3 (Gameplan) for a project. Produces the engineering spec from PRD + Discovery Report + APPROVED Architecture."
 disable-model-invocation: true
 argument-hint: "<project-slug>"
@@ -253,7 +253,7 @@ Tell the user:
 1. The engineering gameplan has been written
 2. Summarize the milestone breakdown (number of milestones, names, estimated scope)
 3. List any open questions or risks that need human input
-4. **Remind them:** "This gameplan must be reviewed and approved before Stage 4 (Test Generation) can run. To approve: edit `<projects-path>/$ARGUMENTS/gameplan.md`, find the Approval Checklist near the bottom, and set Status to 'Approved'. Then run `/stage4-test-generation $ARGUMENTS`."
+4. **Remind them:** "This gameplan must be reviewed and approved before Stage 4 (Test Generation) can run. To approve: edit `<projects-path>/$ARGUMENTS/gameplan.md`, find the Approval Checklist near the bottom, and set Status to 'Approved'. Then run `/test-generation $ARGUMENTS`."
 
 ## Output Template
 

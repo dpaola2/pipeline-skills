@@ -1,5 +1,5 @@
 ---
-name: stage5-implementation
+name: implementation
 description: "Run pipeline Stage 5 (Implementation) for a project milestone. Writes code to make Stage 4's failing tests pass."
 disable-model-invocation: true
 argument-hint: "<project-slug> <milestone>"
@@ -29,7 +29,7 @@ Parse them:
 
 If the second argument is missing, **STOP** and tell the user:
 
-> "Usage: `/stage5-implementation <project-slug> <milestone>` (e.g., `/stage5-implementation deficient-line-items-report M1`)"
+> "Usage: `/implementation <project-slug> <milestone>` (e.g., `/implementation deficient-line-items-report M1`)"
 
 ## Inputs & Outputs
 
@@ -72,7 +72,7 @@ git branch --list '<branch-prefix>PROJECT_SLUG'
 
 If the branch does not exist, **STOP**:
 
-> "The project branch `<branch-prefix>PROJECT_SLUG` does not exist. Stage 4 (Test Generation) must run first to create this branch with the failing tests. Run `/stage4-test-generation PROJECT_SLUG` first."
+> "The project branch `<branch-prefix>PROJECT_SLUG` does not exist. Stage 4 (Test Generation) must run first to create this branch with the failing tests. Run `/test-generation PROJECT_SLUG` first."
 
 ### Check 4: Clean Working Tree
 
@@ -591,7 +591,7 @@ Tell the user:
 6. **Conventions file updates:** List any insights added to the target repo's conventions file (e.g., `AGENTS.md`, `CLAUDE.md`), or "None" if no new insights
 7. **ADRs generated:** List any ADRs written during this milestone (with titles), or "None"
 8. **Progress file:** Confirm that `<projects-path>/PROJECT_SLUG/progress.md` was updated with the milestone entry
-9. **Next step:** "The next milestone is M_NEXT_. Run `/stage5-implementation PROJECT_SLUG M_NEXT_` when ready."
+9. **Next step:** "The next milestone is M_NEXT_. Run `/implementation PROJECT_SLUG M_NEXT_` when ready."
 
 If this was the **last milestone**, instead say:
 

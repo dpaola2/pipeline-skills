@@ -1,5 +1,5 @@
 ---
-name: stage4-test-generation
+name: test-generation
 description: "Run pipeline Stage 4 (Test Generation) for a project. Writes failing TDD test suites in the primary repo from the approved gameplan."
 disable-model-invocation: true
 argument-hint: "<project-slug>"
@@ -320,7 +320,7 @@ Tell the user:
 4. How many acceptance criteria are covered and by how many test cases total
 5. Any acceptance criteria that couldn't be fully tested (and why)
 6. Results of the syntax check (syntax check command from Pipeline Configuration)
-7. **Remind them:** "All tests are expected to FAIL — they're written before implementation (TDD). You can verify they parse with `[syntax check command from Pipeline Configuration] [test file path]`. Next step: review the tests, then run `/stage5-implementation $ARGUMENTS` to make them pass."
+7. **Remind them:** "All tests are expected to FAIL — they're written before implementation (TDD). You can verify they parse with `[syntax check command from Pipeline Configuration] [test file path]`. Next step: review the tests, then run `/implementation $ARGUMENTS` to make them pass."
 
 ## Success Criteria
 

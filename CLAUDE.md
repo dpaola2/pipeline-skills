@@ -86,24 +86,24 @@ The inbox (raw input notes for Stage 0) also lives externally, at Pipeline Confi
 The pipeline runs manually from the target repo directory, one stage at a time:
 
 ```
-/stage0-prd                                       → lists inbox files, asks for selection + slug,
+/prd                                              → lists inbox files, asks for selection + slug,
                                                     produces prd.md (REVIEW BEFORE CONTINUING)
 
-/stage1-discovery <project-slug>                  → produces discovery-report.md
+/discovery <project-slug>                         → produces discovery-report.md
                                                     (optional: review discovery report)
 
-/stage2-architecture <project-slug>               → produces architecture-proposal.md
+/architecture <project-slug>                      → produces architecture-proposal.md
                                                     REQUIRED: review and approve architecture
 
-/stage3-gameplan <project-slug>                   → produces gameplan.md (checks for approval first)
+/gameplan <project-slug>                          → produces gameplan.md (checks for approval first)
                                                     REQUIRED: review and approve gameplan
 
-/stage4-test-generation <project-slug>            → produces failing tests + test-coverage-matrix.md
+/test-generation <project-slug>                   → produces failing tests + test-coverage-matrix.md
 
-/stage5-implementation <project-slug> <milestone> → implements one milestone, updates progress.md
+/implementation <project-slug> <milestone>        → implements one milestone, updates progress.md
                                                     (run once per milestone: M1, M2, ...)
 
-/stage7-qa-plan <project-slug>                    → produces qa-plan.md (checks all milestones complete)
+/qa-plan <project-slug>                           → produces qa-plan.md (checks all milestones complete)
 
 /create-pr <project-slug>                         → pushes branch, creates PR against default branch
 

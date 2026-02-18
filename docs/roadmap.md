@@ -46,7 +46,7 @@
 **Status:** Done
 **Theme:** Pipeline intake
 
-Built a Stage 0 skill (`/stage0-prd`) that generates structured PRDs from raw input notes.
+Built a Stage 0 skill (`/prd`) that generates structured PRDs from raw input notes.
 
 **What was built:**
 - **Inbox pattern** — user drops raw notes (feature descriptions, Slack threads, meeting notes, Google Doc exports) into `inbox/` directory
@@ -80,7 +80,7 @@ Send a webhook POST when a pipeline stage completes, enabling external integrati
 {
   "event": "stage_completed",
   "project": "deficient-line-items-report",
-  "stage": "stage2-architecture",
+  "stage": "architecture",
   "status": "awaiting_review",
   "timestamp": "2026-02-07T12:00:00Z",
   "artifacts": ["architecture-proposal.md"],
@@ -300,7 +300,7 @@ But it also introduces **branch stacking complexity** — if Project A's branch 
 Build the Stage 6 skill for automated code review against the target repo's AGENTS.md and the project's architecture proposal.
 
 **What was built:**
-- `/stage6-review <project-slug>` — reviews the full branch diff after all milestones complete
+- `/review <project-slug>` — reviews the full branch diff after all milestones complete
 - 6 review dimensions: convention compliance, security, spec compliance, cross-platform consistency (V1 no-op), code quality, test coverage
 - Categorized findings (Blocker / Major / Minor / Note) with specific file:line references
 - Verdict: APPROVED (zero Blockers/Majors) or CHANGES REQUESTED
@@ -1219,13 +1219,13 @@ Mechanical find-and-replace across all skills:
 - Remove the self-referential "Conventions file" row instructions
 
 **Files:**
-- `.claude/skills/stage0-prd/SKILL.md`
-- `.claude/skills/stage1-discovery/SKILL.md`
-- `.claude/skills/stage2-architecture/SKILL.md`
-- `.claude/skills/stage3-gameplan/SKILL.md`
-- `.claude/skills/stage4-test-generation/SKILL.md`
-- `.claude/skills/stage5-implementation/SKILL.md`
-- `.claude/skills/stage7-qa-plan/SKILL.md`
+- `.claude/skills/prd/SKILL.md`
+- `.claude/skills/discovery/SKILL.md`
+- `.claude/skills/architecture/SKILL.md`
+- `.claude/skills/gameplan/SKILL.md`
+- `.claude/skills/test-generation/SKILL.md`
+- `.claude/skills/implementation/SKILL.md`
+- `.claude/skills/qa-plan/SKILL.md`
 - `.claude/skills/create-pr/SKILL.md`
 - `.claude/skills/setup-pipeline-repo/SKILL.md` — biggest change: generates a "Pipeline Configuration" section in the existing conventions file (or creates one if none exists) instead of generating a standalone `PIPELINE.md`
 
@@ -1330,11 +1330,11 @@ Make the pipeline executable by both Claude Code and OpenAI Codex CLI, so skills
 Option C is the smallest change that delivers multi-runtime support. Today, each `SKILL.md` file is ~90% runtime-agnostic prompt body and ~10% Claude Code metadata + tool references. Factoring out the prompt body means:
 
 ```
-.claude/skills/stage5-implementation/
+.claude/skills/implementation/
   SKILL.md              # Claude Code adapter (YAML front matter + tool-specific wrappers)
 
 skills/
-  stage5-implementation/
+  implementation/
     prompt.md            # Runtime-agnostic prompt body (the actual instructions)
     claude-code.yaml     # Claude Code metadata (allowed-tools, argument-hint)
     codex.yaml           # Codex metadata (sandbox mode, approval policy)
@@ -1382,27 +1382,27 @@ Stage 5 uses the `Task` tool heavily to explore codebases in parallel. Codex's e
 v1 file structure:
 ```
 skills/                              # NEW — runtime-agnostic prompt bodies
-  stage0-prd/prompt.md
-  stage1-discovery/prompt.md
-  stage2-architecture/prompt.md
-  stage3-gameplan/prompt.md
-  stage4-test-generation/prompt.md
-  stage5-implementation/prompt.md
-  stage7-qa-plan/prompt.md
+  prd/prompt.md
+  discovery/prompt.md
+  architecture/prompt.md
+  gameplan/prompt.md
+  test-generation/prompt.md
+  implementation/prompt.md
+  qa-plan/prompt.md
   create-pr/prompt.md
   setup-pipeline-repo/prompt.md
 
 .claude/skills/                      # EXISTING — Claude Code adapters (thin wrappers)
-  stage0-prd/SKILL.md               # YAML front matter + `{% include skills/stage0-prd/prompt.md %}`
+  prd/SKILL.md                      # YAML front matter + `{% include skills/prd/prompt.md %}`
   ...
 ```
 
 v2 adds:
 ```
 codex/                               # NEW — Codex adapters
-  stage4-test-generation.sh          # `codex exec` with prompt body + tool mappings
-  stage5-implementation.sh
-  stage7-qa-plan.sh
+  test-generation.sh                 # `codex exec` with prompt body + tool mappings
+  implementation.sh
+  qa-plan.sh
   create-pr.sh
 ```
 

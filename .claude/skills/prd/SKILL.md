@@ -1,5 +1,5 @@
 ---
-name: stage0-prd
+name: prd
 description: "Generate a structured PRD from raw input notes. Lists inbox files, asks for file selection and project slug, then produces a pipeline-ready PRD."
 disable-model-invocation: true
 allowed-tools:
@@ -46,7 +46,7 @@ List all files in the **inbox path** directory, excluding `.gitkeep`.
 
 If no files are found, **STOP**:
 
-> "No files found in the inbox at `<inbox-path>`. Drop your raw notes, feature descriptions, or Slack exports there first, then re-run `/stage0-prd`."
+> "No files found in the inbox at `<inbox-path>`. Drop your raw notes, feature descriptions, or Slack exports there first, then re-run `/prd`."
 
 If files are found, present them to the user using `AskUserQuestion`. Ask two things:
 
@@ -210,7 +210,7 @@ Tell the user:
    - `[INFERRED]` — confirm inferred edge cases are valid
    - `[DEFINE]` — fill in missing definitions
 4. Set Status from "Draft — Review Required" to "Ready for Engineering" when satisfied
-5. Then run `/stage1-discovery <slug>` to start the pipeline
+5. Then run `/discovery <slug>` to start the pipeline
 
 ## What NOT To Do
 

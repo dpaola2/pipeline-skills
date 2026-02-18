@@ -60,9 +60,9 @@ The validation agent runs after all milestone PRs are reviewed and merged. It pe
 
 ## QA Plan
 
-**Skill:** `/stage7-qa-plan <project-slug>` (see `.claude/skills/stage7-qa-plan/SKILL.md`)
+**Skill:** `/qa-plan <project-slug>` (see `.claude/skills/qa-plan/SKILL.md`)
 
-Template is embedded in the `/stage7-qa-plan` skill (`.claude/skills/stage7-qa-plan/SKILL.md`).
+Template is embedded in the `/qa-plan` skill (`.claude/skills/qa-plan/SKILL.md`).
 
 ### Report Sections
 

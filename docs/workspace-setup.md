@@ -1,6 +1,6 @@
 # Workspace Setup Guide
 
-This guide explains how to set up the agent pipeline for a new product. After following these steps, you'll be able to run pipeline stages (`/stage0-prd` through `/create-pr`) against your codebase.
+This guide explains how to set up the agent pipeline for a new product. After following these steps, you'll be able to run pipeline stages (`/prd` through `/create-pr`) against your codebase.
 
 ---
 
@@ -109,22 +109,22 @@ cp my-feature-notes.md ~/projects/my-product/pipeline-projects/inbox/
 Then open Claude Code in your target repo (`my-app/`) and run:
 
 ```
-/stage0-prd
+/prd
 ```
 
 This generates a structured PRD from your notes. Review it, then proceed through the pipeline stages:
 
 ```
-/stage1-discovery my-feature
-/stage2-architecture my-feature
+/discovery my-feature
+/architecture my-feature
 # → Review and approve the architecture
-/stage3-gameplan my-feature
+/gameplan my-feature
 # → Review and approve the gameplan
-/stage4-test-generation my-feature
-/stage5-implementation my-feature M1
-/stage5-implementation my-feature M2
+/test-generation my-feature
+/implementation my-feature M1
+/implementation my-feature M2
 # ... one milestone at a time
-/stage7-qa-plan my-feature
+/qa-plan my-feature
 /create-pr my-feature
 ```
 

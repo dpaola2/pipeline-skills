@@ -1,5 +1,5 @@
 ---
-name: stage1-discovery
+name: discovery
 description: "Run pipeline Stage 1 (Discovery) for a project. Explores the target codebase to understand current state before designing changes."
 disable-model-invocation: true
 argument-hint: "<project-slug>"
@@ -325,4 +325,4 @@ CREATE TABLE [table_name] (
 Tell the user:
 1. The discovery report has been written
 2. Summarize the key findings (entities found, risks flagged, open questions)
-3. Note: "You can now review the discovery report, then run `/stage2-architecture $ARGUMENTS` to proceed to the Architecture stage."
+3. Note: "You can now review the discovery report, then run `/architecture $ARGUMENTS` to proceed to the Architecture stage."

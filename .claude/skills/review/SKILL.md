@@ -1,5 +1,5 @@
 ---
-name: stage6-review
+name: review
 description: "Run pipeline Stage 6 (Code Review) for a project. Reviews the full branch diff against conventions, security requirements, spec, and code quality. Produces a review-report.md with categorized findings and a verdict."
 disable-model-invocation: true
 argument-hint: "<project-slug>"
@@ -39,7 +39,7 @@ Read `<projects-path>/$ARGUMENTS/progress.md` and check the **Milestone Status**
 - If ALL milestones are marked **Complete** → proceed.
 - If ANY milestone is still **Pending** or **In Progress** → **STOP**:
 
-> "Not all milestones are complete. Stage 6 runs after all implementation is done. Remaining milestones: [list pending milestones]. Run `/stage5-implementation $ARGUMENTS <milestone>` to complete them first."
+> "Not all milestones are complete. Stage 6 runs after all implementation is done. Remaining milestones: [list pending milestones]. Run `/implementation $ARGUMENTS <milestone>` to complete them first."
 
 ### 2. Project branch exists
 
@@ -269,13 +269,13 @@ Tell the user:
 **If APPROVED:**
 1. The review report has been written to `<projects-path>/$ARGUMENTS/review-report.md`
 2. Summarize: files reviewed, findings count by severity, verdict
-3. "The code review passed. Next step: `/stage7-qa-plan $ARGUMENTS`"
+3. "The code review passed. Next step: `/qa-plan $ARGUMENTS`"
 
 **If CHANGES REQUESTED:**
 1. The review report has been written to `<projects-path>/$ARGUMENTS/review-report.md`
 2. Summarize: files reviewed, findings count by severity, verdict
 3. List the Blocker and Major findings with their suggestions
-4. "Fix the Blocker/Major findings and re-run `/stage6-review $ARGUMENTS`"
+4. "Fix the Blocker/Major findings and re-run `/review $ARGUMENTS`"
 
 ## Flag vs Escalate
 

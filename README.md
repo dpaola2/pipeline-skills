@@ -115,7 +115,7 @@ mkdir -p ../pipeline-projects/inbox
 Drop rough notes (feature ideas, requirements, anything) into the inbox directory, then run Claude Code from your repo and:
 
 ```
-/stage0-prd
+/prd
 ```
 
 This converts your notes into a structured PRD. Review it before continuing.
@@ -123,17 +123,17 @@ This converts your notes into a structured PRD. Review it before continuing.
 **4. Run the pipeline:**
 
 ```
-/stage1-discovery my-feature          # Explore codebase, produce discovery report
-/stage2-architecture my-feature       # Propose technical design
-                                      # <- REVIEW AND APPROVE architecture
-/stage3-gameplan my-feature           # Break into milestones + acceptance criteria
-                                      # <- REVIEW AND APPROVE gameplan
-/stage4-test-generation my-feature    # Write failing tests (TDD)
-/stage5-implementation my-feature M1  # Implement milestone 1
-/stage5-implementation my-feature M2  # Implement milestone 2 (repeat per milestone)
-/stage6-review my-feature             # Automated code review
-/stage7-qa-plan my-feature            # Generate QA plan for manual testing
-/create-pr my-feature                 # Push branch and create PR
+/discovery my-feature          # Explore codebase, produce discovery report
+/architecture my-feature       # Propose technical design
+                               # <- REVIEW AND APPROVE architecture
+/gameplan my-feature           # Break into milestones + acceptance criteria
+                               # <- REVIEW AND APPROVE gameplan
+/test-generation my-feature    # Write failing tests (TDD)
+/implementation my-feature M1  # Implement milestone 1
+/implementation my-feature M2  # Implement milestone 2 (repeat per milestone)
+/review my-feature             # Automated code review
+/qa-plan my-feature            # Generate QA plan for manual testing
+/create-pr my-feature          # Push branch and create PR
 ```
 
 See `HOW_IT_WORKS.md` for a detailed walkthrough of what each stage does and why.
@@ -223,14 +223,14 @@ These checkpoints exist because errors amplify downstream. A wrong data model de
 ├── CLAUDE.md                          # Agent context for working on this repo
 │
 ├── .claude/skills/                    # Pipeline skills (the engine)
-│   ├── stage0-prd/SKILL.md            # /stage0-prd
-│   ├── stage1-discovery/SKILL.md      # /stage1-discovery <slug>
-│   ├── stage2-architecture/SKILL.md   # /stage2-architecture <slug>
-│   ├── stage3-gameplan/SKILL.md       # /stage3-gameplan <slug>
-│   ├── stage4-test-generation/SKILL.md # /stage4-test-generation <slug>
-│   ├── stage5-implementation/SKILL.md # /stage5-implementation <slug> <milestone>
-│   ├── stage6-review/SKILL.md         # /stage6-review <slug>
-│   ├── stage7-qa-plan/SKILL.md        # /stage7-qa-plan <slug>
+│   ├── prd/SKILL.md                   # /prd
+│   ├── discovery/SKILL.md             # /discovery <slug>
+│   ├── architecture/SKILL.md          # /architecture <slug>
+│   ├── gameplan/SKILL.md              # /gameplan <slug>
+│   ├── test-generation/SKILL.md       # /test-generation <slug>
+│   ├── implementation/SKILL.md        # /implementation <slug> <milestone>
+│   ├── review/SKILL.md                # /review <slug>
+│   ├── qa-plan/SKILL.md               # /qa-plan <slug>
 │   ├── create-pr/SKILL.md             # /create-pr <slug>
 │   ├── metrics/SKILL.md               # /metrics <slug>
 │   ├── quality/SKILL.md               # /quality <slug>
@@ -268,14 +268,14 @@ Project artifacts (PRDs, gameplans, progress files) live **outside** this repo, 
 
 | Skill | Usage | What It Does |
 |-------|-------|-------------|
-| `/stage0-prd` | `/stage0-prd` | Convert inbox notes into a structured PRD |
-| `/stage1-discovery` | `/stage1-discovery <slug>` | Explore codebase, produce discovery report |
-| `/stage2-architecture` | `/stage2-architecture <slug>` | Propose technical design (data model, API, migrations) |
-| `/stage3-gameplan` | `/stage3-gameplan <slug>` | Break PRD into milestones with acceptance criteria |
-| `/stage4-test-generation` | `/stage4-test-generation <slug>` | Write failing tests (TDD) |
-| `/stage5-implementation` | `/stage5-implementation <slug> <M#>` | Implement one milestone, make tests pass |
-| `/stage6-review` | `/stage6-review <slug>` | Automated code review against conventions + spec |
-| `/stage7-qa-plan` | `/stage7-qa-plan <slug>` | Generate manual QA testing plan |
+| `/prd` | `/prd` | Convert inbox notes into a structured PRD |
+| `/discovery` | `/discovery <slug>` | Explore codebase, produce discovery report |
+| `/architecture` | `/architecture <slug>` | Propose technical design (data model, API, migrations) |
+| `/gameplan` | `/gameplan <slug>` | Break PRD into milestones with acceptance criteria |
+| `/test-generation` | `/test-generation <slug>` | Write failing tests (TDD) |
+| `/implementation` | `/implementation <slug> <M#>` | Implement one milestone, make tests pass |
+| `/review` | `/review <slug>` | Automated code review against conventions + spec |
+| `/qa-plan` | `/qa-plan <slug>` | Generate manual QA testing plan |
 | `/create-pr` | `/create-pr <slug>` | Push branch, create PR with generated summary |
 
 ### Utility Skills
