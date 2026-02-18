@@ -47,7 +47,7 @@ All milestones for a project are committed to one branch (`<branch-prefix><slug>
 
 Project artifacts live outside both the pipeline repo and the target repos:
 
-- **Pipeline repo** (`agent-pipeline/`) — skills, templates, docs. Shared across all products.
+- **Pipeline repo** (`agent-pipeline/`) — skills, docs, configuration. Shared across all products.
 - **Target repo** (`my-app/`) — source code. Has `PIPELINE.md` describing how it works.
 - **Projects directory** (`pipeline-projects/`) — PRDs, gameplans, progress files. Per-product, per-project.
 

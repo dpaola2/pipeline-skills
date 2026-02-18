@@ -51,7 +51,7 @@ Built a Stage 0 skill (`/stage0-prd`) that generates structured PRDs from raw in
 **What was built:**
 - **Inbox pattern** — user drops raw notes (feature descriptions, Slack threads, meeting notes, Google Doc exports) into `inbox/` directory
 - **Interactive file selection** — skill lists inbox contents, asks user to pick a file and provide a project slug
-- **Full PRD generation** — produces a complete PRD conforming to `templates/prd-intake.md` with all 13 sections
+- **Full PRD generation** — produces a complete PRD conforming to the embedded intake template with all 13 sections
 - **Placeholder markers** — `[CONFIRM]`, `[NEEDS INPUT]`, `[NEEDS REVIEW]`, `[INFERRED]`, `[DEFINE]` flag areas needing human attention
 - **Level suggestion** — suggests Level 1/2/3 based on scope, marked `[CONFIRM]` for human verification
 - **Project directory creation** — creates `projects/<slug>/` and writes `prd.md`
@@ -207,7 +207,7 @@ Provide a way to make pipeline project documents (PRD, architecture proposal, ga
 Integrated Architecture Decision Records into the pipeline, capturing significant technical decisions during Stage 2 (Architecture) and Stage 5 (Implementation).
 
 **What was built:**
-- **ADR template** (`templates/adr.md`) — lightweight format: Context, Decision, Alternatives Considered (table), Consequences
+- **ADR template** (embedded in Stage 2 and Stage 5 skills) — lightweight format: Context, Decision, Alternatives Considered (table), Consequences
 - **Stage 2 integration** — new step 10 generates ADRs for decisions with 2+ genuinely viable alternatives. ADRs are written to `<projects-path>/<slug>/decisions/ADR-NNN-<kebab-title>.md` and committed alongside the architecture proposal
 - **Stage 5 integration** — new step 12 generates ADRs when implementation decisions deviate from or extend the architecture proposal. Continues the numbering sequence from Stage 2
 - **Architecture proposal cross-reference** — new section 8 in the template lists all generated ADRs with links
@@ -561,7 +561,7 @@ Replace time-based estimates in the gameplan template (Section 7: Estimates) wit
 | **XL** | Large — should probably be split into multiple projects | 20+ files, multiple migrations, new infrastructure |
 
 **What changes:**
-- `templates/gameplan.md` Section 7 — replace days columns with a single Size column
+- Stage 3 skill gameplan template Section 7 — replace days columns with a single Size column
 - Stage 3 skill — update instructions to use t-shirt sizes instead of day estimates
 - Existing gameplans are unaffected (they're project artifacts, not templates)
 

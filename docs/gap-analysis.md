@@ -51,7 +51,7 @@ The pipeline shifts the constraint from execution to clarity. Everything in this
 - [ ] iOS (deferred): AGENTS.md for iOS conventions — address when pipeline expands to mobile
 - [ ] Android (deferred): AGENTS.md for Android conventions — address when pipeline expands to mobile
 
-**See:** `docs/orangeqc-constraints.md` → "Reference Materials for Pipeline Agents" for details on what each resource contains and which pipeline stages use it.
+**See:** `docs/examples/orangeqc-constraints.md` → "Reference Materials for Pipeline Agents" for details on what each resource contains and which pipeline stages use it.
 
 **Leverage:** Very high. This is what turns agent output from "generic code" to "OrangeQC code."
 
@@ -60,7 +60,7 @@ The pipeline shifts the constraint from execution to clarity. Everything in this
 **Status:** First PRD converted and validated. Pipeline intake template exists and works.
 
 **What's needed:**
-- [x] PRD intake template (see `templates/prd-intake.md`)
+- [x] PRD intake template (embedded in `/stage0-prd` skill)
 - [x] Process for converting existing PRDs to structured markdown — validated on deficient-line-items-report
 - [ ] Or: agent that converts Google Doc PRDs to structured markdown (Stage 0)
 - [x] PRDs stored in a repo or accessible location — `projects/<slug>/prd.md`
@@ -113,12 +113,12 @@ The pipeline shifts the constraint from execution to clarity. Everything in this
 ## Priority 3: Stage-Specific Gaps
 
 ### 3.1 Discovery Stage Gaps
-- [x] ~~No standardized "discovery report" format~~ — `templates/discovery-report.md` exists, validated on first project
+- [x] ~~No standardized "discovery report" format~~ — template embedded in `/stage1-discovery` skill, validated on first project
 - [x] ~~No automated way to map "PRD concept" → "existing code locations"~~ — Stage 1 skill does this
 - [x] Need few-shot examples of good discovery reports — `projects/deficient-line-items-report/discovery-report.md`
 
 ### 3.2 Architecture Stage Gaps
-- [x] ~~No codified data model conventions~~ — `templates/architecture-proposal.md` covers schema, migrations, API design
+- [x] ~~No codified data model conventions~~ — architecture template (embedded in `/stage2-architecture` skill) covers schema, migrations, API design
 - [x] Example payloads from past features — first project provides reference output
 - [x] ~~Backwards compatibility matrix pattern not templated~~ — included in architecture template
 - [x] ~~Migration planning conventions not documented~~ — included in architecture template
@@ -148,7 +148,7 @@ The pipeline shifts the constraint from execution to clarity. Everything in this
 - [x] ~~**Stage 6 skill not yet built**~~ — `/stage6-review <slug>` implemented
 
 ### 3.7 QA Plan Stage Gaps
-- [x] ~~QA plan format not defined~~ — `templates/qa-plan.md` exists, validated on first project
+- [x] ~~QA plan format not defined~~ — QA plan template embedded in `/stage7-qa-plan` skill, validated on first project
 - [x] ~~No automated acceptance criteria → test coverage mapping~~ — test-coverage-matrix.md + qa-plan.md
 - [ ] Feature flag validation not automated
 - [ ] Linear ticket transitions not automated
@@ -204,11 +204,11 @@ This means:
 
 ### Phase 3: Orchestration (Current)
 
-Now that individual stages work well when run manually:
+All individual stages work and have been validated across multiple products:
 1. ~~Build Stage 6 (Review) skill~~ — Done (ROAD-09)
-2. Build orchestration layer (Claude Code custom commands → Agent SDK)
-3. Wire up Linear integration (automated ticket creation, status transitions)
-4. Run a second project end-to-end to validate pipeline repeatability
+2. ~~Run multiple projects end-to-end to validate pipeline repeatability~~ — Done (7+ completed OrangeQC projects, 4 Show Notes projects)
+3. Build orchestration layer (Claude Code custom commands → Agent SDK)
+4. Wire up Linear integration (automated ticket creation, status transitions)
 
 ### Phase 4: Mobile Expansion
 
