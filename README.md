@@ -36,7 +36,7 @@ cp -r agent-pipeline/.claude/skills/* /path/to/your-project/.claude/skills/
 Run the setup skill from your target repo to auto-detect your framework, stack, and directory structure:
 
 ```
-/setup
+/pipeline-setup
 ```
 
 This detects your framework, test tools, linters, and directory layout, then writes the `## Pipeline Configuration` section into your conventions file. It also creates the projects directory.
@@ -156,7 +156,7 @@ These checkpoints exist because errors amplify downstream. A wrong data model de
 ├── CLAUDE.md                          # Agent context for working on this repo
 │
 ├── .claude/skills/                    # Pipeline skills (the engine)
-│   ├── setup/SKILL.md                 # /setup [repo-path]
+│   ├── pipeline-setup/SKILL.md         # /pipeline-setup [repo-path]
 │   ├── prd/SKILL.md                   # /prd
 │   ├── discovery/SKILL.md             # /discovery <slug>
 │   ├── architecture/SKILL.md          # /architecture <slug>
@@ -216,7 +216,7 @@ Project artifacts (PRDs, gameplans, progress files) live **outside** this repo, 
 
 | Skill | Usage | What It Does |
 |-------|-------|-------------|
-| `/setup` | `/setup [repo-path]` | Auto-detect framework/stack, write Pipeline Configuration |
+| `/pipeline-setup` | `/pipeline-setup [repo-path]` | Auto-detect framework/stack, write Pipeline Configuration |
 | `/metrics` | `/metrics <slug>` | Collect timing and quality metrics for a project |
 | `/quality` | `/quality <slug>` | Run post-flight quality checks on a completed project |
 | `/release-notes` | `/release-notes <cycle>` | Generate release notes from Linear cycle data |

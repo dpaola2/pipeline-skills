@@ -36,7 +36,7 @@ Skills locate the conventions file in the repo root (first of `CLAUDE.md`, `AGEN
 
 **To add a new product to the pipeline:**
 1. Copy the skills from `.claude/skills/` into the target repo
-2. Run `/setup` from the target repo — it auto-detects framework, stack, and directories, then writes the Pipeline Configuration section
+2. Run `/pipeline-setup` from the target repo — it auto-detects framework, stack, and directories, then writes the Pipeline Configuration section
 3. (Or manually: add a `## Pipeline Configuration` section using `docs/examples/pipeline-configuration.md` as a template)
 
 Sections marked REQUIRED apply to every project. Sections marked OPTIONAL can be omitted if they don't apply.
@@ -86,7 +86,7 @@ The inbox (raw input notes for Stage 0) also lives externally, at Pipeline Confi
 The pipeline runs manually from the target repo directory, one stage at a time:
 
 ```
-/setup                                            → auto-detects framework/stack, writes Pipeline Configuration
+/pipeline-setup                                            → auto-detects framework/stack, writes Pipeline Configuration
                                                     (run once per repo, before first project)
 
 /prd                                              → lists inbox files, asks for selection + slug,

@@ -91,7 +91,7 @@ cp -r agent-pipeline/.claude/skills/* my-app/.claude/skills/
 From your target repo directory, run:
 
 ```
-/setup
+/pipeline-setup
 ```
 
 This auto-detects your framework, test tools, linters, and directory structure, then writes the `## Pipeline Configuration` section into your conventions file (`CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md`). It also creates the projects directory.

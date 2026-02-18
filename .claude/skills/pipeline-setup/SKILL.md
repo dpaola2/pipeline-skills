@@ -1,5 +1,5 @@
 ---
-name: setup
+name: pipeline-setup
 description: "Set up a repository for the agent pipeline. Auto-detects framework, stack, and directory structure, then writes the Pipeline Configuration section into the conventions file."
 disable-model-invocation: true
 allowed-tools:
