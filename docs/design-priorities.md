@@ -2,15 +2,15 @@
 
 > **Purpose:** The principles that govern how this pipeline evolves. Every roadmap item, skill change, and architectural decision should be evaluated against these priorities. They're ordered by importance — when two priorities conflict, the higher one wins.
 >
-> These priorities are derived from fundamental software laws applied to agent-orchestrated pipelines. See [[software-laws]] for the underlying reasoning.
+> Each priority is derived from a fundamental software law applied to agent-orchestrated pipelines.
 
 ---
 
 ## 1. Correctness Over Speed
 
-**Derived from:** Goodhart's Law, Amdahl's Law
+**Derived from:** Goodhart's Law (*"When a measure becomes a target, it ceases to be a good measure"*), Amdahl's Law
 
-The pipeline exists to produce *correct* code, not *fast* code. Speed is a secondary benefit of automation, not the primary goal.
+The pipeline exists to produce *correct* code, not *fast* code. Speed is a secondary benefit of automation, not the primary goal. This is the most dangerous law for agent pipelines — quality signals like test pass counts, lint results, and CI green status are proxies for correctness. The moment an agent optimizes for making those signals green rather than writing correct code, the signals become worthless.
 
 **What this means in practice:**
 
@@ -25,7 +25,7 @@ The pipeline exists to produce *correct* code, not *fast* code. Speed is a secon
 
 ## 2. Evolve From Working Systems
 
-**Derived from:** Gall's Law, Lehman's Laws
+**Derived from:** Gall's Law (*"A complex system that works is invariably found to have evolved from a simple system that worked"*), Lehman's Laws (*"As a system evolves, its complexity increases unless work is done to maintain or reduce it"*)
 
 Every new capability should be an incremental evolution of something that already works. Never redesign a working subsystem to accommodate a planned feature.
 
@@ -42,7 +42,7 @@ Every new capability should be an incremental evolution of something that alread
 
 ## 3. Respect Existing Constraints
 
-**Derived from:** Chesterton's Fence
+**Derived from:** Chesterton's Fence (*"Don't remove a fence until you understand why it was put there"*)
 
 When the pipeline modifies existing code, the default posture is to respect every validation, callback, guard clause, and naming convention it encounters. Existing constraints exist for reasons that may not be obvious.
 
@@ -59,7 +59,7 @@ When the pipeline modifies existing code, the default posture is to respect ever
 
 ## 4. Stages Communicate Through Contracts, Not Coupling
 
-**Derived from:** Conway's Law, Postel's Law
+**Derived from:** Conway's Law (*"Organizations which design systems are constrained to produce designs which are copies of the communication structures of those organizations"*), Postel's Law (*"Be conservative in what you send, liberal in what you accept"*)
 
 Each stage produces structured artifacts (discovery report, architecture proposal, gameplan, tests, code). These artifacts are the contracts between stages. Stages should depend on the semantic content of their inputs, not on the exact format.
 
@@ -111,7 +111,19 @@ A pipeline that processes dozens of projects without learning from them is leavi
 
 ---
 
-## Priority Interactions
+## How These Laws Reinforce Each Other
+
+**Goodhart + Amdahl:** The fastest way to speed up the pipeline is to remove human checkpoints (Amdahl). But human checkpoints are the primary defense against Goodhart's Law (agents gaming metrics). The pipeline's two-checkpoint architecture is the current resolution of that tension.
+
+**Conway + Postel:** Conway's Law says stage boundaries shape code boundaries. Postel's Law says stages should be tolerant of each other's output. Together: design stage boundaries carefully (Conway), but don't couple stages tightly to each other's exact output format (Postel).
+
+**Gall + Lehman:** Gall's Law says evolve from working simple systems. Lehman's Law says complexity increases unless actively reduced. Together: add one capability at a time (Gall), and periodically simplify (Lehman). The roadmap should alternate between "add" and "simplify" phases.
+
+**Chesterton + Conway:** Chesterton's Fence says understand existing constraints before changing them. Conway's Law says the pipeline's stage structure shapes what agents see. Together: Stage 1 (Discovery) must make existing constraints visible to all downstream stages. If Conway's Law hides a fence behind a stage boundary, Chesterton's Fence gets violated.
+
+---
+
+## Priority Conflicts
 
 These priorities sometimes conflict. The ordering resolves ambiguity:
 

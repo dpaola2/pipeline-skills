@@ -69,8 +69,6 @@ This converts your notes into a structured PRD. Review it before continuing.
 /create-pr my-feature          # Push branch and create PR
 ```
 
-See `HOW_IT_WORKS.md` for a detailed walkthrough of what each stage does and why.
-
 ---
 
 ## How It Works
@@ -97,13 +95,11 @@ Execution (writes code)
 
 Stages 1-2 are safe to run on any PRD — they only produce documents. The architecture gets locked down before the gameplan, and the gameplan gets locked down before any code is written. This catches design issues early when they're cheap to fix.
 
-**Full details:** `HOW_IT_WORKS.md`
-
 ---
 
 ## Design Priorities
 
-Six principles govern how the pipeline evolves, ordered by importance — when two conflict, the higher one wins. These are derived from fundamental software laws ([full analysis](docs/software-laws.md)).
+Six principles govern how the pipeline evolves, ordered by importance — when two conflict, the higher one wins. Each is derived from a fundamental software law.
 
 1. **Correctness over speed.** Human checkpoints exist because agents optimize for measurable signals (tests pass, CI green), and those signals are imperfect proxies for correctness. Don't remove a quality gate to go faster.
 2. **Evolve from working systems.** Every new capability should be an incremental evolution of something that already works. Validate on one project before making it the default.
@@ -151,45 +147,32 @@ These checkpoints exist because errors amplify downstream. A wrong data model de
 
 ```
 .
-├── README.md                          # You are here
-├── HOW_IT_WORKS.md                    # End-to-end pipeline walkthrough
-├── CLAUDE.md                          # Agent context for working on this repo
+├── README.md                           # You are here
+├── CLAUDE.md                           # Agent context for working on this repo
 │
-├── .claude/skills/                    # Pipeline skills (the engine)
-│   ├── pipeline-setup/SKILL.md         # /pipeline-setup [repo-path]
-│   ├── prd/SKILL.md                   # /prd
-│   ├── discovery/SKILL.md             # /discovery <slug>
-│   ├── architecture/SKILL.md          # /architecture <slug>
-│   ├── gameplan/SKILL.md              # /gameplan <slug>
-│   ├── test-generation/SKILL.md       # /test-generation <slug>
-│   ├── implementation/SKILL.md        # /implementation <slug> <milestone>
-│   ├── review/SKILL.md                # /review <slug>
-│   ├── qa-plan/SKILL.md               # /qa-plan <slug>
-│   ├── create-pr/SKILL.md             # /create-pr <slug>
-│   ├── metrics/SKILL.md               # /metrics <slug>
-│   ├── quality/SKILL.md               # /quality <slug>
-│   ├── release-notes/SKILL.md         # /release-notes <cycle>
-│   └── backfill-timing/SKILL.md       # /backfill-timing <slug>
+├── .claude/skills/                     # Pipeline skills (the product)
+│   ├── pipeline-setup/SKILL.md          # /pipeline-setup [repo-path]
+│   ├── prd/SKILL.md                    # /prd
+│   ├── discovery/SKILL.md              # /discovery <slug>
+│   ├── architecture/SKILL.md           # /architecture <slug>
+│   ├── gameplan/SKILL.md               # /gameplan <slug>
+│   ├── test-generation/SKILL.md        # /test-generation <slug>
+│   ├── implementation/SKILL.md         # /implementation <slug> <milestone>
+│   ├── review/SKILL.md                 # /review <slug>
+│   ├── qa-plan/SKILL.md                # /qa-plan <slug>
+│   ├── create-pr/SKILL.md              # /create-pr <slug>
+│   ├── metrics/SKILL.md                # /metrics <slug>
+│   ├── quality/SKILL.md                # /quality <slug>
+│   ├── release-notes/SKILL.md          # /release-notes <cycle>
+│   └── backfill-timing/SKILL.md        # /backfill-timing <slug>
 │
-└── docs/                              # Architecture and design specs
-    ├── workspace-setup.md             # Setup guide for new adopters
-    ├── design-priorities.md           # Core principles governing pipeline evolution
-    ├── software-laws.md               # Fundamental software laws applied to the pipeline
-    ├── pipeline-architecture.md       # Full pipeline design (7 stages + checkpoints)
-    ├── current-process.md             # The development process this automates
-    ├── gap-analysis.md                # What's missing, what to build
-    ├── roadmap.md                     # Future improvements
-    ├── examples/                      # Product-specific reference material
-    │   └── orangeqc-constraints.md    # Example of product constraints
-    └── stages/                        # Per-stage design specs (reference, not runtime)
-        ├── README.md
-        ├── 01-discovery.md
-        ├── 02-architecture.md
-        ├── 03-gameplan.md
-        ├── 04-test-generation.md
-        ├── 05-implementation.md
-        ├── 06-review.md
-        └── 07-validation.md
+└── docs/
+    ├── design-priorities.md            # Core principles governing pipeline evolution
+    ├── pipeline-architecture.md        # Full pipeline design (7 stages + checkpoints)
+    ├── skill-reference.md              # Detailed skill API surface reference
+    ├── roadmap.md                      # Planned improvements
+    └── examples/
+        └── pipeline-configuration.md   # Annotated Pipeline Configuration template
 ```
 
 Project artifacts (PRDs, gameplans, progress files) live **outside** this repo, in a per-product work directory configured in the target repo's conventions file. This keeps the pipeline repo as a pure skill source with no product-specific data.
@@ -238,9 +221,8 @@ Each stage runs as a manual Claude Code session. Automated orchestration (stage 
 
 | Document | What It Covers |
 |----------|---------------|
-| `HOW_IT_WORKS.md` | End-to-end walkthrough of what each stage does and why |
-| `docs/workspace-setup.md` | Setup guide for new adopters (workspace layout, design principles) |
-| `docs/pipeline-architecture.md` | Detailed stage specs, error handling, cross-cutting concerns |
-| `docs/current-process.md` | The development process this pipeline automates |
-| `docs/stages/` | Deep specs for each individual stage (design reference, not runtime) |
-| `docs/roadmap.md` | Planned improvements |
+| [`docs/design-priorities.md`](docs/design-priorities.md) | Core principles and the software laws behind them |
+| [`docs/pipeline-architecture.md`](docs/pipeline-architecture.md) | Detailed stage specs, error handling, cross-cutting concerns |
+| [`docs/skill-reference.md`](docs/skill-reference.md) | Complete API surface for every skill |
+| [`docs/roadmap.md`](docs/roadmap.md) | Planned improvements |
+| [`docs/examples/pipeline-configuration.md`](docs/examples/pipeline-configuration.md) | Annotated template for Pipeline Configuration setup |

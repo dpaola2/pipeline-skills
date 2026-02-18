@@ -47,7 +47,7 @@ The discovery agent explores the existing codebase to understand how things work
 - Flags technical risks and unknowns
 - Surfaces code that will need modification
 
-**See:** `docs/stages/01-discovery.md` for full specification
+**See:** `.claude/skills/discovery/SKILL.md` for full specification
 
 ---
 
@@ -64,7 +64,7 @@ The architecture agent proposes the technical design: data model changes, API en
 - Generates backwards compatibility matrix
 - Identifies migration strategy (DDL, concurrent indexes, backfills)
 
-**See:** `docs/stages/02-architecture.md` for full specification
+**See:** `.claude/skills/architecture/SKILL.md` for full specification
 
 ---
 
@@ -113,7 +113,7 @@ The gameplan agent produces a complete engineering spec following the gameplan t
 - Identifies dependencies between milestones
 - Creates Linear tickets for each milestone
 
-**See:** `docs/stages/03-gameplan.md` for full specification
+**See:** `.claude/skills/gameplan/SKILL.md` for full specification
 
 ---
 
@@ -172,7 +172,7 @@ The test generation agent writes comprehensive test suites from the approved spe
 | iOS | XCTest | Unit tests, integration tests |
 | Android | JUnit + Espresso | Unit tests, integration tests, UI tests |
 
-**See:** `docs/stages/04-test-generation.md` for full specification
+**See:** `.claude/skills/test-generation/SKILL.md` for full specification
 
 ---
 
@@ -189,7 +189,7 @@ The implementation agent works milestone-by-milestone, writing code to make the 
 - Rails API must be deployed (to staging) before mobile begins
 - Each PR includes the relevant tests from Stage 4
 
-**See:** `docs/stages/05-implementation.md` for full specification
+**See:** `.claude/skills/implementation/SKILL.md` for full specification
 
 ---
 
@@ -210,7 +210,7 @@ The review agent examines the full branch diff against conventions, security req
 - Categorizes findings by severity (Blocker / Major / Minor / Note)
 - Verdict: APPROVED (zero Blockers and Majors) or CHANGES REQUESTED
 
-**See:** `docs/stages/06-review.md` for full specification
+**See:** `.claude/skills/review/SKILL.md` for full specification
 
 ---
 
@@ -228,7 +228,7 @@ The QA plan agent consolidates all manual testing needs into an actionable docum
 - Identifies known limitations, regression risks, and rollback plan
 - A QA tester can pick up the plan and start testing without asking questions
 
-**See:** `docs/stages/07-validation.md` for full specification
+**See:** `.claude/skills/qa-plan/SKILL.md` for full specification
 
 ---
 

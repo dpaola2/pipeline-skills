@@ -2,125 +2,15 @@
 
 ## What This Project Is
 
-This is a toolkit for agent-orchestrated software development. The pipeline takes a PRD (Product Requirements Document) as input and produces implementation code that is ready for QA. It works with any codebase that has a conventions file with a `## Pipeline Configuration` section.
+A toolkit for agent-orchestrated software development. The pipeline takes a PRD as input and produces QA-ready implementation code. It works with any codebase that has a conventions file with a `## Pipeline Configuration` section.
 
 **This repo is the skill source.** Skills are copied into target repos and run from there — Claude Code sessions happen in the target repo directory, not here.
 
 **Read these files to get oriented:**
-1. `docs/workspace-setup.md` - How the workspace is organized and how to get started
+1. `README.md` - Installation, usage, design priorities, skills reference
 2. `docs/pipeline-architecture.md` - The full pipeline design
-3. `docs/gap-analysis.md` - What's missing and what to build
+3. `docs/skill-reference.md` - Detailed API surface for every skill
 4. `docs/roadmap.md` - Future improvements
-
----
-
-## Pipeline Configuration
-
-Configuration lives in a single place: the **conventions file** in each target repo.
-
-### Conventions File (each target repo)
-
-Each target repo has a conventions file (`CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md`) with a `## Pipeline Configuration` section. This section contains everything skills need:
-
-- **Work Directory** — projects path, inbox path (where project artifacts live)
-- **Project Tracker** — Linear, GitHub Issues, or none
-- **Related Repositories** — paths to API docs, mobile repos, etc. (optional)
-- **Repository Details** — default branch, test command, branch prefix, PR base branch
-- **Platforms** — which platforms this project targets
-- **Framework & Stack** — language, test framework, database, frontend
-- **Directory Structure** — where models, controllers, tests, etc. live
-- **Implementation Order** — natural build sequence for milestones
-- **Optional sections** — API conventions, multi-tenant security, backwards compat, feature flags, post-flight checks, complexity analysis, guardrails
-
-Skills locate the conventions file in the repo root (first of `CLAUDE.md`, `AGENTS.md`, `CONVENTIONS.md` found) and read the `## Pipeline Configuration` section for all config.
-
-**To add a new product to the pipeline:**
-1. Copy the skills from `.claude/skills/` into the target repo
-2. Run `/pipeline-setup` from the target repo — it auto-detects framework, stack, and directories, then writes the Pipeline Configuration section
-3. (Or manually: add a `## Pipeline Configuration` section using `docs/examples/pipeline-configuration.md` as a template)
-
-Sections marked REQUIRED apply to every project. Sections marked OPTIONAL can be omitted if they don't apply.
-
-**Why project artifacts live outside the target repo:** Project artifacts (PRDs, gameplans, progress files) are *pipeline-scoped*, not *repo-scoped*. A multi-platform project may touch several repos simultaneously — its artifacts can't live inside any single target repo.
-
----
-
-## Pipeline Skills (Running the Pipeline)
-
-### Project Levels
-
-Projects are categorized by scope. Level definitions adapt based on what Pipeline Configuration → Platforms lists:
-
-**If Platforms lists only ONE active platform:**
-- **Level 1:** Small, self-contained changes (1-2 files)
-- **Level 2:** Medium scope features (new pages, reports, workflows)
-- **Level 3:** Large scope features (significant new capability, multiple milestones)
-
-**If Platforms lists MULTIPLE active platforms:**
-- **Level 1:** Small, single-platform only
-- **Level 2:** Primary platform only (may involve model + controller + views but stays within one platform)
-- **Level 3:** Cross-platform features (requires coordinated changes across all active platforms)
-
-The PRD header specifies the level. Skills adapt their output accordingly.
-
-### Project Directory Convention
-
-Project artifacts live **outside the target repo**, in a configurable directory. The path is set in Pipeline Configuration → Work Directory → Projects. Each project is a subdirectory named with a kebab-case slug:
-
-```
-<projects-path>/my-feature/
-  prd.md                        # Input: the structured PRD
-  discovery-report.md            # Output of Stage 1
-  architecture-proposal.md       # Output of Stage 2 (requires human approval)
-  gameplan.md                    # Output of Stage 3 (requires human approval)
-  test-coverage-matrix.md        # Output of Stage 4
-  progress.md                    # Output of Stage 5 (milestone tracking)
-  qa-plan.md                     # Output of Stage 7
-  decisions/                     # ADRs — significant technical decisions (Stages 2, 5)
-```
-
-The inbox (raw input notes for Stage 0) also lives externally, at Pipeline Configuration → Work Directory → Inbox.
-
-### Running the Pipeline
-
-The pipeline runs manually from the target repo directory, one stage at a time:
-
-```
-/pipeline-setup                                            → auto-detects framework/stack, writes Pipeline Configuration
-                                                    (run once per repo, before first project)
-
-/prd                                              → lists inbox files, asks for selection + slug,
-                                                    produces prd.md (REVIEW BEFORE CONTINUING)
-
-/discovery <project-slug>                         → produces discovery-report.md
-                                                    (optional: review discovery report)
-
-/architecture <project-slug>                      → produces architecture-proposal.md
-                                                    REQUIRED: review and approve architecture
-
-/gameplan <project-slug>                          → produces gameplan.md (checks for approval first)
-                                                    REQUIRED: review and approve gameplan
-
-/test-generation <project-slug>                   → produces failing tests + test-coverage-matrix.md
-
-/implementation <project-slug> <milestone>        → implements one milestone, updates progress.md
-                                                    (run once per milestone: M1, M2, ...)
-
-/qa-plan <project-slug>                           → produces qa-plan.md (checks all milestones complete)
-
-/create-pr <project-slug>                         → pushes branch, creates PR against default branch
-
-/release-notes <cycle_number>                     → generates release notes from Linear cycle data
-                                                    (standalone utility, not a pipeline stage)
-```
-
-### Human Checkpoints
-
-**After Stage 2 (Architecture Review):**
-Edit `<projects-path>/<slug>/architecture-proposal.md`, find the Approval Checklist at the bottom, set Status to "Approved" (or "Approved with Modifications"), and fill in the reviewer checklist. Stage 3 will refuse to run until this is done.
-
-**After Stage 3 (Gameplan Review):**
-Review `<projects-path>/<slug>/gameplan.md` and confirm the milestones, acceptance criteria, and sequencing are correct before any future stages run.
 
 ---
 
@@ -163,7 +53,6 @@ When working with Linear in this project:
 - Use Obsidian-compatible wiki-links where helpful: `[[filename]]`
 - Checklists use `- [ ]` format
 - Mermaid diagrams for flow visualization
-- Stage design docs in `docs/stages/` are architectural reference only (not runtime dependencies)
 
 ---
 

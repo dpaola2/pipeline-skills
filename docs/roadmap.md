@@ -238,7 +238,6 @@ Automate Linear ticket creation and status transitions as part of the pipeline f
 - Stage 5 milestone complete → transition issue to "In Review" or "Done"
 - Stage 7 completion → link QA plan to the Linear project
 
-**Related:** `docs/gap-analysis.md` § 2.2
 
 ---
 
@@ -308,7 +307,6 @@ Build the Stage 6 skill for automated code review against the target repo's AGEN
 
 **V1 scope:** Report-only (no auto-fix loop), Rails-only (cross-platform dimension is a no-op), no Linear integration, no re-review tracking.
 
-**Related:** `docs/gap-analysis.md` § 3.6
 
 ---
 
