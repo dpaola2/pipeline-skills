@@ -93,7 +93,19 @@ Execution (writes code)
   Stage 7: QA Plan — generates manual testing checklist
 ```
 
-Stages 1-2 are safe to run on any PRD — they only produce documents. The architecture gets locked down before the gameplan, and the gameplan gets locked down before any code is written. This catches design issues early when they're cheap to fix.
+Stages 0-3 are safe to run on any branch — they only produce documents in the external projects directory. The architecture gets locked down before the gameplan, and the gameplan gets locked down before any code is written. This catches design issues early when they're cheap to fix.
+
+### Branch Model
+
+The pipeline has a deliberate split in how it treats git branches:
+
+**Stages 0-3 (document stages)** don't care what branch you're on. They read the codebase and write artifacts to the external projects directory. You can run them on `main`, a feature branch, or anywhere — it doesn't matter because they only produce documents.
+
+**Stage 4 (test generation)** is the transition point. It creates a project branch (`<branch-prefix><slug>`) from the **local** default branch and commits test files to it.
+
+**Stages 5-7 + create-pr** all operate on the project branch created by Stage 4.
+
+The branch is created from the **local** default branch (not `origin/`). This is intentional — stages 0-3 may have committed artifacts to the projects directory on the local default branch, and those commits may not be pushed yet. Branching from `origin` would create a branch that's missing those artifacts.
 
 ---
 

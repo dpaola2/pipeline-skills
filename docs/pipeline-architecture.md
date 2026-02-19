@@ -159,6 +159,8 @@ The human reviewer checks:
 
 The test generation agent writes comprehensive test suites from the approved spec. Tests are written BEFORE implementation (TDD).
 
+**This stage is the branch transition point.** Stages 0-3 are branch-agnostic (they only produce documents in the external projects directory). Stage 4 creates the project branch from the **local** default branch and commits the first code files to it. All subsequent stages operate on this branch. See [Branch Management](#branch-management) for details.
+
 - Model/unit tests from data model design
 - Request/API tests from endpoint designs + example payloads
 - System/E2E tests from user flows in the PRD
@@ -181,13 +183,12 @@ The test generation agent writes comprehensive test suites from the approved spe
 **Input:** Spec + Failing Tests (per milestone)
 **Output:** Implementation code + Passing tests + ADRs for implementation decisions that deviate from the spec
 
-The implementation agent works milestone-by-milestone, writing code to make the failing tests pass.
+The implementation agent works milestone-by-milestone on the project branch created by Stage 4, writing code to make the failing tests pass.
 
-- Works in order: **Rails API first**, then iOS, then Android
-- Creates PRs per milestone (not one giant PR)
-- Follows `AGENTS.md` conventions per repo
-- Rails API must be deployed (to staging) before mobile begins
-- Each PR includes the relevant tests from Stage 4
+- One milestone per invocation, all committed to the same project branch
+- Follows conventions file per repo
+- For M2+, prior milestone tests must pass before starting
+- Extracts codebase insights into the conventions file after each milestone
 
 **See:** `.claude/skills/implementation/SKILL.md` for full specification
 
@@ -233,6 +234,21 @@ The QA plan agent consolidates all manual testing needs into an actionable docum
 ---
 
 ## Cross-Cutting Concerns
+
+### Branch Management
+
+The pipeline splits into two phases with different branch behavior:
+
+**Document stages (0-3)** are branch-agnostic. PRD, Discovery, Architecture, and Gameplan only produce markdown artifacts in the external projects directory. They don't create, switch, or commit to branches in the target repo. You can run them on any branch.
+
+**Code stages (4-7 + create-pr)** all operate on a dedicated project branch:
+
+1. **Stage 4** creates `<branch-prefix><slug>` from the local default branch and commits test files
+2. **Stage 5** checks out that branch and commits implementation code (one commit per milestone)
+3. **Stages 6-7** read from the branch but don't modify it
+4. **create-pr** pushes the branch and opens a PR
+
+**Why the branch is created from the local default branch (not `origin/`):** Stages 0-3 may commit pipeline artifacts to the projects directory on the local default branch. If the projects directory is tracked by the same git repo, those commits exist locally but may not be pushed yet. Branching from `origin/<default-branch>` would create a branch based on the stale remote state — missing all the pipeline documents (PRD, discovery report, architecture proposal, gameplan). Only the test-coverage-matrix (committed after the branch is created) would be visible. Branching from the local default branch guarantees the project branch includes everything.
 
 ### Linear Integration
 

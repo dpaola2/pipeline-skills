@@ -20,6 +20,12 @@ Two skills gate the pipeline on human approval:
 1. **After Stage 2 (Architecture):** Edit `architecture-proposal.md`, find the Approval Checklist at the bottom, set Status to "Approved". Stage 3 checks this before running.
 2. **After Stage 3 (Gameplan):** Edit `gameplan.md`, find the Approval Checklist near the bottom, set Status to "Approved". Stage 4 checks this before running.
 
+### Branch Model
+
+Stages 0-3 are branch-agnostic — they only produce documents in the external projects directory and don't touch target repo branches. Stage 4 is the transition point: it creates a project branch (`<branch-prefix><slug>`) from the **local** default branch (configured in Repository Details). Stages 5-7 and create-pr all operate on that branch.
+
+The branch is created from the local default branch, not `origin/`. This ensures the branch includes any locally-committed pipeline artifacts that haven't been pushed yet.
+
 ### Artifact Commits
 
 Every skill that produces project artifacts (files in `<projects-path>/<slug>/`) commits them to git if the projects directory is inside a git repo. These are separate from target repo commits — project artifacts live outside the target repo.

@@ -260,7 +260,7 @@ Fix any syntax errors before finishing.
 
 1. Verify the working tree is clean (`git status`). If there are uncommitted changes, **STOP** and ask the user how to proceed.
 2. Fetch the latest from origin: `git fetch origin`
-3. Create and check out a new branch: `git checkout -b <branch-prefix>$ARGUMENTS origin/<default-branch>` (branch prefix and default branch from Pipeline Configuration → Repository Details)
+3. Create and check out a new branch: `git checkout -b <branch-prefix>$ARGUMENTS <default-branch>` (branch prefix and default branch from Pipeline Configuration → Repository Details)
 
 If the branch `<branch-prefix>$ARGUMENTS` already exists, **STOP** and ask the user whether to overwrite it or use a different name. Do not delete existing branches without explicit approval.
 
