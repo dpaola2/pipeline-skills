@@ -2,7 +2,7 @@
 name: implementation
 description: "Run pipeline Stage 5 (Implementation) for a project milestone. Writes code to make Stage 4's failing tests pass."
 disable-model-invocation: true
-argument-hint: "<project-slug> <milestone>"
+argument-hint: "<callsign> <milestone>"
 allowed-tools:
   - Read
   - Glob
@@ -11,6 +11,9 @@ allowed-tools:
   - Write
   - Edit
   - Task
+  - mcp__wcp__wcp_get_artifact
+  - mcp__wcp__wcp_attach
+  - mcp__wcp__wcp_comment
 ---
 
 # Stage 5: Implementation
@@ -21,27 +24,27 @@ You are a **code builder**. You write the minimum viable code to make Stage 4's 
 
 ## Argument Parsing
 
-`$ARGUMENTS` contains two space-separated values: `<project-slug> <milestone>`
+`$ARGUMENTS` contains two space-separated values: `<callsign> <milestone>`
 
 Parse them:
-- **PROJECT_SLUG**: The first token (e.g., `deficient-line-items-report`)
+- **CALLSIGN**: The first token — a WCP callsign (e.g., `SN-3`)
 - **MILESTONE**: The second token, case-insensitive (e.g., `M1`, `m1`)
 
 If the second argument is missing, **STOP** and tell the user:
 
-> "Usage: `/implementation <project-slug> <milestone>` (e.g., `/implementation deficient-line-items-report M1`)"
+> "Usage: `/implementation <callsign> <milestone>` (e.g., `/implementation SN-3 M1`)"
 
 ## Inputs & Outputs
 
-- **Input 1:** `<projects-path>/PROJECT_SLUG/gameplan.md` (MUST be approved) — milestone goals, acceptance criteria, platform tasks
-- **Input 2:** `<projects-path>/PROJECT_SLUG/architecture-proposal.md` — data model, service design, controller design, view architecture
-- **Input 3:** `<projects-path>/PROJECT_SLUG/test-coverage-matrix.md` — maps acceptance criteria to test file locations
-- **Input 4:** `<projects-path>/PROJECT_SLUG/discovery-report.md` — existing codebase context
-- **Input 5:** `<projects-path>/PROJECT_SLUG/prd.md` — requirement details and edge cases
+- **Input 1:** `wcp_get_artifact(CALLSIGN, "gameplan.md")` (MUST be approved) — milestone goals, acceptance criteria, platform tasks
+- **Input 2:** `wcp_get_artifact(CALLSIGN, "architecture-proposal.md")` — data model, service design, controller design, view architecture
+- **Input 3:** `wcp_get_artifact(CALLSIGN, "test-coverage-matrix.md")` — maps acceptance criteria to test file locations
+- **Input 4:** `wcp_get_artifact(CALLSIGN, "discovery-report.md")` — existing codebase context
+- **Input 5:** `wcp_get_artifact(CALLSIGN, "prd.md")` — requirement details and edge cases
 - **Input 6:** Test files in the repo's test directory (from Pipeline Configuration → Directory Structure) — the failing tests you must make pass
 - **Output 1:** Implementation code in the repo, committed to the project branch
-- **Output 2:** `<projects-path>/PROJECT_SLUG/progress.md` — updated with milestone completion data (in the agent-pipeline repo)
-- **Output (conditional):** `<projects-path>/PROJECT_SLUG/decisions/ADR-*.md` — written when implementation decisions deviate from or extend the architecture
+- **Output 2:** `wcp_attach(CALLSIGN, ...)` → `progress.md` — updated with milestone completion data
+- **Output (conditional):** `wcp_attach(CALLSIGN, ...)` → `ADR-*.md` — written when implementation decisions deviate from or extend the architecture
 
 ## Pre-Flight Checks (MANDATORY)
 
@@ -49,7 +52,7 @@ Run ALL of these checks before writing any code. If any check fails, **STOP** an
 
 ### Check 1: Gameplan Approved
 
-Read `<projects-path>/PROJECT_SLUG/gameplan.md` and find the **Approval Checklist** section near the bottom.
+Read `wcp_get_artifact(CALLSIGN, "gameplan.md")` and find the **Approval Checklist** section near the bottom.
 
 - If **Status** is "Approved" or "Approved with Modifications" or "Accepted" → proceed.
 - If **Status** is "Pending" or "Rejected" or the checklist is missing → **STOP**:
@@ -64,15 +67,15 @@ Read the gameplan and verify that the requested MILESTONE exists in the mileston
 
 ### Check 3: Project Branch Exists
 
-Verify the project branch `<branch-prefix>PROJECT_SLUG` exists. This branch was created by Stage 4 and contains the failing tests.
+Verify the project branch `<branch-prefix>CALLSIGN` exists. This branch was created by Stage 4 and contains the failing tests.
 
 ```bash
-git branch --list '<branch-prefix>PROJECT_SLUG'
+git branch --list '<branch-prefix>CALLSIGN'
 ```
 
 If the branch does not exist, **STOP**:
 
-> "The project branch `<branch-prefix>PROJECT_SLUG` does not exist. Stage 4 (Test Generation) must run first to create this branch with the failing tests. Run `/test-generation PROJECT_SLUG` first."
+> "The project branch `<branch-prefix>CALLSIGN` does not exist. Stage 4 (Test Generation) must run first to create this branch with the failing tests. Run `/test-generation CALLSIGN` first."
 
 ### Check 4: Clean Working Tree
 
@@ -104,14 +107,14 @@ If prior milestone tests FAIL, they haven't been implemented yet. **STOP**:
 
 ### Check 6: Read Progress File
 
-Read `<projects-path>/PROJECT_SLUG/progress.md` if it exists. This file tracks milestone completion across invocations.
+Read `wcp_get_artifact(CALLSIGN, "progress.md")`. This artifact tracks milestone completion across invocations.
 
 - Parse the **Milestone Status** table to see which milestones are already complete.
 - If the requested MILESTONE is already marked **Complete**, warn the user:
 
 > "Milestone MILESTONE was already completed (commit `COMMIT_SHA` on DATE). Re-implementing will overwrite prior work on the same branch. Continue? If yes, run the command again with `--force`."
 
-- If the file doesn't exist yet, that's fine — you'll create it in Step 12 after committing.
+- If the artifact doesn't exist yet (no content returned), that's fine — you'll create it in Step 13 after committing.
 
 ## Before You Start
 
@@ -124,17 +127,17 @@ date +"%Y-%m-%dT%H:%M:%S%z"
 After passing all pre-flight checks, read these files:
 
 1. Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full.
-2. From the `## Pipeline Configuration` section, extract: **Work Directory** (projects path, inbox path), **Repository Details** (default branch, test command, branch prefix, etc.), **Framework & Stack**, **Directory Structure**, **Implementation Order**, and all other pipeline config sub-sections. This is **critical** for conventions on the framework's models, controllers, services, views, routes, migrations, and JavaScript.
-3. The gameplan at `<projects-path>/PROJECT_SLUG/gameplan.md` — find the **MILESTONE section** specifically. Read the goals, acceptance criteria, and platform tasks.
-4. The architecture proposal at `<projects-path>/PROJECT_SLUG/architecture-proposal.md` — read the sections relevant to this milestone (data model, service design, controller design, view architecture).
-5. The test-coverage-matrix at `<projects-path>/PROJECT_SLUG/test-coverage-matrix.md` — identify which test files and describe/context blocks cover this milestone.
+2. From the `## Pipeline Configuration` section, extract: **Repository Details** (default branch, test command, branch prefix, etc.), **Framework & Stack**, **Directory Structure**, **Implementation Order**, and all other pipeline config sub-sections. This is **critical** for conventions on the framework's models, controllers, services, views, routes, migrations, and JavaScript.
+3. The gameplan via `wcp_get_artifact(CALLSIGN, "gameplan.md")` — find the **MILESTONE section** specifically. Read the goals, acceptance criteria, and platform tasks.
+4. The architecture proposal via `wcp_get_artifact(CALLSIGN, "architecture-proposal.md")` — read the sections relevant to this milestone (data model, service design, controller design, view architecture).
+5. The test-coverage-matrix via `wcp_get_artifact(CALLSIGN, "test-coverage-matrix.md")` — identify which test files and describe/context blocks cover this milestone.
 
 ## Step-by-Step Procedure
 
 ### 1. Check Out the Project Branch
 
 1. Fetch latest: `git fetch origin`
-2. Check out the project branch: `git checkout <branch-prefix>PROJECT_SLUG`
+2. Check out the project branch: `git checkout <branch-prefix>CALLSIGN`
 
 This is the branch Stage 4 created. It already contains the failing tests. All milestone implementations are committed to this same branch.
 
@@ -295,7 +298,7 @@ Commit all new and modified files on the project branch:
 
 - Bullet point summary of key changes
 
-Pipeline: PROJECT_SLUG | Stage: implementation | Milestone: MILESTONE
+Pipeline: CALLSIGN | Stage: implementation | Milestone: MILESTONE
 ```
 
 Example (for a Rails project where Pipeline Configuration platform label is "Rails"):
@@ -307,7 +310,7 @@ Example (for a Rails project where Pipeline Configuration platform label is "Rai
 - Adds ReportSetting model with defaults, .for() class method, accessors
 - Implements Analytics::DeficientLineItems with full query interface
 
-Pipeline: deficient-line-items-report | Stage: implementation | Milestone: M1
+Pipeline: SN-3 | Stage: implementation | Milestone: M1
 ```
 
 3. Do NOT push unless the user asks you to.
@@ -383,7 +386,7 @@ The conventions file is the one found during setup (e.g., `CLAUDE.md`, `AGENTS.m
 
 **Step B: Pipeline-scoped insights → progress.md Notes section**
 
-Some insights are about the pipeline process itself — not about this codebase. Capture these in the milestone's Notes section in `progress.md` (Step 12). They'll be reviewed and may be added to pipeline docs or memory.
+Some insights are about the pipeline process itself — not about this codebase. Capture these in the milestone's Notes section in `progress.md` (Step 13). They'll be reviewed and may be added to pipeline docs or memory.
 
 **What qualifies as pipeline-scoped:**
 - Stage 4 test antipatterns discovered (e.g., "cumulative matchers fail in suite runs")
@@ -399,25 +402,31 @@ If you have no new insights for this milestone, skip this step and note "No new 
 
 If you made a technical decision during this milestone that deviates from or fills a gap in the architecture proposal — e.g., chose an approach the spec didn't specify, or changed an approach because implementation revealed a problem — write an ADR.
 
-- Check `<projects-path>/PROJECT_SLUG/decisions/` for existing ADRs to continue the numbering sequence (e.g., if ADR-003 exists, the next is ADR-004)
+- Check existing ADR artifacts by reading the work item's artifact list to continue the numbering sequence (e.g., if ADR-003 exists, the next is ADR-004)
 - Use the ADR Template below as the format
 - Set `Stage: 5` in the metadata
+- Write each ADR as a WCP artifact:
+  ```
+  wcp_attach(
+    id=CALLSIGN,
+    type="adr",
+    title="ADR-NNN: [Title]",
+    filename="ADR-NNN-title.md",
+    content="[ADR content]"
+  )
+  ```
 - If no decisions during this milestone warrant an ADR, skip this step
 
 ### 13. Update Progress File
 
 After committing, capture the completion timestamp via Bash: `date +"%Y-%m-%dT%H:%M:%S%z"` — save as COMPLETED_AT.
 
-Update the progress file in the **projects directory** (from Pipeline Configuration → Work Directory — NOT the repo itself).
-
-**File:** `<projects-path>/PROJECT_SLUG/progress.md`
-
-If the file doesn't exist yet, create it with the full structure (including frontmatter). If it already exists, update the **Milestone Status** table, add/replace the milestone entry section, and update the frontmatter.
+Read the existing progress artifact: `wcp_get_artifact(CALLSIGN, "progress.md")` — it may not exist yet if this is the first milestone.
 
 **Frontmatter:** The progress file has YAML frontmatter with per-milestone timing. Each milestone invocation adds its own `pipeline_mN_started_at` / `pipeline_mN_completed_at` pair.
 
-- If creating the file for the first time, include the frontmatter block.
-- If the file already exists, read the existing frontmatter and add the new milestone timing fields (do not overwrite existing milestone fields). Use the Edit tool to update the frontmatter.
+- If creating the file for the first time, include the full structure with frontmatter.
+- If the artifact already exists, update the **Milestone Status** table, add/replace the milestone entry section, and update the frontmatter fields.
 
 The milestone key in frontmatter uses lowercase (e.g., `pipeline_m1_started_at`, `pipeline_m2_completed_at`).
 
@@ -432,13 +441,25 @@ pipeline_quality_m1_files_analyzed: 6
 
 Use the actual milestone number (e.g., `m2` for M2). Values come from Step 10. If any value is `—`, write it as a quoted string: `"—"`.
 
+Write the complete progress content as a WCP artifact:
+
+```
+wcp_attach(
+  id=CALLSIGN,
+  type="progress",
+  title="Implementation Progress",
+  filename="progress.md",
+  content="[full progress content]"
+)
+```
+
 The progress file has this structure:
 
 ```markdown
 ---
 pipeline_stage: 5
 pipeline_stage_name: implementation
-pipeline_project: "PROJECT_SLUG"
+pipeline_project: "CALLSIGN"
 pipeline_m1_started_at: "<STARTED_AT>"
 pipeline_m1_completed_at: "<COMPLETED_AT>"
 pipeline_quality_m1_flog_avg: 8.2
@@ -447,11 +468,11 @@ pipeline_quality_m1_flog_max_method: "ClassName#method_name"
 pipeline_quality_m1_files_analyzed: 6
 ---
 
-# Implementation Progress — PROJECT_SLUG
+# Implementation Progress — CALLSIGN
 
 | Field | Value |
 |-------|-------|
-| **Branch** | `<branch-prefix>PROJECT_SLUG` |
+| **Branch** | `<branch-prefix>CALLSIGN` |
 | **Repo** | [current repo path] |
 | **Milestones** | M0–M_LAST_ |
 
@@ -508,23 +529,18 @@ Any implementation notes, gotchas, or lessons learned
 - Include the actual commit SHA from the commit you just made
 - List ALL acceptance criteria from the gameplan with checked/unchecked status
 - Record any spec gaps or implementation notes
-- Do NOT commit this file to the repo — it lives in the projects directory (from Pipeline Configuration → Work Directory), not the repo itself
 
-### 14. Commit Pipeline Artifacts
+### 14. Post Completion Comment
 
-Commit the progress file and any ADRs to version control in the projects directory:
+Add a comment to the work item summarizing what was done:
 
-1. Check if the projects directory is inside a git repository:
-   ```bash
-   cd <projects-path> && git rev-parse --git-dir 2>/dev/null
-   ```
-   If this command fails (not a git repo), skip this step silently.
-
-2. Stage and commit:
-   ```bash
-   cd <projects-path> && git add PROJECT_SLUG/progress.md PROJECT_SLUG/decisions/ && git commit -m "pipeline: MILESTONE progress for PROJECT_SLUG"
-   ```
-   If nothing to commit (no changes detected), skip silently.
+```
+wcp_comment(
+  id=CALLSIGN,
+  author="pipeline/implementation",
+  body="Stage 5/MILESTONE complete — [brief summary of what was implemented]. Commit: `SHORT_SHA` on branch `<branch-prefix>CALLSIGN`"
+)
+```
 
 ## When the Spec Has Gaps
 
@@ -578,7 +594,7 @@ Only files in directories listed in Pipeline Configuration → Directory Structu
 
 Tell the user:
 
-1. **Branch:** `<branch-prefix>PROJECT_SLUG`
+1. **Branch:** `<branch-prefix>CALLSIGN`
 2. **Files created/modified:** List every file with a brief description
 3. **Test results:**
    - This milestone's tests: X passing, Y failing
@@ -590,12 +606,12 @@ Tell the user:
 5. **Spec gaps discovered:** Any issues found in the architecture or gameplan
 6. **Conventions file updates:** List any insights added to the target repo's conventions file (e.g., `AGENTS.md`, `CLAUDE.md`), or "None" if no new insights
 7. **ADRs generated:** List any ADRs written during this milestone (with titles), or "None"
-8. **Progress file:** Confirm that `<projects-path>/PROJECT_SLUG/progress.md` was updated with the milestone entry
-9. **Next step:** "The next milestone is M_NEXT_. Run `/implementation PROJECT_SLUG M_NEXT_` when ready."
+8. **Progress file:** Confirm that progress.md artifact on `CALLSIGN` was updated with the milestone entry
+9. **Next step:** "The next milestone is M_NEXT_. Run `/implementation CALLSIGN M_NEXT_` when ready."
 
 If this was the **last milestone**, instead say:
 
-> "All milestones are implemented. The project branch `<branch-prefix>PROJECT_SLUG` is ready for review. Next step: push the branch and create a PR against the default branch."
+> "All milestones are implemented. The project branch `<branch-prefix>CALLSIGN` is ready for review. Next step: push the branch and create a PR against the default branch."
 
 ## ADR Template
 
@@ -604,7 +620,7 @@ If this was the **last milestone**, instead say:
 
 **Date:** [YYYY-MM-DD]
 **Status:** Accepted
-**Project:** [project-slug]
+**Project:** [callsign]
 **Stage:** [2 or 5]
 
 ## Context

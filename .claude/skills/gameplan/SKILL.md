@@ -2,11 +2,13 @@
 name: gameplan
 description: "Run pipeline Stage 3 (Gameplan) for a project. Produces the engineering spec from PRD + Discovery Report + APPROVED Architecture."
 disable-model-invocation: true
-argument-hint: "<project-slug>"
+argument-hint: "<callsign>"
 allowed-tools:
   - Read
-  - Write
-  - Edit
+  - Bash
+  - mcp__wcp__wcp_get_artifact
+  - mcp__wcp__wcp_attach
+  - mcp__wcp__wcp_comment
 ---
 
 # Stage 3: Gameplan
@@ -17,19 +19,19 @@ You are a **project planner**. You synthesize the PRD, Discovery Report, and APP
 
 ## Inputs & Outputs
 
-- **Input 1:** `<projects-path>/$ARGUMENTS/prd.md`
-- **Input 2:** `<projects-path>/$ARGUMENTS/discovery-report.md`
-- **Input 3:** `<projects-path>/$ARGUMENTS/architecture-proposal.md` (MUST be approved)
-- **Output:** `<projects-path>/$ARGUMENTS/gameplan.md`
+- **Input 1:** `wcp_get_artifact($ARGUMENTS, "prd.md")`
+- **Input 2:** `wcp_get_artifact($ARGUMENTS, "discovery-report.md")`
+- **Input 3:** `wcp_get_artifact($ARGUMENTS, "architecture-proposal.md")` (MUST be approved)
+- **Output:** `wcp_attach($ARGUMENTS, ...)` → `gameplan.md`
 
 ## Pre-Flight Check (MANDATORY)
 
-Before doing anything else, read `<projects-path>/$ARGUMENTS/architecture-proposal.md` and scroll to the **Approval Checklist** section at the bottom.
+Before doing anything else, read the architecture proposal via `wcp_get_artifact($ARGUMENTS, "architecture-proposal.md")` and scroll to the **Approval Checklist** section at the bottom.
 
 - If **Status** is "Approved" or "Approved with Modifications" → proceed.
 - If **Status** is "Pending" or "Rejected" or the checklist is missing → **STOP** and tell the user:
 
-> "The architecture proposal has not been approved yet. Please review and approve it before running Stage 3. To approve: edit `<projects-path>/$ARGUMENTS/architecture-proposal.md`, find the Approval Checklist at the bottom, and set Status to 'Approved'."
+> "The architecture proposal has not been approved yet. Please review and approve it before running Stage 3. To approve: read the architecture proposal from `$ARGUMENTS`, find the Approval Checklist at the bottom, and set Status to 'Approved'."
 
 This gate is non-negotiable.
 
@@ -44,30 +46,10 @@ date +"%Y-%m-%dT%H:%M:%S%z"
 After passing the pre-flight check, read these files:
 
 1. Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full.
-2. From the `## Pipeline Configuration` section, extract: **Work Directory** (projects path, inbox path), **Repository Details** (default branch, test command, branch prefix, etc.), **Platforms**, **Framework & Stack**, and all other pipeline config sub-sections. Understand which optional concerns apply (multi-tenant, feature flags, exports, backwards compat).
-3. The PRD at `<projects-path>/$ARGUMENTS/prd.md`
-4. The Discovery Report at `<projects-path>/$ARGUMENTS/discovery-report.md`
-5. The APPROVED Architecture Proposal at `<projects-path>/$ARGUMENTS/architecture-proposal.md`
-
-### Commit Pending Pipeline Changes
-
-Before starting work, commit any uncommitted changes in the projects directory (e.g., human approval edits made between stages):
-
-1. Check if the projects directory is inside a git repository:
-   ```bash
-   cd <projects-path> && git rev-parse --git-dir 2>/dev/null
-   ```
-   If this command fails (not a git repo), skip this step silently.
-
-2. Check for uncommitted changes in the project subdirectory:
-   ```bash
-   cd <projects-path> && git status --porcelain $ARGUMENTS/
-   ```
-
-3. If there are changes, stage and commit them:
-   ```bash
-   cd <projects-path> && git add $ARGUMENTS/ && git commit -m "pipeline: approve artifacts for $ARGUMENTS"
-   ```
+2. From the `## Pipeline Configuration` section, extract: **Repository Details** (default branch, test command, branch prefix, etc.), **Platforms**, **Framework & Stack**, and all other pipeline config sub-sections. Understand which optional concerns apply (multi-tenant, feature flags, exports, backwards compat).
+3. The PRD via `wcp_get_artifact($ARGUMENTS, "prd.md")`
+4. The Discovery Report via `wcp_get_artifact($ARGUMENTS, "discovery-report.md")`
+5. The APPROVED Architecture Proposal via `wcp_get_artifact($ARGUMENTS, "architecture-proposal.md")`
 
 ## Step-by-Step Procedure
 
@@ -134,11 +116,22 @@ Complete every section of the non-functional checklist in the template:
 
 ### 7. Backfill Architecture Approval Timestamp
 
-If `<projects-path>/$ARGUMENTS/architecture-proposal.md` has YAML frontmatter with an empty `pipeline_approved_at` field, fill it now:
+If the architecture proposal has YAML frontmatter with an empty `pipeline_approved_at` field, fill it now:
 
-1. Look for the approval date in the architecture proposal's Approval Checklist section (the `### Date:` field). Parse it into ISO 8601 format.
-2. If no date is found in the checklist, use the current timestamp: `date +"%Y-%m-%dT%H:%M:%S%z"`.
-3. Use the Edit tool to update the `pipeline_approved_at:` line in the frontmatter with the resolved timestamp (quoted).
+1. Read the architecture proposal: `wcp_get_artifact($ARGUMENTS, "architecture-proposal.md")`
+2. Parse the frontmatter to find the empty `pipeline_approved_at:` field.
+3. Look for the approval date in the Approval Checklist section (the `### Date:` field). Parse it into ISO 8601 format. If no date is found, use the current timestamp: `date +"%Y-%m-%dT%H:%M:%S%z"`.
+4. Modify the content string to fill in the `pipeline_approved_at:` field with the resolved timestamp (quoted).
+5. Reattach the updated architecture proposal:
+   ```
+   wcp_attach(
+     id=$ARGUMENTS,
+     type="architecture",
+     title="Architecture Proposal",
+     filename="architecture-proposal.md",
+     content="[modified content]"
+   )
+   ```
 
 ### 8. Write the Engineering Gameplan
 
@@ -157,10 +150,30 @@ pipeline_approved_at:
 ---
 ```
 
-Write the gameplan (with frontmatter) to `<projects-path>/$ARGUMENTS/gameplan.md` using the Output Template section below.
+Build the full gameplan content (with frontmatter) using the Output Template section below, then attach it:
+
+```
+wcp_attach(
+  id=$ARGUMENTS,
+  type="gameplan",
+  title="Gameplan",
+  filename="gameplan.md",
+  content="[full gameplan with frontmatter]"
+)
+```
+
+Then log completion:
+
+```
+wcp_comment(
+  id=$ARGUMENTS,
+  author="pipeline/gameplan",
+  body="Stage 3 complete — Gameplan attached as gameplan.md"
+)
+```
 
 Update the header to reference the approved architecture:
-- Set "Approved Architecture" to the path of the architecture proposal
+- Set "Approved Architecture" to the architecture proposal artifact
 
 **Important:** Include the Approval Checklist section from the template (with Status: Pending). This is the gate Stage 4 checks before generating tests. The `pipeline_approved_at` field is left empty — Stage 4 will fill it when it reads the approval date.
 
@@ -222,22 +235,6 @@ No two milestones should both claim to **create** the same file. A file created 
 
 If all 7 checks pass, the gameplan is ready for human review. If any check fails, fix the gameplan and re-run that check before proceeding.
 
-### 10. Commit Pipeline Artifacts
-
-Commit the gameplan (and any architecture-proposal frontmatter updates) to version control in the projects directory:
-
-1. Check if the projects directory is inside a git repository:
-   ```bash
-   cd <projects-path> && git rev-parse --git-dir 2>/dev/null
-   ```
-   If this command fails (not a git repo), skip this step silently.
-
-2. Stage and commit:
-   ```bash
-   cd <projects-path> && git add $ARGUMENTS/gameplan.md $ARGUMENTS/architecture-proposal.md && git commit -m "pipeline: gameplan for $ARGUMENTS"
-   ```
-   If nothing to commit (no changes detected), skip silently.
-
 ## What NOT To Do
 
 - **Do not modify the architecture.** It has been approved. Flag issues as open questions.
@@ -253,7 +250,7 @@ Tell the user:
 1. The engineering gameplan has been written
 2. Summarize the milestone breakdown (number of milestones, names, estimated scope)
 3. List any open questions or risks that need human input
-4. **Remind them:** "This gameplan must be reviewed and approved before Stage 4 (Test Generation) can run. To approve: edit `<projects-path>/$ARGUMENTS/gameplan.md`, find the Approval Checklist near the bottom, and set Status to 'Approved'. Then run `/test-generation $ARGUMENTS`."
+4. **Remind them:** "This gameplan must be reviewed and approved before Stage 4 (Test Generation) can run. To approve: read the gameplan from `$ARGUMENTS`, find the Approval Checklist near the bottom, and set Status to 'Approved'. Then run `/test-generation $ARGUMENTS`."
 
 ## Output Template
 
@@ -261,7 +258,7 @@ Tell the user:
 ---
 pipeline_stage: 3
 pipeline_stage_name: gameplan
-pipeline_project: "[slug]"
+pipeline_project: "[callsign]"
 pipeline_started_at: "[ISO 8601 timestamp]"
 pipeline_completed_at: "[ISO 8601 timestamp]"
 pipeline_approved_at: "[ISO 8601 timestamp — filled by Stage 4]"

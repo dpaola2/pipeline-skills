@@ -2,28 +2,30 @@
 name: backfill-timing
 description: "Retrofit YAML frontmatter with pipeline timing metadata onto existing project documents that were created before timing was implemented."
 disable-model-invocation: true
-argument-hint: "<project-slug>"
+argument-hint: "<callsign>"
 allowed-tools:
   - Read
   - Glob
   - Grep
   - Bash
-  - Edit
+  - mcp__wcp__wcp_get_artifact
+  - mcp__wcp__wcp_attach
+  - mcp__wcp__wcp_comment
 ---
 
 # Backfill Timing
 
-You **retrofit YAML frontmatter** with pipeline timing metadata onto existing project documents. This is for projects that completed stages before the timing system was added.
+You **retrofit YAML frontmatter** with pipeline timing metadata onto existing project artifacts on a WCP work item. This is for projects that completed stages before the timing system was added.
 
 ## Inputs
 
-- `<projects-path>/$ARGUMENTS/` — the project directory containing pipeline documents
+- All artifacts on WCP work item `$ARGUMENTS`
 - The current repository — for git commit timestamps
 
 ## Before You Start
 
-1. Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full. From the `## Pipeline Configuration` section, extract the **projects path** (from Work Directory → Projects).
-2. Verify `<projects-path>/$ARGUMENTS/` exists and contains pipeline documents.
+1. Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full.
+2. Verify the work item exists by attempting to read artifacts (e.g., `wcp_get_artifact($ARGUMENTS, "prd.md")`).
 
 ## Document-to-Stage Mapping
 
@@ -41,12 +43,17 @@ You **retrofit YAML frontmatter** with pipeline timing metadata onto existing pr
 
 ### 1. Inventory Documents
 
-List all `.md` files in `<projects-path>/$ARGUMENTS/`. For each file in the mapping table above, check:
+Read each known artifact by filename via `wcp_get_artifact($ARGUMENTS, filename)`:
 
-- Does the file exist?
-- Does it already have YAML frontmatter (starts with `---` on line 1)?
+- `prd.md`
+- `discovery-report.md`
+- `architecture-proposal.md`
+- `gameplan.md`
+- `test-coverage-matrix.md`
+- `progress.md`
+- `qa-plan.md`
 
-If a file already has frontmatter with `pipeline_stage` set, **skip it** — it was created with live timing.
+For each that returns content, check if it already has YAML frontmatter with `pipeline_stage` set. If so, **skip it** — it was created with live timing.
 
 ### 2. Determine Timestamps per Document
 
@@ -64,29 +71,47 @@ This gives the commit's author date in ISO 8601 format. Use this as `pipeline_mN
 
 #### Source B: Document Header Dates (day-level precision)
 
-Most documents have a header like `> **Date:** February 5, 2026`. Parse this date and format as `YYYY-MM-DDT00:00:00-0600` (use local timezone offset from `date +%z`).
+Most documents have a header like `> **Date:** February 5, 2026`. Parse the header from the artifact content and format as `YYYY-MM-DDT00:00:00-0600` (use local timezone offset from `date +%z`).
 
 Use this as `pipeline_completed_at`.
 
 #### Source C: Approval Checklist Dates
 
-For `architecture-proposal.md` and `gameplan.md`, read the Approval Checklist section. The `### Date:` field contains the approval date. Parse and format as ISO 8601.
+For `architecture-proposal.md` and `gameplan.md`, parse the Approval Checklist section from the artifact content. The `### Date:` field contains the approval date. Parse and format as ISO 8601.
 
 Use this as `pipeline_approved_at`.
 
-#### Source D: File Modification Timestamps (last resort)
-
-If no other source is available:
-
-```bash
-stat -f '%Sm' -t '%Y-%m-%dT%H:%M:%S' "<projects-path>/$ARGUMENTS/<filename>" && date +%z
-```
-
-Combine the two outputs (timestamp + timezone offset) for the `pipeline_completed_at`.
+> **Note:** WCP artifacts don't have filesystem timestamps. If no other source is available (git commits, document header dates, or approval checklist dates), omit the timestamp.
 
 ### 3. Write Frontmatter
 
-For each document, prepend a YAML frontmatter block. Use the Edit tool to insert at the top of the file.
+For each document that needs backfilling:
+
+1. The content was already read in Step 1
+2. Prepend the YAML frontmatter block to the content
+3. Reattach the modified content using the type mapping below:
+
+```
+wcp_attach(
+  id=$ARGUMENTS,
+  type="<type>",
+  title="<title>",
+  filename="<filename>",
+  content="<modified content with frontmatter>"
+)
+```
+
+**Type mapping:**
+
+| Filename | type | title |
+|----------|------|-------|
+| `prd.md` | `prd` | `PRD: [title from content]` |
+| `discovery-report.md` | `discovery` | `Discovery Report` |
+| `architecture-proposal.md` | `architecture` | `Architecture Proposal` |
+| `gameplan.md` | `gameplan` | `Gameplan` |
+| `test-coverage-matrix.md` | `test-matrix` | `Test Coverage Matrix` |
+| `progress.md` | `progress` | `Implementation Progress` |
+| `qa-plan.md` | `qa-plan` | `QA Plan` |
 
 **Standard documents** (prd.md, discovery-report.md, test-coverage-matrix.md, qa-plan.md):
 
@@ -140,7 +165,6 @@ Use these descriptions for the `pipeline_backfill_source` field:
 | Git commit | `"git commit <short-sha>"` |
 | Document header date | `"document header date"` |
 | Approval checklist date | `"approval checklist date"` |
-| File modification time | `"file modification timestamp"` |
 
 If multiple sources were used for different fields, use the primary source.
 
@@ -152,6 +176,16 @@ If multiple sources were used for different fields, use the primary source.
 - **Do not set `pipeline_started_at` on backfilled documents.** Start times are unrecoverable.
 
 ## When You're Done
+
+Post a completion comment:
+
+```
+wcp_comment(
+  id=$ARGUMENTS,
+  author="pipeline/backfill-timing",
+  body="Timing frontmatter backfilled for [N] artifacts"
+)
+```
 
 Tell the user:
 1. Which documents were backfilled (and which were skipped)

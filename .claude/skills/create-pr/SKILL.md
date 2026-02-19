@@ -2,14 +2,17 @@
 name: create-pr
 description: "Push the implementation branch and create a PR against the default branch with a generated summary from project artifacts."
 disable-model-invocation: true
-argument-hint: "<project-slug>"
+argument-hint: "<callsign>"
 allowed-tools:
   - Read
   - Glob
   - Grep
   - Bash
   - Edit
-  - Write
+  - mcp__wcp__wcp_get_artifact
+  - mcp__wcp__wcp_attach
+  - mcp__wcp__wcp_comment
+  - mcp__wcp__wcp_update
 ---
 
 # Create PR
@@ -20,20 +23,20 @@ This skill runs post-flight checks (if configured in the conventions file), read
 
 ## Inputs
 
-- `<projects-path>/$ARGUMENTS/progress.md` — milestone table, commit SHAs, test counts, files summary
-- `<projects-path>/$ARGUMENTS/qa-plan.md` — manual test scenario count, known limitations
-- `<projects-path>/$ARGUMENTS/gameplan.md` — project overview, milestone descriptions
-- `<projects-path>/$ARGUMENTS/prd.md` — project name and level (from header)
+- `wcp_get_artifact($ARGUMENTS, "progress.md")` — milestone table, commit SHAs, test counts, files summary
+- `wcp_get_artifact($ARGUMENTS, "qa-plan.md")` — manual test scenario count, known limitations
+- `wcp_get_artifact($ARGUMENTS, "gameplan.md")` — project overview, milestone descriptions
+- `wcp_get_artifact($ARGUMENTS, "prd.md")` — project name and level (from header)
 
 ## Pre-Flight Checks (MANDATORY)
 
 Run ALL of these checks before doing anything else. If any check fails, **STOP** and report the issue to the user.
 
-First, locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full. From the `## Pipeline Configuration` section, extract: **Work Directory** (projects path), **Repository Details** (default branch, branch prefix, test command), **Post-Flight Checks** (if present), and **Complexity Analysis** (if present).
+First, locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full. From the `## Pipeline Configuration` section, extract: **Repository Details** (default branch, branch prefix, test command), **Post-Flight Checks** (if present), and **Complexity Analysis** (if present).
 
 ### Check 1: All Milestones Complete
 
-Read `<projects-path>/$ARGUMENTS/progress.md` and check the **Milestone Status** table.
+Read `wcp_get_artifact($ARGUMENTS, "progress.md")` and check the **Milestone Status** table.
 
 - If ALL milestones are marked **Complete** → proceed.
 - If ANY milestone is still **Pending** or **In Progress** → **STOP**:
@@ -42,10 +45,10 @@ Read `<projects-path>/$ARGUMENTS/progress.md` and check the **Milestone Status**
 
 ### Check 2: QA Plan Exists
 
-Verify `<projects-path>/$ARGUMENTS/qa-plan.md` exists.
+Check whether `wcp_get_artifact($ARGUMENTS, "qa-plan.md")` returns content.
 
-- If it exists → proceed.
-- If missing → **STOP**:
+- If it returns content → proceed.
+- If it returns no content or errors → **STOP**:
 
 > "No QA plan found. Run `/qa-plan $ARGUMENTS` first."
 
@@ -139,22 +142,22 @@ Build a post-flight summary to include in the PR body later:
 
 ### 2. Read Project Artifacts
 
-Read these files and extract the data needed for the PR summary:
+Read these artifacts from WCP and extract the data needed for the PR summary:
 
-1. **`<projects-path>/$ARGUMENTS/progress.md`** — extract:
+1. **`wcp_get_artifact($ARGUMENTS, "progress.md")`** — extract:
    - Milestone status table (milestone names, descriptions, commit SHAs)
    - "Project Complete" section (total commits, test count, files created/modified)
 
-2. **`<projects-path>/$ARGUMENTS/qa-plan.md`** — extract:
+2. **`wcp_get_artifact($ARGUMENTS, "qa-plan.md")`** — extract:
    - Count of manual test scenarios (QA-NNN entries in Section 4)
    - Key feature areas covered (section headings under Section 4)
    - Known limitations count and list (Section 6)
 
-3. **`<projects-path>/$ARGUMENTS/gameplan.md`** — extract:
+3. **`wcp_get_artifact($ARGUMENTS, "gameplan.md")`** — extract:
    - Project overview (first paragraph under "Project Overview" or "Overview")
    - This becomes the PR summary description
 
-4. **`<projects-path>/$ARGUMENTS/prd.md`** — extract:
+4. **`wcp_get_artifact($ARGUMENTS, "prd.md")`** — extract:
    - Feature name from the document title
    - Project level from the header table
 
@@ -301,7 +304,7 @@ Assemble the PR body using this structure:
 
 **[N]** manual test scenarios covering [list key feature areas from qa-plan.md Section 4 headings].
 
-Full QA plan: `<projects-path>/[slug]/qa-plan.md`
+Full QA plan: `$ARGUMENTS`/qa-plan.md artifact
 
 ### Known Limitations
 
@@ -337,18 +340,19 @@ Use a HEREDOC for the body to preserve formatting.
 
 ### 8. Update Progress File with PR Timing
 
-After the PR is created, capture the timestamp and PR URL, then update `<projects-path>/$ARGUMENTS/progress.md` frontmatter:
+After the PR is created, capture the timestamp and PR URL, then update the progress artifact:
 
 1. Capture the timestamp: `date +"%Y-%m-%dT%H:%M:%S%z"` — save as PR_CREATED_AT.
 2. Extract the PR URL from the `gh pr create` output.
-3. If progress.md has YAML frontmatter (between `---` markers), use the Edit tool to add these fields before the closing `---`:
+3. Read the current progress artifact: `wcp_get_artifact($ARGUMENTS, "progress.md")`.
+4. Parse existing YAML frontmatter (between `---` markers). Add these fields:
 
 ```yaml
 pipeline_pr_created_at: "<PR_CREATED_AT>"
 pipeline_pr_url: "<PR_URL>"
 ```
 
-4. If `HAS_QUALITY_DATA` is true, also add project-level quality summary fields to the frontmatter:
+5. If `HAS_QUALITY_DATA` is true, also add project-level quality summary fields to the frontmatter:
 
 ```yaml
 pipeline_quality_flog_avg: [project_flog_avg]
@@ -358,13 +362,31 @@ pipeline_quality_verdict: "[verdict]"
 pipeline_quality_files_analyzed: [files_analyzed]
 ```
 
-If progress.md has no frontmatter, prepend one with the stage 5 fields plus the PR fields (and quality fields if applicable).
+If the progress content has no frontmatter, prepend one with the stage 5 fields plus the PR fields (and quality fields if applicable).
+
+6. Reattach the modified content:
+
+```
+wcp_attach(
+  id=$ARGUMENTS,
+  type="progress",
+  title="Implementation Progress",
+  filename="progress.md",
+  content="[modified content with updated frontmatter]"
+)
+```
 
 ### 9. Generate Metrics Report
 
 After updating the PR timing, generate the project metrics report. This provides an immediate timing summary for every completed project.
 
-1. Read all `.md` files in `<projects-path>/$ARGUMENTS/` and extract YAML frontmatter from each (lines between `---` markers). Parse `pipeline_started_at`, `pipeline_completed_at`, `pipeline_approved_at`, `pipeline_m*_started_at`, `pipeline_m*_completed_at`, `pipeline_pr_created_at`, `pipeline_pr_url`, and `pipeline_backfilled` fields.
+1. Read all project artifacts from WCP and extract YAML frontmatter from each. Use:
+   - `wcp_get_artifact($ARGUMENTS, "progress.md")`
+   - `wcp_get_artifact($ARGUMENTS, "gameplan.md")`
+   - `wcp_get_artifact($ARGUMENTS, "prd.md")`
+   - `wcp_get_artifact($ARGUMENTS, "qa-plan.md")`
+
+   Parse `pipeline_started_at`, `pipeline_completed_at`, `pipeline_approved_at`, `pipeline_m*_started_at`, `pipeline_m*_completed_at`, `pipeline_pr_created_at`, `pipeline_pr_url`, and `pipeline_backfilled` fields.
 
 2. Enrich with git data — get PR merge status:
 
@@ -380,7 +402,19 @@ gh pr list --head '<branch-prefix>$ARGUMENTS' --state all --json mergedAt,create
    - **PR review time**: PR `createdAt` → PR `mergedAt` (if merged)
    - **Total lead time**: earliest `started_at` (or `completed_at`) → PR merge (or latest timestamp)
 
-4. Write the report to `<projects-path>/$ARGUMENTS/metrics.md` with:
+4. Write the metrics report as a WCP artifact:
+
+```
+wcp_attach(
+  id=$ARGUMENTS,
+  type="metrics",
+  title="Pipeline Metrics",
+  filename="metrics.md",
+  content="[metrics report]"
+)
+```
+
+The report should contain:
    - Stage timeline table (stage, document, started, completed, duration, wait)
    - Implementation breakdown table (per-milestone completed_at, delta from prior, commit SHA)
    - Summary table (total lead time, active agent time, human review time, PR review time)
@@ -388,73 +422,19 @@ gh pr list --head '<branch-prefix>$ARGUMENTS' --state all --json mergedAt,create
 
 Format durations as: `Xm` (under 1h), `Xh Ym` (1-24h), `Xd Yh` (over 24h). Use `—` for unavailable data.
 
-### 10. Update Aggregate Metrics
+### 10. Mark Work Item Done
 
-After the per-project metrics report, update the product-level aggregate metrics file. This step is **non-blocking** — if it fails (e.g., can't parse a progress file), log a warning and continue. Never block PR creation on aggregate metrics.
+Update the WCP work item status and leave a completion comment:
 
-1. Use the projects path from Pipeline Configuration (`<projects-path>`).
-
-2. Scan all subdirectories in `<projects-path>/` for `progress.md` files.
-
-3. For each project directory with a `progress.md`, check if the project is completed:
-   - **Has frontmatter:** Look for `pipeline_pr_url` or `pipeline_pr_created_at` fields → completed.
-   - **No frontmatter:** Check the Milestone Status table — if all milestones are "Complete" and a PR URL or commit SHA can be found in the file, include with available data.
-
-4. For each completed project, extract:
-   - Project name (from directory name)
-   - Level (from `prd.md` header if available)
-   - Milestone count (from Milestone Status table)
-   - Per-milestone timing (from `pipeline_m*_started_at` / `pipeline_m*_completed_at` frontmatter)
-   - Implementation window (first milestone start → last milestone complete)
-   - PR created date, PR merged date (from frontmatter + GitHub API)
-   - Stage 4 first commit date (from `metrics.md` or git log)
-   - Data quality flag (backfilled vs live timing)
-
-5. Compute aggregate stats:
-   - Total projects completed
-   - Total milestones implemented
-   - Median milestone delta (across all projects with per-milestone timing)
-   - Fastest milestone (project + milestone ID + time)
-   - Slowest milestone same-day (excluding overnight gaps)
-   - Fastest project (tests → last commit)
-   - Largest project (tests → last commit, most milestones)
-   - PR review times (for merged PRs)
-
-6. Also collect in-progress projects (directories with `progress.md` but no `pipeline_pr_url`, or with `prd.md` but no `progress.md`).
-
-7. Write the aggregate report to `<projects-path>/metrics.md` with these sections:
-   - **Completed Projects** table (project, level, PRD date, first commit, last commit, PR created, PR merged, Stage 4→PR time)
-   - **Implementation Speed** table (project, milestones, test gen → last commit, commits) with per-project milestone delta sub-tables
-   - **PR Review Time** table
-   - **Pipeline Throughput** summary stats
-   - **Agent Speed Highlights** (median delta, fastest/slowest milestone, combined times)
-   - **In-Progress Projects** table
-   - **Data Quality Notes** section noting which projects have live vs backfilled vs no timing data
-
-8. Add YAML frontmatter to the aggregate metrics file:
-
-```yaml
----
-pipeline_generated_at: "<current-date>"
-pipeline_product: "<product-name>"
----
 ```
+wcp_update(id=$ARGUMENTS, status="done")
 
-### 11. Commit Pipeline Artifacts
-
-Commit the updated progress file, project metrics, and aggregate metrics to version control in the projects directory:
-
-1. Check if the projects directory is inside a git repository:
-   ```bash
-   cd <projects-path> && git rev-parse --git-dir 2>/dev/null
-   ```
-   If this command fails (not a git repo), skip this step silently.
-
-2. Stage and commit:
-   ```bash
-   cd <projects-path> && git add $ARGUMENTS/progress.md $ARGUMENTS/metrics.md metrics.md && git commit -m "pipeline: create-pr metrics for $ARGUMENTS"
-   ```
-   If nothing to commit (no changes detected), skip silently.
+wcp_comment(
+  id=$ARGUMENTS,
+  author="pipeline/create-pr",
+  body="Pipeline complete — PR created at [PR_URL]. Work item marked as done."
+)
+```
 
 ## What NOT To Do
 
@@ -470,4 +450,4 @@ Commit the updated progress file, project metrics, and aggregate metrics to vers
 Tell the user:
 1. The PR URL
 2. Summary stats: milestones, test count, files changed
-3. **Remind them:** "Share the QA plan (`<projects-path>/$ARGUMENTS/qa-plan.md`) with the tester when QA begins."
+3. **Remind them:** "Share the QA plan (`$ARGUMENTS`/qa-plan.md artifact) with the tester when QA begins."

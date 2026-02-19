@@ -13,17 +13,6 @@ Comments in `<!-- -->` are guidance — remove them from your final version.
 
 <!-- REQUIRED sections below. Every target repo needs all of these. -->
 
-### Work Directory
-
-<!-- Where project artifacts (PRDs, gameplans, progress files) live.
-     These paths are relative to the target repo root.
-     The projects dir and inbox dir must exist before running any skill. -->
-
-| Setting | Path |
-|---------|------|
-| **Projects** | `../pipeline-projects/` |
-| **Inbox** | `../pipeline-projects/inbox/` |
-
 ### Project Tracker
 
 <!-- Which issue tracker to use for linking pipeline projects to tickets.
@@ -51,7 +40,7 @@ If using GitHub Issues:
 
 <!-- Core git and testing configuration.
      - Test command: whatever runs your full test suite
-     - Branch prefix: pipeline branches are named <prefix><project-slug>
+     - Branch prefix: pipeline branches are named <prefix><callsign>
      - PR base branch: where /create-pr targets (usually same as default branch) -->
 
 | Setting | Value |

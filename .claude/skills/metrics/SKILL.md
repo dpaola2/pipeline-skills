@@ -2,34 +2,46 @@
 name: metrics
 description: "Compute and display pipeline timing metrics for a project by reading YAML frontmatter from all project documents."
 disable-model-invocation: true
-argument-hint: "<project-slug>"
+argument-hint: "<callsign>"
 allowed-tools:
   - Read
   - Glob
   - Grep
   - Bash
-  - Write
+  - mcp__wcp__wcp_get_artifact
+  - mcp__wcp__wcp_attach
+  - mcp__wcp__wcp_comment
 ---
 
 # Metrics
 
-You **compute pipeline timing metrics** for a project by reading the YAML frontmatter from all project documents, enriching with git/PR data, and producing a metrics report.
+You **compute pipeline timing metrics** for a project by reading the YAML frontmatter from all project artifacts on a WCP work item, enriching with git/PR data, and producing a metrics report.
 
 ## Inputs
 
-- `<projects-path>/$ARGUMENTS/` — the project directory containing pipeline documents with frontmatter
+- All artifacts on WCP work item `$ARGUMENTS`
 - The current repository — for git and PR data
 
 ## Before You Start
 
-1. Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full. From the `## Pipeline Configuration` section, extract the **projects path** (from Work Directory → Projects) and **Repository Details** (default branch, branch prefix, etc.).
-2. Verify `<projects-path>/$ARGUMENTS/` exists.
+1. Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full. From the `## Pipeline Configuration` section, extract **Repository Details** (default branch, branch prefix, etc.).
+2. Verify the work item exists: `wcp_get($ARGUMENTS)` or attempt to read any artifact.
 
 ## Step-by-Step Procedure
 
 ### 1. Read All Frontmatter
 
-Read each document in `<projects-path>/$ARGUMENTS/` and extract the YAML frontmatter (lines between the opening and closing `---` markers).
+Read each of these artifacts via `wcp_get_artifact($ARGUMENTS, filename)`:
+- `prd.md`
+- `discovery-report.md`
+- `architecture-proposal.md`
+- `gameplan.md`
+- `test-coverage-matrix.md`
+- `progress.md`
+- `review-report.md`
+- `qa-plan.md`
+
+For each that returns content, extract the YAML frontmatter (lines between the opening and closing `---` markers). Skip any that don't exist.
 
 Parse these fields from each document:
 - `pipeline_stage`
@@ -85,7 +97,19 @@ Format all durations in human-readable form:
 
 ### 5. Write Metrics Report
 
-Write to `<projects-path>/$ARGUMENTS/metrics.md`:
+Attach the metrics report to the work item:
+
+```
+wcp_attach(
+  id=$ARGUMENTS,
+  type="metrics",
+  title="Pipeline Metrics",
+  filename="metrics.md",
+  content="[metrics report]"
+)
+```
+
+Use this template for the report content:
 
 ```markdown
 # Pipeline Metrics — $ARGUMENTS
@@ -148,31 +172,27 @@ Use `—` for fields where data is unavailable.
 - If only `completed_at` exists, still show it in the timeline for ordering
 - Note data quality issues in the "Data Quality Notes" section
 
-### 7. Commit Pipeline Artifacts
+### 7. Post Summary Comment
 
-Commit the metrics report to version control in the projects directory:
+Add a comment to the work item summarizing the metrics:
 
-1. Check if the projects directory is inside a git repository:
-   ```bash
-   cd <projects-path> && git rev-parse --git-dir 2>/dev/null
-   ```
-   If this command fails (not a git repo), skip this step silently.
-
-2. Stage and commit:
-   ```bash
-   cd <projects-path> && git add $ARGUMENTS/metrics.md && git commit -m "pipeline: metrics for $ARGUMENTS"
-   ```
-   If nothing to commit (no changes detected), skip silently.
+```
+wcp_comment(
+  id=$ARGUMENTS,
+  author="pipeline/metrics",
+  body="Metrics report attached as metrics.md — [brief summary of key metrics]"
+)
+```
 
 ## What NOT To Do
 
-- **Do not modify any project documents.** Only write `metrics.md`.
+- **Do not modify any project artifacts.** Only produce `metrics.md`.
 - **Do not fabricate timestamps.** Use `—` for missing data.
 - **Do not run pipeline stages.** This is a read-only analysis tool.
 
 ## When You're Done
 
 Tell the user:
-1. The metrics report has been written to `<projects-path>/$ARGUMENTS/metrics.md`
+1. The metrics report has been attached to `$ARGUMENTS` as `metrics.md`
 2. Summarize key metrics: total lead time, active agent time, agent efficiency
 3. Note any data quality limitations (backfilled vs live data)

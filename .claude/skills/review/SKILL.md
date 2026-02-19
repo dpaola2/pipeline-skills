@@ -2,14 +2,15 @@
 name: review
 description: "Run pipeline Stage 6 (Code Review) for a project. Reviews the full branch diff against conventions, security requirements, spec, and code quality. Produces a review-report.md with categorized findings and a verdict."
 disable-model-invocation: true
-argument-hint: "<project-slug>"
+argument-hint: "<callsign>"
 allowed-tools:
   - Bash
   - Read
-  - Write
-  - Edit
   - Glob
   - Grep
+  - mcp__wcp__wcp_get_artifact
+  - mcp__wcp__wcp_attach
+  - mcp__wcp__wcp_comment
 ---
 
 # Stage 6: Code Review
@@ -23,18 +24,24 @@ You are a **code reviewer**. You examine the full branch diff for a completed pr
 ## Inputs & Outputs
 
 - **Input 1:** Conventions file (`CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` in repo root) — framework, directory structure, test command, security config, convention standard
-- **Input 2:** `<projects-path>/$ARGUMENTS/architecture-proposal.md` — approved design
-- **Input 3:** `<projects-path>/$ARGUMENTS/gameplan.md` — acceptance criteria, milestone breakdown
-- **Input 4:** `<projects-path>/$ARGUMENTS/progress.md` — milestone completion data, spec gaps, notes
-- **Input 5:** `<projects-path>/$ARGUMENTS/test-coverage-matrix.md` — what should be tested
+- **Input 2:** `wcp_get_artifact($ARGUMENTS, "architecture-proposal.md")` — approved design
+- **Input 3:** `wcp_get_artifact($ARGUMENTS, "gameplan.md")` — acceptance criteria, milestone breakdown
+- **Input 4:** `wcp_get_artifact($ARGUMENTS, "progress.md")` — milestone completion data, spec gaps, notes
+- **Input 5:** `wcp_get_artifact($ARGUMENTS, "test-coverage-matrix.md")` — what should be tested
 - **Input 6:** Branch diff files — the actual code to review
-- **Output:** `<projects-path>/$ARGUMENTS/review-report.md`
+- **Output:** `wcp_attach($ARGUMENTS, ...)` → `review-report.md`
 
 ## Pre-Flight Check (MANDATORY)
 
 ### 1. All milestones complete
 
-Read `<projects-path>/$ARGUMENTS/progress.md` and check the **Milestone Status** table.
+Fetch the progress artifact:
+
+```
+wcp_get_artifact($ARGUMENTS, "progress.md")
+```
+
+Check the **Milestone Status** table.
 
 - If ALL milestones are marked **Complete** → proceed.
 - If ANY milestone is still **Pending** or **In Progress** → **STOP**:
@@ -46,7 +53,7 @@ Read `<projects-path>/$ARGUMENTS/progress.md` and check the **Milestone Status**
 Check that the project branch exists in the repo:
 
 ```bash
-git branch --list '<branch-prefix><slug>'
+git branch --list '<branch-prefix>$ARGUMENTS'
 ```
 
 If the branch doesn't exist, **STOP**:
@@ -71,13 +78,13 @@ If there are uncommitted changes on the project branch, **STOP**:
 date +"%Y-%m-%dT%H:%M:%S%z"
 ```
 
-After passing all pre-flight checks, read ALL of these files:
+After passing all pre-flight checks, read ALL of these:
 
-1. Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full. From the `## Pipeline Configuration` section, extract: **Work Directory** (projects path), **Repository Details** (default branch, branch prefix, test command), **Framework & Stack**, **Directory Structure**, **Multi-Tenant Security** (if present), **API Conventions** (if present), and **Platforms**.
-2. The architecture proposal at `<projects-path>/$ARGUMENTS/architecture-proposal.md` — the approved design
-3. The gameplan at `<projects-path>/$ARGUMENTS/gameplan.md` — acceptance criteria, milestone breakdown
-4. The progress file at `<projects-path>/$ARGUMENTS/progress.md` — spec gaps, implementation notes, test results
-5. The test-coverage-matrix at `<projects-path>/$ARGUMENTS/test-coverage-matrix.md` — what should be tested
+1. Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full. From the `## Pipeline Configuration` section, extract: **Repository Details** (default branch, branch prefix, test command), **Framework & Stack**, **Directory Structure**, **Multi-Tenant Security** (if present), **API Conventions** (if present), and **Platforms**.
+2. The architecture proposal: `wcp_get_artifact($ARGUMENTS, "architecture-proposal.md")` — the approved design
+3. The gameplan: `wcp_get_artifact($ARGUMENTS, "gameplan.md")` — acceptance criteria, milestone breakdown
+4. The progress file: `wcp_get_artifact($ARGUMENTS, "progress.md")` — spec gaps, implementation notes, test results
+5. The test-coverage-matrix: `wcp_get_artifact($ARGUMENTS, "test-coverage-matrix.md")` — what should be tested
 
 ## Step-by-Step Procedure
 
@@ -86,13 +93,13 @@ After passing all pre-flight checks, read ALL of these files:
 Get the list of changed files:
 
 ```bash
-git diff --name-only origin/<base-branch>...<branch-prefix><slug>
+git diff --name-only origin/<base-branch>...<branch-prefix>$ARGUMENTS
 ```
 
 Get the commit count:
 
 ```bash
-git log --oneline origin/<base-branch>...<branch-prefix><slug> | wc -l
+git log --oneline origin/<base-branch>...<branch-prefix>$ARGUMENTS | wc -l
 ```
 
 Categorize the changed files into groups based on Pipeline Configuration → Directory Structure. Map each file to its purpose category (Models, Controllers, Services, Views, Migrations, Frontend JS, Routes, Tests, Other) using the paths from that section.
@@ -197,11 +204,21 @@ Number findings within each severity: B1, B2... for Blockers; MJ1, MJ2... for Ma
 - **APPROVED:** Zero Blocker findings AND zero Major findings
 - **CHANGES REQUESTED:** Any Blocker or Major findings exist
 
-### Step 11: Write review-report.md
+### Step 11: Attach review-report.md
 
 Capture the completion timestamp via Bash: `date +"%Y-%m-%dT%H:%M:%S%z"` — save as COMPLETED_AT.
 
-Write the review report to `<projects-path>/$ARGUMENTS/review-report.md` using the Output Template section below.
+Attach the review report to the work item:
+
+```
+wcp_attach(
+  id=$ARGUMENTS,
+  type="review",
+  title="Code Review Report",
+  filename="review-report.md",
+  content="[full report with frontmatter]"
+)
+```
 
 Prepend YAML frontmatter:
 
@@ -236,26 +253,20 @@ Before finalizing, verify:
 - [ ] The dimension summary table accurately reflects the findings
 - [ ] DORA frontmatter is present and complete
 
-### Step 13: Commit Pipeline Artifacts
+### Step 13: Post completion comment
 
-Commit the review report to version control in the projects directory:
-
-1. Check if the projects directory is inside a git repository:
-   ```bash
-   cd <projects-path> && git rev-parse --git-dir 2>/dev/null
-   ```
-   If this command fails (not a git repo), skip this step silently.
-
-2. Stage and commit:
-   ```bash
-   cd <projects-path> && git add $ARGUMENTS/review-report.md && git commit -m "pipeline: review-report for $ARGUMENTS"
-   ```
-   If nothing to commit (no changes detected), skip silently.
+```
+wcp_comment(
+  id=$ARGUMENTS,
+  author="pipeline/review",
+  body="Stage 6 complete — Review report attached as review-report.md. Verdict: [APPROVED/CHANGES REQUESTED]"
+)
+```
 
 ## What NOT To Do
 
 - **Do not fix any code.** This is a report-only stage. You produce findings; the human decides what to fix.
-- **Do not modify any files in the target repo.** You only produce `review-report.md` in the projects directory.
+- **Do not modify any files in the target repo.** You only produce `review-report.md` attached to the work item.
 - **Do not modify test files.** Stage 4 owns test files. If you find test issues, report them as findings.
 - **Do not auto-fix and re-review in a loop.** V1 is single-pass report only. The spec describes a review loop — that's for future automation.
 - **Do not skip dimensions.** Check all 6 (even if dimension 4 is a no-op for V1). Record "Skipped" or "N/A" for inapplicable dimensions rather than omitting them.
@@ -267,12 +278,12 @@ Commit the review report to version control in the projects directory:
 Tell the user:
 
 **If APPROVED:**
-1. The review report has been written to `<projects-path>/$ARGUMENTS/review-report.md`
+1. The review report has been attached to `$ARGUMENTS` as `review-report.md`
 2. Summarize: files reviewed, findings count by severity, verdict
 3. "The code review passed. Next step: `/qa-plan $ARGUMENTS`"
 
 **If CHANGES REQUESTED:**
-1. The review report has been written to `<projects-path>/$ARGUMENTS/review-report.md`
+1. The review report has been attached to `$ARGUMENTS` as `review-report.md`
 2. Summarize: files reviewed, findings count by severity, verdict
 3. List the Blocker and Major findings with their suggestions
 4. "Fix the Blocker/Major findings and re-run `/review $ARGUMENTS`"
@@ -294,7 +305,7 @@ Tell the user:
 ---
 pipeline_stage: 6
 pipeline_stage_name: review
-pipeline_project: "[slug]"
+pipeline_project: "[callsign]"
 pipeline_started_at: "[ISO 8601 timestamp]"
 pipeline_completed_at: "[ISO 8601 timestamp]"
 pipeline_review_verdict: "[approved | changes_requested]"
@@ -308,10 +319,10 @@ pipeline_review_notes: "[count]"
 
 > **Generated by:** Pipeline Stage 6 (Review)
 > **Date:** [Date]
-> **Branch:** `<branch-prefix>[slug]`
+> **Branch:** `<branch-prefix>$ARGUMENTS`
 > **Base:** `[base-branch]`
-> **Architecture:** `<projects-path>/[slug]/architecture-proposal.md`
-> **Gameplan:** `<projects-path>/[slug]/gameplan.md`
+> **Architecture:** `$ARGUMENTS` artifact `architecture-proposal.md`
+> **Gameplan:** `$ARGUMENTS` artifact `gameplan.md`
 
 ---
 
@@ -398,7 +409,7 @@ A dimension **Fails** if it has any Blocker or Major findings. **Pass** means Mi
 
 | Field | Value |
 |-------|-------|
-| **Branch** | `<branch-prefix>[slug]` |
+| **Branch** | `<branch-prefix>$ARGUMENTS` |
 | **Base** | `[base-branch]` |
 | **Files reviewed** | [count] |
 | **Commits reviewed** | [count] |

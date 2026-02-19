@@ -2,13 +2,14 @@
 name: qa-plan
 description: "Run pipeline Stage 7 (QA Plan) for a project. Generates a comprehensive QA plan from all project artifacts after implementation is complete."
 disable-model-invocation: true
-argument-hint: "<project-slug>"
+argument-hint: "<callsign>"
 allowed-tools:
   - Read
-  - Write
-  - Edit
   - Glob
   - Grep
+  - mcp__wcp__wcp_get_artifact
+  - mcp__wcp__wcp_attach
+  - mcp__wcp__wcp_comment
 ---
 
 # Stage 7: QA Plan
@@ -19,16 +20,16 @@ You are a **QA planner**. You read all project artifacts — PRD, gameplan, test
 
 ## Inputs & Outputs
 
-- **Input 1:** `<projects-path>/$ARGUMENTS/prd.md` — original requirements, edge cases
-- **Input 2:** `<projects-path>/$ARGUMENTS/gameplan.md` — acceptance criteria, milestone breakdown, testing plan
-- **Input 3:** `<projects-path>/$ARGUMENTS/architecture-proposal.md` — data model, security considerations
-- **Input 4:** `<projects-path>/$ARGUMENTS/test-coverage-matrix.md` — automated vs manual testing needs
-- **Input 5:** `<projects-path>/$ARGUMENTS/progress.md` — spec gaps from each milestone, test results, implementation notes
-- **Output:** `<projects-path>/$ARGUMENTS/qa-plan.md`
+- **Input 1:** `wcp_get_artifact($ARGUMENTS, "prd.md")` — original requirements, edge cases
+- **Input 2:** `wcp_get_artifact($ARGUMENTS, "gameplan.md")` — acceptance criteria, milestone breakdown, testing plan
+- **Input 3:** `wcp_get_artifact($ARGUMENTS, "architecture-proposal.md")` — data model, security considerations
+- **Input 4:** `wcp_get_artifact($ARGUMENTS, "test-coverage-matrix.md")` — automated vs manual testing needs
+- **Input 5:** `wcp_get_artifact($ARGUMENTS, "progress.md")` — spec gaps from each milestone, test results, implementation notes
+- **Output:** `wcp_attach($ARGUMENTS, ...)` → `qa-plan.md`
 
 ## Pre-Flight Check (MANDATORY)
 
-Read `<projects-path>/$ARGUMENTS/progress.md` and check the **Milestone Status** table.
+Read `wcp_get_artifact($ARGUMENTS, "progress.md")` and check the **Milestone Status** table.
 
 - If ALL milestones are marked **Complete** → proceed.
 - If ANY milestone is still **Pending** or **In Progress** → **STOP**:
@@ -45,12 +46,12 @@ date +"%Y-%m-%dT%H:%M:%S%z"
 
 After passing the pre-flight check, read ALL of these files:
 
-1. Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full. From the `## Pipeline Configuration` section, extract: **Work Directory** (projects path), **Repository Details** (default branch, branch prefix), **Framework & Stack**, and **Platforms**.
-2. The PRD at `<projects-path>/$ARGUMENTS/prd.md` — requirements, edge cases, user scenarios
-3. The gameplan at `<projects-path>/$ARGUMENTS/gameplan.md` — acceptance criteria, testing plan, non-functional requirements
-4. The architecture proposal at `<projects-path>/$ARGUMENTS/architecture-proposal.md` — data model, security scoping, performance considerations
-5. The test-coverage-matrix at `<projects-path>/$ARGUMENTS/test-coverage-matrix.md` — **especially** the "Criteria Not Directly Testable" section
-6. The progress file at `<projects-path>/$ARGUMENTS/progress.md` — **especially** the "Spec Gaps" and "Notes" sections from each milestone
+1. Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full. From the `## Pipeline Configuration` section, extract: **Repository Details** (default branch, branch prefix), **Framework & Stack**, and **Platforms**.
+2. The PRD via `wcp_get_artifact($ARGUMENTS, "prd.md")` — requirements, edge cases, user scenarios
+3. The gameplan via `wcp_get_artifact($ARGUMENTS, "gameplan.md")` — acceptance criteria, testing plan, non-functional requirements
+4. The architecture proposal via `wcp_get_artifact($ARGUMENTS, "architecture-proposal.md")` — data model, security scoping, performance considerations
+5. The test-coverage-matrix via `wcp_get_artifact($ARGUMENTS, "test-coverage-matrix.md")` — **especially** the "Criteria Not Directly Testable" section
+6. The progress file via `wcp_get_artifact($ARGUMENTS, "progress.md")` — **especially** the "Spec Gaps" and "Notes" sections from each milestone
 
 ## Step-by-Step Procedure
 
@@ -117,7 +118,17 @@ pipeline_completed_at: "<COMPLETED_AT>"
 ---
 ```
 
-Write the QA plan (with frontmatter) to `<projects-path>/$ARGUMENTS/qa-plan.md` using the Output Template section below.
+Write the QA plan using the Output Template section below. Attach it via:
+
+```
+wcp_attach(
+  id=$ARGUMENTS,
+  type="qa-plan",
+  title="QA Plan",
+  filename="qa-plan.md",
+  content="[full QA plan with frontmatter]"
+)
+```
 
 For the **Manual Testing Checklist** section, organize tests by feature area (matching the gameplan's milestones). For each test:
 - Write a clear scenario description
@@ -137,26 +148,20 @@ Before finalizing, verify:
 - [ ] A tester could follow the plan without asking any clarifying questions
 - [ ] The rollback plan is actionable
 
-### 8. Commit Pipeline Artifacts
+### 8. Post Completion Comment
 
-Commit the QA plan to version control in the projects directory:
-
-1. Check if the projects directory is inside a git repository:
-   ```bash
-   cd <projects-path> && git rev-parse --git-dir 2>/dev/null
-   ```
-   If this command fails (not a git repo), skip this step silently.
-
-2. Stage and commit:
-   ```bash
-   cd <projects-path> && git add $ARGUMENTS/qa-plan.md && git commit -m "pipeline: qa-plan for $ARGUMENTS"
-   ```
-   If nothing to commit (no changes detected), skip silently.
+```
+wcp_comment(
+  id=$ARGUMENTS,
+  author="pipeline/qa-plan",
+  body="Stage 7 complete — QA plan attached as qa-plan.md with [N] manual test scenarios"
+)
+```
 
 ## What NOT To Do
 
 - **Do not run tests or write code.** This is a document-generation stage.
-- **Do not modify any files in the repo.** You only produce `qa-plan.md` in the projects directory.
+- **Do not modify any files in the repo.** You only produce `qa-plan.md` via WCP.
 - **Do not duplicate automated test coverage.** Focus exclusively on what needs manual verification.
 - **Do not include vague test instructions.** Not "verify the report works" — be specific about what to check.
 - **Do not skip the pre-flight check.** All milestones must be complete before generating the QA plan.
@@ -164,7 +169,7 @@ Commit the QA plan to version control in the projects directory:
 ## When You're Done
 
 Tell the user:
-1. The QA plan has been written to `<projects-path>/$ARGUMENTS/qa-plan.md`
+1. The QA plan has been attached to `$ARGUMENTS` as `qa-plan.md`
 2. Summarize: how many manual test scenarios, key focus areas, known limitations count
 3. Mention whether test data setup instructions are included or manual setup is needed
 4. **Remind them:** "The QA plan is ready for handoff. Next steps: run `/create-pr $ARGUMENTS` to push the branch and create a PR against the default branch (from Pipeline Configuration), then share this QA plan with the tester."
@@ -175,7 +180,7 @@ Tell the user:
 ---
 pipeline_stage: 7
 pipeline_stage_name: qa-plan
-pipeline_project: "[slug]"
+pipeline_project: "[callsign]"
 pipeline_started_at: "[ISO 8601 timestamp]"
 pipeline_completed_at: "[ISO 8601 timestamp]"
 ---
@@ -184,10 +189,10 @@ pipeline_completed_at: "[ISO 8601 timestamp]"
 
 > **Generated by:** Pipeline Stage 7 (QA Plan)
 > **Date:** [Date]
-> **Branch:** `<branch-prefix>[slug]`
+> **Branch:** `<branch-prefix>[callsign]`
 > **PR:** [Link or TBD]
-> **Gameplan:** `<projects-path>/[slug]/gameplan.md`
-> **Progress:** `<projects-path>/[slug]/progress.md`
+> **Gameplan:** `[callsign]/gameplan.md`
+> **Progress:** `[callsign]/progress.md`
 
 ---
 
@@ -232,7 +237,7 @@ pipeline_completed_at: "[ISO 8601 timestamp]"
 ### Test Data Setup
 
 ```bash
-[seed command from Pipeline Configuration → Framework & Stack, e.g., bundle exec rake pipeline:seed_[slug]]
+[seed command from Pipeline Configuration → Framework & Stack, e.g., bundle exec rake pipeline:seed_[callsign]]
 ```
 
 [If no seed task exists: "No seed task was created for this project. Test data must be set up manually — see scenarios below."]

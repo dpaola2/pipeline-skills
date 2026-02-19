@@ -2,7 +2,7 @@
 name: test-generation
 description: "Run pipeline Stage 4 (Test Generation) for a project. Writes failing TDD test suites in the primary repo from the approved gameplan."
 disable-model-invocation: true
-argument-hint: "<project-slug>"
+argument-hint: "<callsign>"
 allowed-tools:
   - Read
   - Glob
@@ -11,6 +11,9 @@ allowed-tools:
   - Write
   - Edit
   - Task
+  - mcp__wcp__wcp_get_artifact
+  - mcp__wcp__wcp_attach
+  - mcp__wcp__wcp_comment
 ---
 
 # Stage 4: Test Generation
@@ -21,21 +24,21 @@ You are a **test writer**. You write comprehensive, failing test suites BEFORE a
 
 ## Inputs & Outputs
 
-- **Input 1:** `<projects-path>/$ARGUMENTS/gameplan.md` (MUST be approved) — milestones and acceptance criteria
-- **Input 2:** `<projects-path>/$ARGUMENTS/architecture-proposal.md` — data model, query patterns, security design
-- **Input 3:** `<projects-path>/$ARGUMENTS/prd.md` — requirement IDs and edge cases (Section 10)
-- **Input 4:** `<projects-path>/$ARGUMENTS/discovery-report.md` — existing codebase context
+- **Input 1:** `wcp_get_artifact($ARGUMENTS, "gameplan.md")` (MUST be approved) — milestones and acceptance criteria
+- **Input 2:** `wcp_get_artifact($ARGUMENTS, "architecture-proposal.md")` — data model, query patterns, security design
+- **Input 3:** `wcp_get_artifact($ARGUMENTS, "prd.md")` — requirement IDs and edge cases (Section 10)
+- **Input 4:** `wcp_get_artifact($ARGUMENTS, "discovery-report.md")` — existing codebase context
 - **Output 1:** Test files in the repo's test directory (from Pipeline Configuration → Directory Structure)
-- **Output 2:** `<projects-path>/$ARGUMENTS/test-coverage-matrix.md` — maps acceptance criteria to test locations
+- **Output 2:** `wcp_attach($ARGUMENTS, ...)` → `test-coverage-matrix.md` — maps acceptance criteria to test locations
 
 ## Pre-Flight Check (MANDATORY)
 
-Before doing anything else, read `<projects-path>/$ARGUMENTS/gameplan.md` and scroll to the **Approval Checklist** section near the bottom.
+Before doing anything else, read the gameplan via `wcp_get_artifact($ARGUMENTS, "gameplan.md")` and scroll to the **Approval Checklist** section near the bottom.
 
 - If **Status** is "Approved" or "Approved with Modifications" → proceed.
 - If **Status** is "Pending" or "Rejected" or the checklist is missing → **STOP** and tell the user:
 
-> "The gameplan has not been approved yet. Please review and approve it before running Stage 4. To approve: edit `<projects-path>/$ARGUMENTS/gameplan.md`, find the Approval Checklist near the bottom, and set Status to 'Approved'."
+> "The gameplan for `$ARGUMENTS` has not been approved yet. Please review and approve it before running Stage 4. Find the Approval Checklist near the bottom of the gameplan and set Status to 'Approved'."
 
 This gate is non-negotiable.
 
@@ -47,39 +50,21 @@ This gate is non-negotiable.
 date +"%Y-%m-%dT%H:%M:%S%z"
 ```
 
-**Then**, backfill the gameplan approval timestamp: if `<projects-path>/$ARGUMENTS/gameplan.md` has YAML frontmatter with an empty `pipeline_approved_at` field, fill it now:
+**Then**, backfill the gameplan approval timestamp: if the gameplan has YAML frontmatter with an empty `pipeline_approved_at` field, fill it now:
 
-1. Look for the approval date in the gameplan's Approval Checklist section (the `### Date:` field). Parse it into ISO 8601 format.
-2. If no date is found in the checklist, use the current timestamp: `date +"%Y-%m-%dT%H:%M:%S%z"`.
-3. Use the Edit tool to update the `pipeline_approved_at:` line in the frontmatter with the resolved timestamp (quoted).
+1. Read the gameplan: `wcp_get_artifact($ARGUMENTS, "gameplan.md")`
+2. Look for the approval date in the gameplan's Approval Checklist section (the `### Date:` field). Parse it into ISO 8601 format.
+3. If no date is found in the checklist, use the current timestamp: `date +"%Y-%m-%dT%H:%M:%S%z"`.
+4. Modify the content string to update the `pipeline_approved_at:` line in the frontmatter with the resolved timestamp (quoted).
+5. Reattach the updated gameplan: `wcp_attach(id=$ARGUMENTS, type="gameplan", title="Gameplan", filename="gameplan.md", content="[modified content]")`
 
 After passing the pre-flight check, read these files:
 
 1. Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full.
-2. From the `## Pipeline Configuration` section, extract: **Work Directory** (projects path, inbox path), **Repository Details** (default branch, test command, branch prefix, etc.), **Framework & Stack**, **Directory Structure**, and all other pipeline config sub-sections. This is **critical** for test conventions, directory structure, factory patterns, and test framework configuration.
-3. The approved gameplan at `<projects-path>/$ARGUMENTS/gameplan.md` — your primary input (milestones, acceptance criteria, platform tasks)
-4. The architecture proposal at `<projects-path>/$ARGUMENTS/architecture-proposal.md` — data model, query patterns, serialization, security scoping
-5. The PRD at `<projects-path>/$ARGUMENTS/prd.md` — edge cases (Section 10), detailed requirement descriptions
-
-### Commit Pending Pipeline Changes
-
-Before starting work, commit any uncommitted changes in the projects directory (e.g., human approval edits made between stages):
-
-1. Check if the projects directory is inside a git repository:
-   ```bash
-   cd <projects-path> && git rev-parse --git-dir 2>/dev/null
-   ```
-   If this command fails (not a git repo), skip this step silently.
-
-2. Check for uncommitted changes in the project subdirectory:
-   ```bash
-   cd <projects-path> && git status --porcelain $ARGUMENTS/
-   ```
-
-3. If there are changes, stage and commit them:
-   ```bash
-   cd <projects-path> && git add $ARGUMENTS/ && git commit -m "pipeline: approve artifacts for $ARGUMENTS"
-   ```
+2. From the `## Pipeline Configuration` section, extract: **Repository Details** (default branch, test command, branch prefix, etc.), **Framework & Stack**, **Directory Structure**, and all other pipeline config sub-sections. This is **critical** for test conventions, directory structure, factory patterns, and test framework configuration.
+3. The approved gameplan: `wcp_get_artifact($ARGUMENTS, "gameplan.md")` — your primary input (milestones, acceptance criteria, platform tasks)
+4. The architecture proposal: `wcp_get_artifact($ARGUMENTS, "architecture-proposal.md")` — data model, query patterns, serialization, security scoping
+5. The PRD: `wcp_get_artifact($ARGUMENTS, "prd.md")` — edge cases (Section 10), detailed requirement descriptions
 
 ## Step-by-Step Procedure
 
@@ -213,7 +198,19 @@ pipeline_completed_at: "<COMPLETED_AT>"
 ---
 ```
 
-Write to `<projects-path>/$ARGUMENTS/test-coverage-matrix.md`:
+Attach to the work item via WCP:
+
+```
+wcp_attach(
+  id=$ARGUMENTS,
+  type="test-matrix",
+  title="Test Coverage Matrix",
+  filename="test-coverage-matrix.md",
+  content="[full matrix content with frontmatter]"
+)
+```
+
+The matrix content should follow this format:
 
 ```markdown
 # Test Coverage Matrix — [Feature Name]
@@ -295,32 +292,26 @@ Commit all new files on the `<branch-prefix>$ARGUMENTS` branch:
 2. Commit with message: `Add Stage 4 test suite for $ARGUMENTS`
 3. Do NOT push unless the user asks you to
 
-### Commit Pipeline Artifacts
+### Log Completion
 
-Commit the test-coverage-matrix (and any gameplan frontmatter updates) to version control in the projects directory:
-
-1. Check if the projects directory is inside a git repository:
-   ```bash
-   cd <projects-path> && git rev-parse --git-dir 2>/dev/null
-   ```
-   If this command fails (not a git repo), skip this step silently.
-
-2. Stage and commit:
-   ```bash
-   cd <projects-path> && git add $ARGUMENTS/test-coverage-matrix.md $ARGUMENTS/gameplan.md && git commit -m "pipeline: test-coverage-matrix for $ARGUMENTS"
-   ```
-   If nothing to commit (no changes detected), skip silently.
+```
+wcp_comment(
+  id=$ARGUMENTS,
+  author="pipeline/test-generation",
+  body="Stage 4 complete — Test suite committed on branch `<branch-prefix>$ARGUMENTS`, coverage matrix attached as test-coverage-matrix.md"
+)
+```
 
 ### Report to User
 
 Tell the user:
 1. The branch name: `<branch-prefix>$ARGUMENTS`
 2. List every file created with a brief description of what it tests
-3. The coverage matrix has been written to `<projects-path>/$ARGUMENTS/test-coverage-matrix.md`
+3. The coverage matrix has been attached to `$ARGUMENTS` as `test-coverage-matrix.md`
 4. How many acceptance criteria are covered and by how many test cases total
 5. Any acceptance criteria that couldn't be fully tested (and why)
 6. Results of the syntax check (syntax check command from Pipeline Configuration)
-7. **Remind them:** "All tests are expected to FAIL — they're written before implementation (TDD). You can verify they parse with `[syntax check command from Pipeline Configuration] [test file path]`. Next step: review the tests, then run `/implementation $ARGUMENTS` to make them pass."
+7. **Remind them:** "All tests are expected to FAIL — they're written before implementation (TDD). You can verify they parse with `[syntax check command from Pipeline Configuration] [test file path]`. Next step: review the tests, then run `/implementation $ARGUMENTS M1` to make them pass."
 
 ## Success Criteria
 

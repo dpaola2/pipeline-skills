@@ -25,7 +25,7 @@ You **set up a repository for the agent pipeline** by detecting its framework, s
 ## Outputs
 
 - A `## Pipeline Configuration` section appended to the repo's conventions file (`CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md`)
-- The projects directory created (e.g., `../pipeline-projects/inbox/`)
+- WCP artifact types ensured for the target namespace (if WCP is available)
 
 ## Step-by-Step Procedure
 
@@ -215,14 +215,6 @@ If the user wants to correct, ask follow-up questions for the specific values.
 
 If Linear: ask for team name. If GitHub Issues: ask for repository name.
 
-**Question 4** (single-select): Work directory location.
-
-> "Where should project artifacts (PRDs, gameplans, progress files) live?"
->
-> Options:
-> - "`../pipeline-projects/`" (Recommended)
-> - "Custom path"
-
 ### Step 8: Ask About Optional Sections
 
 For each optional section the user selected in Question 2, ask the minimum necessary to populate it:
@@ -300,13 +292,6 @@ Build the `## Pipeline Configuration` markdown section. Use the exact table form
 > Pipeline skills read this section to understand how to run the agent pipeline against this repo.
 > Run skills from this repo's root directory (not from the pipeline repo).
 
-### Work Directory
-
-| Setting | Path |
-|---------|------|
-| **Projects** | `[projects-path]` |
-| **Inbox** | `[projects-path]inbox/` |
-
 ### Project Tracker
 
 | Setting | Value |
@@ -383,13 +368,19 @@ Then append any optional sections the user confirmed (Post-Flight Checks, API Co
 [generated content]
 ```
 
-### Step 12: Create Projects Directory
+### Step 12: Ensure WCP Artifact Types
 
-```bash
-mkdir -p <projects-path>inbox
+If the WCP MCP server is available (`mcp__wcp__wcp_schema`), ensure the required pipeline artifact types exist for the namespace that will be used for pipeline runs.
+
+Call `wcp_schema_update` to add any missing artifact types:
+
+```
+wcp_schema_update(namespace, add_artifact_types=["progress", "metrics", "quality"])
 ```
 
-Confirm it was created.
+The default WCP schema already includes `prd`, `discovery`, `architecture`, `adr`, `gameplan`, `plan`, `test-matrix`, `review`, and `qa-plan`. The three above are pipeline-specific extensions.
+
+If the WCP MCP server is not available, skip this step silently.
 
 ### Step 13: Check for Pipeline Skills
 
@@ -415,7 +406,7 @@ Tell the user:
 3. **Next steps:**
    - Review the Pipeline Configuration section and adjust any values
    - Copy pipeline skills if not already present (show command only if needed)
-   - Drop notes in `<inbox-path>` and run `/prd` to start your first project
+   - Create a WCP work item with your brief, then run `/prd <callsign>` to start your first project
 
 ## What NOT To Do
 

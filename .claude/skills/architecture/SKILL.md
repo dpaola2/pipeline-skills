@@ -2,15 +2,16 @@
 name: architecture
 description: "Run pipeline Stage 2 (Architecture) for a project. Designs data model, API endpoints, migrations, and security scoping based on Pipeline Configuration in the conventions file."
 disable-model-invocation: true
-argument-hint: "<project-slug>"
+argument-hint: "<callsign>"
 allowed-tools:
   - Read
   - Glob
   - Grep
   - Bash
-  - Write
-  - Edit
   - Task
+  - mcp__wcp__wcp_get_artifact
+  - mcp__wcp__wcp_attach
+  - mcp__wcp__wcp_comment
 ---
 
 # Stage 2: Architecture
@@ -19,10 +20,10 @@ You are a **technical designer**. You propose the data model, API endpoints, mig
 
 ## Inputs & Outputs
 
-- **Input 1:** `<projects-path>/$ARGUMENTS/prd.md`
-- **Input 2:** `<projects-path>/$ARGUMENTS/discovery-report.md`
-- **Output:** `<projects-path>/$ARGUMENTS/architecture-proposal.md`
-- **Output (conditional):** `<projects-path>/$ARGUMENTS/decisions/ADR-*.md` — one per significant decision with 2+ viable alternatives
+- **Input 1:** `wcp_get_artifact($ARGUMENTS, "prd.md")`
+- **Input 2:** `wcp_get_artifact($ARGUMENTS, "discovery-report.md")`
+- **Output:** `wcp_attach($ARGUMENTS, ...)` → `architecture-proposal.md`
+- **Output (conditional):** `wcp_attach($ARGUMENTS, ...)` → `ADR-*.md` — one per significant decision with 2+ viable alternatives
 
 ## Before You Start
 
@@ -34,9 +35,9 @@ date +"%Y-%m-%dT%H:%M:%S%z"
 
 Then read these files in order:
 
-1. Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full. From the `## Pipeline Configuration` section, extract: **Work Directory** (projects path), **Repository Details** (default branch, test command, branch prefix, etc.), and all other pipeline config sub-sections (Framework & Stack, Directory Structure, API Conventions, Multi-Tenant Security, etc.). **Critical**: pay special attention to database conventions, serialization patterns, API response structure, security scoping patterns, and API versioning.
-2. The PRD at `<projects-path>/$ARGUMENTS/prd.md` — understand what we're building
-3. The Discovery Report at `<projects-path>/$ARGUMENTS/discovery-report.md` — understand what exists today
+1. Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full. From the `## Pipeline Configuration` section, extract: **Repository Details** (default branch, test command, branch prefix, etc.), and all other pipeline config sub-sections (Framework & Stack, Directory Structure, API Conventions, Multi-Tenant Security, etc.). **Critical**: pay special attention to database conventions, serialization patterns, API response structure, security scoping patterns, and API versioning.
+2. The PRD via `wcp_get_artifact($ARGUMENTS, "prd.md")` — understand what we're building
+3. The Discovery Report via `wcp_get_artifact($ARGUMENTS, "discovery-report.md")` — understand what exists today
 
 ## Step-by-Step Procedure
 
@@ -137,7 +138,17 @@ For significant design decisions:
 
 ### 10. Generate ADRs
 
-For each significant decision that had 2+ genuinely viable alternatives, write an ADR file to `<projects-path>/$ARGUMENTS/decisions/ADR-NNN-<kebab-title>.md`.
+For each significant decision that had 2+ genuinely viable alternatives, attach an ADR:
+
+```
+wcp_attach(
+  id=$ARGUMENTS,
+  type="adr",
+  title="ADR-NNN: [Title]",
+  filename="ADR-NNN-title.md",
+  content="[ADR content]"
+)
+```
 
 - Use the ADR Template section below as the format
 - Sequential numbering starting at 001 (e.g., `ADR-001-service-vs-concern.md`)
@@ -149,7 +160,7 @@ For each significant decision that had 2+ genuinely viable alternatives, write a
 
 Capture the completion timestamp via Bash: `date +"%Y-%m-%dT%H:%M:%S%z"` — save as COMPLETED_AT.
 
-Prepend YAML frontmatter to the proposal content before writing:
+Prepend YAML frontmatter to the proposal content before attaching:
 
 ```yaml
 ---
@@ -162,25 +173,29 @@ pipeline_approved_at:
 ---
 ```
 
-Write the proposal (with frontmatter) to `<projects-path>/$ARGUMENTS/architecture-proposal.md` using the Output Template section below.
+Attach the proposal (with frontmatter) using the Output Template section below:
+
+```
+wcp_attach(
+  id=$ARGUMENTS,
+  type="architecture",
+  title="Architecture Proposal",
+  filename="architecture-proposal.md",
+  content="[full proposal with frontmatter]"
+)
+```
+
+Then post a completion comment:
+
+```
+wcp_comment(
+  id=$ARGUMENTS,
+  author="pipeline/architecture",
+  body="Stage 2 complete — Architecture proposal attached as architecture-proposal.md [+ N ADRs]"
+)
+```
 
 **Important:** The template includes an Approval Checklist section at the end. Leave the Status as "Pending" — the human reviewer will update it. The `pipeline_approved_at` field is left empty — Stage 3 will fill it when it reads the approval date.
-
-### 12. Commit Pipeline Artifacts
-
-Commit the architecture proposal and any ADRs to version control in the projects directory:
-
-1. Check if the projects directory is inside a git repository:
-   ```bash
-   cd <projects-path> && git rev-parse --git-dir 2>/dev/null
-   ```
-   If this command fails (not a git repo), skip this step silently.
-
-2. Stage and commit:
-   ```bash
-   cd <projects-path> && git add $ARGUMENTS/architecture-proposal.md $ARGUMENTS/decisions/ && git commit -m "pipeline: architecture-proposal for $ARGUMENTS"
-   ```
-   If nothing to commit (no changes detected), skip silently.
 
 ## Referencing the Codebase
 
@@ -210,7 +225,7 @@ Tell the user:
 2. Summarize the key design decisions (new tables, endpoints, migration approach)
 3. List ADRs generated (with titles), or "None" if no decisions warranted an ADR
 4. List the open questions that need human input
-5. **Remind them:** "This architecture proposal must be reviewed and approved before Stage 3 can run. To approve: edit `<projects-path>/$ARGUMENTS/architecture-proposal.md`, find the Approval Checklist at the bottom, and set Status to 'Approved' (or 'Approved with Modifications'). Then run `/gameplan $ARGUMENTS`."
+5. **Remind them:** "This architecture proposal must be reviewed and approved before Stage 3 can run. To approve: read the architecture proposal from `$ARGUMENTS` (architecture-proposal.md artifact), find the Approval Checklist at the bottom, and set Status to 'Approved' (or 'Approved with Modifications'). Then run `/gameplan $ARGUMENTS`."
 
 ## ADR Template
 
@@ -219,7 +234,7 @@ Tell the user:
 
 **Date:** [YYYY-MM-DD]
 **Status:** Accepted
-**Project:** [project-slug]
+**Project:** [callsign]
 **Stage:** [2 or 5]
 
 ## Context
@@ -248,7 +263,7 @@ Tell the user:
 ---
 pipeline_stage: 2
 pipeline_stage_name: architecture
-pipeline_project: "[slug]"
+pipeline_project: "[callsign]"
 pipeline_started_at: "[ISO 8601 timestamp]"
 pipeline_completed_at: "[ISO 8601 timestamp]"
 pipeline_approved_at: "[ISO 8601 timestamp — filled by Stage 3]"
@@ -488,13 +503,13 @@ Include fields, associations, and custom formatting.]
 
 ## 8. Architecture Decision Records
 
-> ADRs for significant decisions are in the `decisions/` subdirectory. Only decisions with 2+ genuinely viable alternatives are recorded here.
+> ADRs for significant decisions are attached as artifacts. Only decisions with 2+ genuinely viable alternatives are recorded.
 
 <!-- If no ADRs were generated, replace the table below with: "No decisions in this project warranted a standalone ADR." -->
 
 | ADR | Title | Summary |
 |-----|-------|---------|
-| [ADR-001](decisions/ADR-001-title.md) | [Title] | [One-line summary] |
+| ADR-001-title.md | [Title] | [One-line summary] |
 
 ---
 

@@ -2,39 +2,41 @@
 name: quality
 description: "Generate a code quality report for a pipeline project by reading quality frontmatter from progress.md and optionally running fresh analysis."
 disable-model-invocation: true
-argument-hint: "<project-slug>"
+argument-hint: "<callsign>"
 allowed-tools:
   - Read
   - Glob
   - Grep
   - Bash
-  - Write
+  - mcp__wcp__wcp_get_artifact
+  - mcp__wcp__wcp_attach
+  - mcp__wcp__wcp_comment
 ---
 
 # Quality
 
-You **generate a code quality report** for a pipeline project by reading the `pipeline_quality_*` frontmatter from `progress.md`, optionally running fresh analysis against the repo baseline, and writing a quality report.
+You **generate a code quality report** for a pipeline project by reading the `pipeline_quality_*` frontmatter from `progress.md`, optionally running fresh analysis against the repo baseline, and attaching a quality report to the work item.
 
 ## Inputs
 
-- `<projects-path>/$ARGUMENTS/progress.md` — quality frontmatter from Stage 5 implementation milestones
+- `wcp_get_artifact($ARGUMENTS, "progress.md")` — quality frontmatter from Stage 5 implementation milestones
 - The current repository — for running fresh baseline and per-file analysis
 - The conventions file — for Complexity Analysis tool configuration
 
 ## Before You Start
 
-1. Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full. From the `## Pipeline Configuration` section, extract the **projects path** (from Work Directory → Projects), **Repository Details** (default branch, branch prefix, etc.), and look for a **Complexity Analysis** section.
-2. Verify `<projects-path>/$ARGUMENTS/` exists and contains `progress.md`.
+1. Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full. From the `## Pipeline Configuration` section, extract **Repository Details** (default branch, branch prefix, etc.), and look for a **Complexity Analysis** section.
+2. Read progress.md: `wcp_get_artifact($ARGUMENTS, "progress.md")`
 
-If `progress.md` does not exist, **STOP**:
+If progress.md does not exist, **STOP**:
 
-> "No progress file found for `$ARGUMENTS`. Run Stage 5 implementation first."
+> "No progress artifact found for `$ARGUMENTS`. Run Stage 5 implementation first."
 
 ## Step-by-Step Procedure
 
 ### 1. Read Quality Frontmatter
 
-Read `<projects-path>/$ARGUMENTS/progress.md` and extract YAML frontmatter. Parse all `pipeline_quality_*` fields:
+`wcp_get_artifact($ARGUMENTS, "progress.md")` — extract YAML frontmatter. Parse all `pipeline_quality_*` fields:
 
 **Per-milestone fields** (pattern: `pipeline_quality_mN_*`):
 - `pipeline_quality_mN_flog_avg`
@@ -88,7 +90,19 @@ If the branch does not exist (already merged/deleted), note this in the report a
 
 ### 4. Write Quality Report
 
-Write to `<projects-path>/$ARGUMENTS/quality.md`:
+Attach the quality report to the work item:
+
+```
+wcp_attach(
+  id=$ARGUMENTS,
+  type="quality",
+  title="Quality Report",
+  filename="quality.md",
+  content="[quality report]"
+)
+```
+
+Use the following template for the report content:
 
 ```markdown
 # Code Quality Report — $ARGUMENTS
@@ -150,25 +164,21 @@ Write to `<projects-path>/$ARGUMENTS/quality.md`:
 - If the branch is gone, note "Fresh analysis unavailable — branch merged/deleted" and use frontmatter only
 - Use `—` for any metric that cannot be computed
 
-### 6. Commit Pipeline Artifacts
+### 6. Post Completion Comment
 
-Commit the quality report to version control in the projects directory:
+Add a comment to the work item summarizing the quality report:
 
-1. Check if the projects directory is inside a git repository:
-   ```bash
-   cd <projects-path> && git rev-parse --git-dir 2>/dev/null
-   ```
-   If this command fails (not a git repo), skip this step silently.
-
-2. Stage and commit:
-   ```bash
-   cd <projects-path> && git add $ARGUMENTS/quality.md && git commit -m "pipeline: quality for $ARGUMENTS"
-   ```
-   If nothing to commit (no changes detected), skip silently.
+```
+wcp_comment(
+  id=$ARGUMENTS,
+  author="pipeline/quality",
+  body="Quality report attached as quality.md — [verdict summary]"
+)
+```
 
 ## What NOT To Do
 
-- **Do not modify any project documents.** Only write `quality.md`.
+- **Do not modify any project documents.** Only attach `quality.md` to the WCP work item.
 - **Do not modify source code.** This is a read-only analysis tool.
 - **Do not fabricate scores.** Use `—` for missing data.
 - **Do not run pipeline stages.** This is a standalone reporting tool.
@@ -178,7 +188,7 @@ Commit the quality report to version control in the projects directory:
 
 Tell the user:
 
-1. The quality report has been written to `<projects-path>/$ARGUMENTS/quality.md`
+1. The quality report has been attached to `$ARGUMENTS` as `quality.md`
 2. Summarize key metrics: project flog avg, delta from baseline, verdict
 3. Highlight any hotspots above threshold
 4. Note data quality limitations (frontmatter vs fresh, branch availability)

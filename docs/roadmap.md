@@ -36,6 +36,7 @@
 | ROAD-26 | Release Notes Skill | Developer experience | **Done** |
 | ROAD-27 | Weekly Pipeline Digest | Visibility | Planned |
 | ROAD-28 | Extract Metrics & Quality into In-Project Prompts | Portability | Planned |
+| ROAD-29 | WCP Migration (Artifact Storage) | Pipeline architecture | **Done** |
 
 ---
 
@@ -43,10 +44,10 @@
 
 ### ROAD-01: Stage 0 — PRD Generation Skill
 
-**Status:** Done
+**Status:** Done *(superseded by ROAD-29 — WCP Migration)*
 **Theme:** Pipeline intake
 
-Built a Stage 0 skill (`/prd`) that generates structured PRDs from raw input notes.
+Built a Stage 0 skill (`/prd`) that generates structured PRDs from raw input notes. The inbox/slug input model was replaced by WCP work items in ROAD-29.
 
 **What was built:**
 - **Inbox pattern** — user drops raw notes (feature descriptions, Slack threads, meeting notes, Google Doc exports) into `inbox/` directory
@@ -363,10 +364,10 @@ Added support for running the pipeline against multiple products (repos), with s
 
 ### ROAD-14: Externalize Project Work Directories
 
-**Status:** Done
+**Status:** Done *(superseded by ROAD-29 — WCP Migration)*
 **Theme:** Portability
 
-Externalized project artifacts (`projects/`) and inbox (`inbox/`) from the pipeline repo into configurable per-product directories. The pipeline repo is now purely the engine (skills, templates, docs). Each product's `pipeline.md` config points to where its project work lives.
+Externalized project artifacts (`projects/`) and inbox (`inbox/`) from the pipeline repo into configurable per-product directories. This approach was fully replaced by WCP artifact storage in ROAD-29 — project artifacts now live in WCP work items, not the filesystem.
 
 **What was built:**
 - **Work Directory section** in `pipeline.md` — two new fields: Projects path and Inbox path
@@ -1651,3 +1652,36 @@ Skills become thinner — they read the repo config for _what_ to measure and _h
 5. Verify that a standalone Claude Code session in a target repo (without pipeline skills) still captures metrics when following the repo's conventions
 
 **Related:** ROAD-19 (DORA Metrics — timing data that moves to repo config), ROAD-20 (Code Quality — complexity tools already designed for repo config), ROAD-24 (Merge PIPELINE.md — the destination file may change), ROAD-25 (Multi-Runtime — this is a prerequisite for runtime-agnostic instrumentation)
+
+---
+
+### ROAD-29: WCP Migration (Artifact Storage)
+
+**Status:** Done
+**Theme:** Pipeline architecture
+
+Migrated all pipeline skills from filesystem-based artifact storage to WCP (Work Context Protocol). One WCP work item = one pipeline run. The callsign (e.g., `SN-3`) replaces the slug (e.g., `my-feature`) as the identifier passed to every skill.
+
+**What changed:**
+- **13 skills updated** — all except `/release-notes` (which reads from Linear cycles, orthogonal to pipeline artifacts)
+- **`$ARGUMENTS` is now a callsign** — e.g., `/discovery SN-3` instead of `/discovery my-feature`
+- **Artifact reads** — `wcp_get_artifact(id, "prd.md")` replaces `Read <projects-path>/slug/prd.md`
+- **Artifact writes** — `wcp_attach(id, type, title, filename, content)` replaces `Write <projects-path>/slug/report.md`
+- **Frontmatter edits** — read/modify/reattach via `wcp_get_artifact` + `wcp_attach` replaces in-place `Edit`
+- **Progress logging** — `wcp_comment(id, author, body)` replaces git commits to the projects directory
+- **Pipeline Configuration** — Work Directory section (Projects + Inbox paths) removed entirely
+- **Git commits to projects dir** — eliminated. Artifacts live in WCP, not the filesystem
+- **Branch names** — use callsign (e.g., `pipeline/SN-3` instead of `pipeline/my-feature`)
+
+**What stayed the same:**
+- Git branching for code stages (Stage 4 creates branch, Stage 5 commits code)
+- Milestone pattern (M1/M2/M3) in gameplans and progress tracking
+- YAML timing frontmatter inside artifact content (metrics skill parses it)
+- Approval checklists in artifact content (pre-flight checks parse them)
+- Target repo operations (code writes, test writes, git commits to feature branch)
+
+**Supersedes:** ROAD-14 (Externalize Project Work Dirs) — WCP replaces the filesystem approach entirely. Also supersedes the inbox pattern from ROAD-01 — work item briefs come from the WCP work item body.
+
+**WCP schema extensions added:** `progress`, `metrics`, `quality` artifact types (via `wcp_schema_update` in `/pipeline-setup`).
+
+**Related:** ROAD-14 (superseded), ROAD-01 (inbox pattern superseded), ROAD-22 (Pipeline Status MCP Server — WCP may simplify this)
