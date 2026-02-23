@@ -146,7 +146,7 @@ Integrated post-flight checks into the `/create-pr` skill, driven by each target
   - Phase B: Report-only checks (e.g., Brakeman, ripsecrets) — block if blocking, record if non-blocking
   - Phase C: Record results for the PR body
 - **PR body includes post-flight results** — table showing which checks ran and their outcomes
-- **OrangeQC's `PIPELINE.md`** configured with: StandardRB (auto-fix, blocking), Brakeman (report-only, blocking), ripsecrets (report-only, blocking)
+- **Target repo's `PIPELINE.md`** configured with: StandardRB (auto-fix, blocking), Brakeman (report-only, blocking), ripsecrets (report-only, blocking)
 
 **Design decision:** Checks live in the target repo's `PIPELINE.md`, not hardcoded in the pipeline. A Django project would list `flake8` and `bandit`; a Node project would list `eslint` and `npm audit`. The pipeline just reads and executes whatever the repo declares. If `PIPELINE.md` has no Post-Flight Checks section, the step is skipped entirely.
 
@@ -159,7 +159,7 @@ Integrated post-flight checks into the `/create-pr` skill, driven by each target
 **Status:** Done
 **Theme:** Portability
 
-Externalized all platform-specific configuration using a two-file architecture. Updated all 7 skills, 4 templates, and 2 docs. Zero hardcoded `~/projects/orangeqc/` paths remain in skills or templates.
+Externalized all platform-specific configuration using a two-file architecture. Updated all 7 skills, 4 templates, and 2 docs. Zero hardcoded target repo paths remain in skills or templates.
 
 **What was built:**
 - **`pipeline.md`** (pipeline repo) — maps the pipeline to target repositories (repo paths, project tracker). This is the only file to edit when pointing the pipeline at different repos.
@@ -348,10 +348,10 @@ Add a "ludicrous speed" mode that auto-approves human checkpoints when there are
 Added support for running the pipeline against multiple products (repos), with separate pipeline configs per product and a `/setup-pipeline-repo` skill for automated repo onboarding.
 
 **What was built:**
-- **`pipelines/` directory** — named pipeline configs per product (e.g., `pipelines/orangeqc.md`, `pipelines/show-notes.md`)
+- **`pipelines/` directory** — named pipeline configs per product (e.g., `pipelines/acme-app.md`, `pipelines/side-project.md`)
 - **Active pointer pattern** — `pipeline.md` at repo root is always the active config; switch products by copying from `pipelines/`
 - **`/setup-pipeline-repo` skill** — explores a new repo, detects framework/tests/CI/structure, auto-generates `PIPELINE.md` in the target repo and a pipeline config in `pipelines/`, optionally activates it
-- **Show Notes onboarded** — first non-OrangeQC product added to the pipeline (Rails 8.1 web app)
+- **Show Notes onboarded** — first additional product added to the pipeline (Rails 8.1 web app)
 
 **Design decisions:**
 - Active pointer over per-command product argument — matches session-based workflow, zero existing skill changes (all 8 skills still read `pipeline.md`)
@@ -373,14 +373,14 @@ Externalized project artifacts (`projects/`) and inbox (`inbox/`) from the pipel
 - **Work Directory section** in `pipeline.md` — two new fields: Projects path and Inbox path
 - **All 9 skills updated** — read projects/inbox paths from `pipeline.md` Work Directory instead of assuming local `projects/` and `inbox/`
 - **External project directories** — each product has its own git repo for project artifacts:
-  - OrangeQC: `~/projects/orangeqc/pipeline-projects/`
-  - Show Notes: `~/projects/show-notes/pipeline-projects/`
+  - Primary product: `~/projects/primary-app/pipeline-projects/`
+  - Secondary product: `~/projects/secondary-app/pipeline-projects/`
 - **`/setup-pipeline-repo` skill updated** — generates Work Directory section in new pipeline configs, asks user for projects path
-- **Migration** — 6 OrangeQC projects and 1 Show Notes project moved to external directories
+- **Migration** — 6 primary product projects and 1 secondary product project moved to external directories
 
 **Why:** Two problems solved:
-1. Personal project artifacts (Show Notes) no longer mix with work artifacts (OrangeQC) in the same repo
-2. OrangeQC Level 3 projects (multi-repo: Rails + iOS + Android) need cross-repo project artifacts that don't belong inside any single target repo
+1. Personal project artifacts no longer mix with work artifacts in the same repo
+2. Level 3 projects (multi-repo: Rails + iOS + Android) need cross-repo project artifacts that don't belong inside any single target repo
 
 **Design decisions:**
 - One config field per product in `pipeline.md` — follows the existing pattern of `cp pipelines/<product>.md pipeline.md` to switch everything
@@ -518,7 +518,7 @@ Two possible modes:
 
 **Open questions:**
 
-- **How long to wait for CI?** OrangeQC's CI suite takes ~5 minutes. Waiting is fine. A repo with 30-minute CI would need a different strategy (background polling, notifications).
+- **How long to wait for CI?** A typical CI suite takes ~5 minutes. Waiting is fine. A repo with 30-minute CI would need a different strategy (background polling, notifications).
 - **What about flaky tests?** If a test fails intermittently and isn't related to this branch's changes, the agent shouldn't try to fix it. The scope check (compare against base branch) handles this, but flaky tests that pass on base and fail on the PR branch are harder to distinguish from real regressions.
 - **Test-only fixes vs. implementation fixes:** If the CI failure reveals a real bug in the implementation (not just a test issue), should the agent fix it? Probably yes for small fixes, but large implementation changes should go back through the pipeline (related to ROAD-10).
 
@@ -631,7 +631,7 @@ Track the four DORA metrics before and after pipeline adoption to measure whethe
 
 **Before/after comparison:**
 
-The "before" baseline is the pre-pipeline development process. For OrangeQC, this is the Stepwyz agency workflow (~7 hrs/week Rails). For Show Notes, this is Dave's solo development.
+The "before" baseline is the pre-pipeline development process (e.g., an agency workflow or solo development).
 
 - **Before data:** Mine git history, deploy logs, and incident records for the 3-6 months before pipeline adoption
 - **After data:** Track the same metrics for pipeline-produced projects going forward
@@ -670,7 +670,7 @@ The "before" baseline is the pre-pipeline development process. For OrangeQC, thi
 - Agent Efficiency = active agent time / (agent + idle) — the key leverage metric
 
 **Considerations:**
-- Small sample size is a real limitation. OrangeQC has 3 pipeline projects so far. Statistical significance requires patience.
+- Small sample size is a real limitation with only a few pipeline projects so far. Statistical significance requires patience.
 - DORA metrics measure the delivery *system*, not just the pipeline. Improvements may come from better PRDs, faster reviews, or CI improvements — not just the agent doing the coding
 - Lead Time is the most directly measurable and the most likely to show dramatic improvement (agent implements in minutes vs. agency implements over days/weeks)
 - Deployment Frequency and Change Failure Rate require v2 (deploy hook integration) — not captured by frontmatter alone
@@ -842,8 +842,8 @@ Add a new step to `/setup-pipeline-repo` (after Step 4: Detect Post-Flight Check
 >
 > From the dependency files, detect available complexity tools (same detection approach as post-flight checks). Present suggestions to the user — they can add, remove, or modify. Write the confirmed tools into the Complexity Analysis section of the config.
 
-**OrangeQC considerations:**
-- Larger, older codebase — the repo average may be skewed by legacy code
+**Mature codebase considerations:**
+- Larger, older codebases — the repo average may be skewed by legacy code
 - More interesting comparison: pipeline code vs. *recent* hand-written code (last 6 months), not historical average
 - StandardRB is already enforced (ROAD-04 post-flight) — complexity metrics go beyond style
 - Available tools: Flog and RuboCop (in Gemfile). Flay and Reek could be added standalone.
@@ -883,7 +883,7 @@ A web dashboard that visualizes pipeline state across all products and projects.
 |-------|------------|-------------|
 | **Assembly Line** (main view) | `progress.md` per project | Each project as an item on a conveyor belt, positioned at its current stage (0-7). Completed stages glow green. Active stage pulses. Blocked stages show a red inserter arm. |
 | **Project Detail** (click to expand) | `progress.md`, `gameplan.md` | Milestone breakdown with completion status, commit SHAs, test results, acceptance criteria checklist |
-| **Product Switcher** | `pipelines/` directory | Toggle between OrangeQC, Show Notes, etc. Each product has its own assembly line |
+| **Product Switcher** | `pipelines/` directory | Toggle between products. Each product has its own assembly line |
 | **Metrics Panel** | ROAD-19 + ROAD-20 data | DORA metrics (lead time, deployment frequency), complexity scores, test counts — displayed as Factorio-style production statistics |
 | **Stage Machine Status** | Derived from project state | Each stage (0-7) shown as a Factorio assembler. Tooltip shows: projects currently in this stage, average time spent, throughput |
 
@@ -898,7 +898,7 @@ A web dashboard that visualizes pipeline state across all products and projects.
 | Blocked project | Red belt segment |
 | Complete project (PR merged) | Item reaching the end of the line → into a chest |
 | Metrics | Production statistics screen |
-| Product (OrangeQC, Show Notes) | Separate factory floor / tab |
+| Product | Separate factory floor / tab |
 
 **Architecture options:**
 
@@ -1063,7 +1063,7 @@ Example `list_projects()` response (summary view):
   },
   {
     "slug": "deficient-line-items-report",
-    "product": "orangeqc",
+    "product": "acme-app",
     "stage": "QA Plan complete",
     "status": "complete"
   }
@@ -1157,7 +1157,7 @@ Add a "Test Quality Heuristics" section to the Stage 4 skill, referenced during 
 **Theme:** Portability
 **Supersedes:** ROAD-05 (two-file architecture becomes a one-file-per-repo architecture)
 
-Eliminate `PIPELINE.md` as a standalone file. Fold its unique content into each target repo's conventions file (`AGENTS.md` for OrangeQC, `CLAUDE.md` for Show Notes). One file per repo, one source of truth.
+Eliminate `PIPELINE.md` as a standalone file. Fold its unique content into each target repo's conventions file (`AGENTS.md`, `CLAUDE.md`, etc.). One file per repo, one source of truth.
 
 **Why:** ROAD-05 created a two-file architecture: `pipeline.md` (where repos are) + `PIPELINE.md` (how the repo works). In practice, `PIPELINE.md` overlaps ~80% with the conventions file and the two have already drifted — `AGENTS.md` says the default branch is `dave/agents-staging`, `PIPELINE.md` says `staging` (correct). Having two files that describe the same repo invites inconsistency. The conventions file already serves every Claude Code session; `PIPELINE.md` only serves pipeline skills. Merging them means pipeline skills and ad-hoc Claude sessions read the same truth.
 
@@ -1181,8 +1181,8 @@ AGENTS.md / CLAUDE.md           → how the repo works + how to write code (ever
 
 #### 1. Add "Pipeline Configuration" section to each conventions file
 
-**OrangeQC AGENTS.md** — add near the top (after "Git Branch and Push Policy"):
-- Fix default branch from `dave/agents-staging` to `staging`
+**Primary repo AGENTS.md** — add near the top (after "Git Branch and Push Policy"):
+- Fix default branch
 - New section with: default branch, test command, branch prefix, platforms, seed tasks dir
 - Implementation order (7 steps)
 - Post-flight checks (StandardRB, Brakeman, ripsecrets)
@@ -1202,10 +1202,10 @@ Add `Conventions File` column to the Target Repositories table:
 ```markdown
 | Repository | Path | Conventions File | Purpose |
 |-----------|------|-----------------|---------|
-| Primary | `~/projects/orangeqc/orangeqc/` | `AGENTS.md` | Rails web app + API backend |
+| Primary | `~/projects/my-app/` | `AGENTS.md` | Rails web app + API backend |
 ```
 
-Update: `pipeline.md.example`, `pipelines/orangeqc.md`, `pipelines/show-notes.md`, and the active `pipeline.md`.
+Update: `pipeline.md.example`, named pipeline configs in `pipelines/`, and the active `pipeline.md`.
 
 Remove the blockquote paragraphs about `PIPELINE.md` from all pipeline configs.
 
@@ -1237,8 +1237,7 @@ Mechanical find-and-replace across all skills:
 
 #### 5. Delete PIPELINE.md from both repos
 
-- `~/projects/orangeqc/orangeqc/PIPELINE.md` — delete
-- `~/projects/show-notes/PIPELINE.md` — delete
+- Each target repo's `PIPELINE.md` — delete
 
 #### 6. Update MEMORY.md
 
@@ -1246,7 +1245,7 @@ Reflect the new two-layer architecture. Remove references to PIPELINE.md as a se
 
 **Execution order:**
 
-1. Add Pipeline Config section to OrangeQC AGENTS.md + fix default branch
+1. Add Pipeline Config section to primary repo's AGENTS.md + fix default branch
 2. Add Pipeline Config section to Show Notes CLAUDE.md
 3. Update pipeline repo — all skills, docs, pipeline.md format (single commit)
 4. Delete PIPELINE.md from both repos (one commit per repo)
@@ -1256,7 +1255,7 @@ Reflect the new two-layer architecture. Remove references to PIPELINE.md as a se
 
 After all changes:
 1. `grep -r "PIPELINE.md" .claude/skills/` → zero results (except possibly setup-pipeline-repo explaining the migration)
-2. Activate OrangeQC config, verify pipeline.md has conventions file column
+2. Activate primary product config, verify pipeline.md has conventions file column
 3. Activate Show Notes config, verify same
 4. Verify PIPELINE.md is gone from both repos
 5. Spot-check a skill (e.g., stage4) reads correctly from the conventions file
@@ -1265,9 +1264,8 @@ After all changes:
 
 | Repo | Files |
 |------|-------|
-| OrangeQC Rails (`~/projects/orangeqc/orangeqc/`) | `AGENTS.md` (edit), `PIPELINE.md` (delete) |
-| Show Notes (`~/projects/show-notes/`) | `CLAUDE.md` (edit), `PIPELINE.md` (delete) |
-| Pipeline (`~/projects/orangeqc/agent-pipeline/`) | 9 skill files, `pipeline.md.example`, `pipeline.md`, `pipelines/orangeqc.md`, `pipelines/show-notes.md`, `pipelines/README.md`, `CLAUDE.md`, `docs/roadmap.md`, `docs/pipeline-architecture.md`, `MEMORY.md` |
+| Each target repo | Conventions file (edit), `PIPELINE.md` (delete) |
+| Pipeline repo | 9 skill files, `pipeline.md.example`, `pipeline.md`, named configs in `pipelines/`, `pipelines/README.md`, `CLAUDE.md`, `docs/roadmap.md`, `docs/pipeline-architecture.md`, `MEMORY.md` |
 
 **Considerations:**
 - This is a zero-behavior-change refactor — skills read the same information, just from one file instead of two
@@ -1483,8 +1481,8 @@ A `/release-notes <cycle_number>` skill that generates release notes from Linear
 
 **Links**
 
-* [iOS in the App Store](https://apps.apple.com/us/app/orangeqc/id324039524)
-* [OrangeQC in the Google Play Store](https://play.google.com/store/apps/details?id=com.orangeqc.native)
+* [iOS in the App Store]({ios_app_store_url})
+* [Android in the Google Play Store]({google_play_store_url})
 
 **New Features**
 
@@ -1620,7 +1618,7 @@ A `/weekly-digest` skill (standalone utility, like `/release-notes`) that:
 
 Move metrics collection and code quality analysis logic out of pipeline skills and into in-project prompt files (e.g., `PIPELINE.md` or conventions files) so that any agent — not just one running from this pipeline repo — can capture the same data.
 
-**Why:** Currently, metrics capture (ROAD-19 DORA timing, ROAD-20 code quality) and quality checks are baked into the skill files in `.claude/skills/`. This means they only run when you use _this_ pipeline's skills. If someone runs an agent directly against a target repo (e.g., via Claude Code in the OrangeQC repo, or via Codex), none of that instrumentation fires. Extracting the metrics and quality instructions into the target repo's own prompt files makes them portable — any agent that reads the repo's conventions will know to capture timing frontmatter, run complexity tools, and report quality metrics.
+**Why:** Currently, metrics capture (ROAD-19 DORA timing, ROAD-20 code quality) and quality checks are baked into the skill files in `.claude/skills/`. This means they only run when you use _this_ pipeline's skills. If someone runs an agent directly against a target repo (e.g., via Claude Code or Codex), none of that instrumentation fires. Extracting the metrics and quality instructions into the target repo's own prompt files makes them portable — any agent that reads the repo's conventions will know to capture timing frontmatter, run complexity tools, and report quality metrics.
 
 **What moves:**
 - **DORA timing frontmatter** — instructions for when to stamp `pipeline_start`, `pipeline_stage_N_start/end`, etc. into project artifacts
@@ -1646,7 +1644,7 @@ Skills become thinner — they read the repo config for _what_ to measure and _h
 
 **Migration path:**
 1. Define the `## Metrics & Quality` schema in `PIPELINE.md`
-2. Populate it for OrangeQC and Show Notes repos
+2. Populate it for each target repo
 3. Update `/setup-pipeline-repo` to detect and generate this section for new repos
 4. Refactor skills to read metrics config from repo instead of inline logic
 5. Verify that a standalone Claude Code session in a target repo (without pipeline skills) still captures metrics when following the repo's conventions

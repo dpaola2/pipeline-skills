@@ -191,8 +191,8 @@ Use this template when no previous release notes exist in the `release-notes/` d
 
 ## Links
 
-* [iOS in the App Store](https://apps.apple.com/us/app/orangeqc/id324039524)
-* [OrangeQC in the Google Play Store](https://play.google.com/store/apps/details?id=com.orangeqc.native)
+* [iOS in the App Store]({ios_app_store_url})
+* [Android in the Google Play Store]({google_play_store_url})
 
 ## New Features
 
