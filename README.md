@@ -147,11 +147,17 @@ There's no separate config file in the pipeline repo. Skills run from the target
 
 The pipeline has two mandatory review gates:
 
-**After Stage 2 (Architecture Review):** Read the `architecture-proposal.md` artifact from the work item, find the Approval Checklist, set Status to "Approved", and fill in the reviewer checklist. Stage 3 refuses to run until this is done.
+**After Stage 2 (Architecture Review):** Review and approve the architecture proposal before the gameplan is generated.
 
-**After Stage 3 (Gameplan Review):** Review the `gameplan.md` artifact — verify milestones, acceptance criteria, and sequencing before any code is generated.
+**After Stage 3 (Gameplan Review):** Review and approve the gameplan before any code is generated.
 
 These checkpoints exist because errors amplify downstream. A wrong data model decision in Stage 2 propagates through the gameplan, tests, and implementation. Catching it before Stage 3 is dramatically cheaper than catching it during Stage 5.
+
+**Three ways to handle checkpoints:**
+
+1. **Manual** (original): Read the artifact, edit the Approval Checklist section, set Status to "Approved", reattach.
+2. **Interactive review** (new): Run `/pipeline-approve <callsign>` — walks through each checklist item and open question via structured prompts.
+3. **Autopilot** (new): Run `/pipeline-autopilot <callsign>` — handles checkpoints automatically (interview mode or auto-approve when no blocking questions).
 
 ---
 
@@ -173,6 +179,9 @@ These checkpoints exist because errors amplify downstream. A wrong data model de
 │   ├── review/SKILL.md                 # /review <callsign>
 │   ├── qa-plan/SKILL.md                # /qa-plan <callsign>
 │   ├── create-pr/SKILL.md              # /create-pr <callsign>
+│   ├── pipeline-approve/SKILL.md       # /pipeline-approve <callsign>
+│   ├── pipeline-advance/SKILL.md       # /pipeline-advance <callsign>
+│   ├── pipeline-autopilot/SKILL.md     # /pipeline-autopilot <callsign> [flags]
 │   ├── metrics/SKILL.md                # /metrics <callsign>
 │   ├── quality/SKILL.md                # /quality <callsign>
 │   ├── release-notes/SKILL.md          # /release-notes <cycle>
@@ -207,6 +216,14 @@ Project artifacts (PRDs, gameplans, progress files) are stored as WCP (Work Cont
 | `/qa-plan` | `/qa-plan <callsign>` | Generate manual QA testing plan |
 | `/create-pr` | `/create-pr <callsign>` | Push branch, create PR with generated summary |
 
+### Orchestration Skills
+
+| Skill | Usage | What It Does |
+|-------|-------|-------------|
+| `/pipeline-approve` | `/pipeline-approve <callsign>` | Interactive approval review — walks through checklist and open questions |
+| `/pipeline-advance` | `/pipeline-advance <callsign>` | Detect current stage, run the next one (single step) |
+| `/pipeline-autopilot` | `/pipeline-autopilot <callsign> [flags]` | Run the full pipeline autonomously with context isolation per stage |
+
 ### Setup & Utility Skills
 
 | Skill | Usage | What It Does |
@@ -221,11 +238,11 @@ Project artifacts (PRDs, gameplans, progress files) are stored as WCP (Work Cont
 
 ## Status
 
-**Phase: Operational**
+**Phase: Operational + Orchestration**
 
 The pipeline is running on real projects across multiple products. All stages (0-7) have Claude Code skills and have been validated end-to-end.
 
-Each stage runs as a manual Claude Code session. Automated orchestration (stage chaining) is a future phase.
+Three orchestration skills enable autonomous pipeline operation: `/pipeline-approve` for interactive checkpoint review, `/pipeline-advance` for single-step advancement, and `/pipeline-autopilot` for full autonomous runs with context isolation per stage.
 
 ---
 

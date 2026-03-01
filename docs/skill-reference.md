@@ -273,6 +273,57 @@ Retrofit YAML frontmatter onto existing project artifacts created before timing 
 
 ---
 
+## Orchestration Skills
+
+### `/pipeline-approve <callsign>`
+
+Interactive approval review — walks through the Approval Checklist and Open Questions for architecture proposals and gameplans.
+
+| | |
+|---|---|
+| **Invocation** | `/pipeline-approve <callsign>` |
+| **Arguments** | `callsign` — WCP work item identifier (e.g., `SN-3`) |
+| **Prerequisites** | `architecture-proposal.md` or `gameplan.md` exists with Approval Checklist Status = "Pending" |
+| **Reads** | Architecture proposal and/or gameplan via `wcp_get_artifact` |
+| **Produces** | Reattaches updated artifact with filled-in Approval Checklist (Status, Reviewer, Date, Notes) and resolved Open Questions |
+| **Side Effects** | Updates artifact approval status; logs approval decision as WCP comment |
+| **Human Action** | Answer each checklist item and open question when prompted |
+
+---
+
+### `/pipeline-advance <callsign>`
+
+Detect the current pipeline stage and run the next one. Single-step advancement with approval gate handling.
+
+| | |
+|---|---|
+| **Invocation** | `/pipeline-advance <callsign>` |
+| **Arguments** | `callsign` — WCP work item identifier (e.g., `SN-3`) |
+| **Prerequisites** | WCP work item exists |
+| **Reads** | Work item artifact list via `wcp_get`; approval-gated artifacts to check Status |
+| **Produces** | Runs the next pipeline stage in a Task agent; or invokes `/pipeline-approve` at gates |
+| **Side Effects** | Depends on which stage is executed; logs progress as WCP comment |
+| **Human Action** | Confirm before running the next stage; answer approval questions if at a gate |
+
+---
+
+### `/pipeline-autopilot <callsign> [flags]`
+
+Run the full pipeline autonomously from current state to completion, with context isolation per stage.
+
+| | |
+|---|---|
+| **Invocation** | `/pipeline-autopilot <callsign> [--from N] [--to N] [--auto-approve]` |
+| **Arguments** | `callsign` — WCP work item identifier; optional flags for range and approval mode |
+| **Prerequisites** | WCP work item exists |
+| **Reads** | Work item artifacts to detect starting stage; conventions file in target repo |
+| **Produces** | All pipeline artifacts from starting stage to completion; each stage runs in isolated Task agent |
+| **Side Effects** | Creates/modifies all pipeline artifacts; creates branch and implementation code (stages 4+); logs all progress as WCP comments |
+| **Human Action** | Choose approval mode at start; answer approval questions at gates (unless auto-approve); review completion report |
+| **Flags** | `--from N` start from stage N; `--to N` stop after stage N; `--auto-approve` auto-approve when no blocking questions |
+
+---
+
 ## Pipeline Flow Cheat Sheet
 
 Quick-reference sequence showing the full pipeline with arguments and key gates.
@@ -294,6 +345,14 @@ Quick-reference sequence showing the full pipeline with arguments and key gates.
 | 6 | `/review` | `<callsign>` | All milestones complete; clean tree | `review-report.md` |
 | 7 | `/qa-plan` | `<callsign>` | All milestones complete | `qa-plan.md` |
 | PR | `/create-pr` | `<callsign>` | All complete; QA plan exists; no open PR | GitHub PR + `metrics.md` |
+
+### Orchestration Skills (run instead of manual stage invocations)
+
+| Command | Arguments | Purpose |
+|---------|-----------|---------|
+| `/pipeline-approve` | `<callsign>` | Interactive review of pending approval gate |
+| `/pipeline-advance` | `<callsign>` | Detect current stage, run the next one |
+| `/pipeline-autopilot` | `<callsign> [flags]` | Run the full pipeline with context isolation |
 
 ### Setup & Utility Skills (run anytime)
 
