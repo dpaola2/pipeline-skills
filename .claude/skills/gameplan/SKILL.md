@@ -1,6 +1,11 @@
 ---
 name: gameplan
 description: "Run pipeline Stage 3 (Gameplan) for a project. Produces the engineering spec from PRD + Discovery Report + APPROVED Architecture."
+category: pipeline-stage
+stage: 3
+tags: [gameplan, spec, milestones, planning]
+requires:
+  mcp: [wcp]
 disable-model-invocation: true
 argument-hint: "<callsign>"
 allowed-tools:

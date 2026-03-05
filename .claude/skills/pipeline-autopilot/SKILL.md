@@ -1,6 +1,11 @@
 ---
 name: pipeline-autopilot
 description: "Run the full pipeline autonomously for a work item. Chains stages with context isolation, handles approval gates via interactive interview or auto-approve."
+category: orchestration
+tags: [orchestration, automation, autonomous]
+requires:
+  mcp: [wcp]
+  skills: [pipeline-approve, pipeline-advance]
 disable-model-invocation: true
 argument-hint: "<callsign> [--from <stage>] [--to <stage>] [--auto-approve]"
 allowed-tools:

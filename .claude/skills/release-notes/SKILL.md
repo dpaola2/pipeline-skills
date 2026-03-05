@@ -1,6 +1,10 @@
 ---
 name: release-notes
 description: "Generate release notes from a Linear cycle — pulls completed issues, categorizes them, and formats the notes using the previous cycle's format as a template."
+category: utility
+tags: [release-notes, linear, documentation]
+requires:
+  mcp: [linear]
 disable-model-invocation: true
 argument-hint: "<cycle_number>"
 allowed-tools:

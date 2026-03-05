@@ -1,6 +1,10 @@
 ---
 name: pipeline-approve
 description: "Interactive approval review for pipeline checkpoints. Walks through the approval checklist and open questions for architecture proposals and gameplans."
+category: orchestration
+tags: [approval, review, checkpoint]
+requires:
+  mcp: [wcp]
 disable-model-invocation: true
 argument-hint: "<callsign>"
 allowed-tools:

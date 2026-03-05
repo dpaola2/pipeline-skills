@@ -1,6 +1,10 @@
 ---
 name: backfill-timing
 description: "Retrofit YAML frontmatter with pipeline timing metadata onto existing project documents that were created before timing was implemented."
+category: metrics
+tags: [metrics, timing, backfill]
+requires:
+  mcp: [wcp]
 disable-model-invocation: true
 argument-hint: "<callsign>"
 allowed-tools:

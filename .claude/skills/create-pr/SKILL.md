@@ -1,6 +1,10 @@
 ---
 name: create-pr
 description: "Push the implementation branch and create a PR against the default branch with a generated summary from project artifacts."
+category: pipeline-stage
+tags: [git, pull-request, github]
+requires:
+  mcp: [wcp]
 disable-model-invocation: true
 argument-hint: "<callsign>"
 allowed-tools:

@@ -1,6 +1,11 @@
 ---
 name: pipeline-advance
 description: "Detect the current pipeline stage for a work item and run the next stage. Handles approval gates by invoking /pipeline-approve."
+category: orchestration
+tags: [orchestration, automation, stage-management]
+requires:
+  mcp: [wcp]
+  skills: [pipeline-approve]
 disable-model-invocation: true
 argument-hint: "<callsign>"
 allowed-tools:

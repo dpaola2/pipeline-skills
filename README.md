@@ -24,11 +24,30 @@ The pipeline is product-agnostic. It works with any codebase that has a conventi
 
 ### Installation
 
-Copy the pipeline skills into your project's `.claude/skills/` directory:
+Use the install script to copy skills into your project:
 
 ```bash
-# Copy all pipeline skills
-cp -r agent-pipeline/.claude/skills/* /path/to/your-project/.claude/skills/
+# Install the full pipeline (all 17 skills)
+/path/to/pipeline-skills/bin/install.sh ~/projects/my-app --collection full
+
+# Install just the core pipeline stages (prd through create-pr)
+/path/to/pipeline-skills/bin/install.sh ~/projects/my-app --collection core
+
+# Install individual skills
+/path/to/pipeline-skills/bin/install.sh ~/projects/my-app prd discovery architecture
+
+# See what's available
+/path/to/pipeline-skills/bin/install.sh --list-collections
+```
+
+**Collections:** `core` (9 pipeline stages), `orchestration` (3 autonomous tools), `metrics` (3 measurement tools), `full` (all 17 skills).
+
+To update installed skills, re-run the same install command — it overwrites with the latest versions.
+
+To see what's installed in a repo:
+
+```bash
+/path/to/pipeline-skills/bin/install.sh ~/projects/my-app --list
 ```
 
 ### Setup

@@ -1,6 +1,11 @@
 ---
 name: qa-plan
 description: "Run pipeline Stage 7 (QA Plan) for a project. Generates a comprehensive QA plan from all project artifacts after implementation is complete."
+category: pipeline-stage
+stage: 7
+tags: [qa, testing, manual-testing]
+requires:
+  mcp: [wcp]
 disable-model-invocation: true
 argument-hint: "<callsign>"
 allowed-tools:

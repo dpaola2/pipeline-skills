@@ -1,0 +1,55 @@
+# Pipeline Skills Registry
+#
+# This file is the index for installing skills into target repos.
+# Skill metadata (description, tags, requires) lives in each SKILL.md frontmatter.
+# This file defines collections and install-time configuration.
+
+name: pipeline-skills
+description: Agent-orchestrated development pipeline — PRD to QA-ready code
+
+# Collections: named groups of skills for batch installation.
+# Use: bin/install.sh --collection <name> /path/to/target
+collections:
+  # The full pipeline stages (0-7) plus PR creation
+  core:
+    - prd
+    - discovery
+    - architecture
+    - gameplan
+    - test-generation
+    - implementation
+    - review
+    - qa-plan
+    - create-pr
+
+  # Autonomous pipeline operation
+  orchestration:
+    - pipeline-advance
+    - pipeline-approve
+    - pipeline-autopilot
+
+  # Measurement and quality tools
+  metrics:
+    - metrics
+    - quality
+    - backfill-timing
+
+  # Everything needed for a full pipeline install
+  full:
+    - prd
+    - discovery
+    - architecture
+    - gameplan
+    - test-generation
+    - implementation
+    - review
+    - qa-plan
+    - create-pr
+    - pipeline-setup
+    - pipeline-advance
+    - pipeline-approve
+    - pipeline-autopilot
+    - metrics
+    - quality
+    - backfill-timing
+    - release-notes

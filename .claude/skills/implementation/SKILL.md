@@ -1,6 +1,11 @@
 ---
 name: implementation
 description: "Run pipeline Stage 5 (Implementation) for a project milestone. Writes code to make Stage 4's failing tests pass."
+category: pipeline-stage
+stage: 5
+tags: [implementation, coding, tdd]
+requires:
+  mcp: [wcp]
 disable-model-invocation: true
 argument-hint: "<callsign> <milestone>"
 allowed-tools:
