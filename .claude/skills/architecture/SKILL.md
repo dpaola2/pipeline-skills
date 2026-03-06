@@ -1,12 +1,6 @@
 ---
 name: architecture
 description: "Run pipeline Stage 2 (Architecture) for a project. Designs data model, API endpoints, migrations, and security scoping based on Pipeline Configuration in the conventions file."
-category: pipeline-stage
-stage: 2
-tags: [architecture, design, data-model, api]
-requires:
-  mcp: [wcp]
-disable-model-invocation: true
 argument-hint: "<callsign>"
 allowed-tools:
   - Read

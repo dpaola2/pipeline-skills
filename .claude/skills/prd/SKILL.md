@@ -1,12 +1,6 @@
 ---
 name: prd
 description: "Generate a structured PRD from a WCP work item brief. Reads the work item body as input, produces a pipeline-ready PRD attached as a WCP artifact."
-category: pipeline-stage
-stage: 0
-tags: [prd, planning, intake]
-requires:
-  mcp: [wcp]
-disable-model-invocation: true
 argument-hint: "<callsign>"
 allowed-tools:
   - Read

@@ -1,11 +1,6 @@
 ---
 name: metrics
 description: "Compute and display pipeline timing metrics for a project by reading YAML frontmatter from all project documents."
-category: metrics
-tags: [metrics, timing, measurement]
-requires:
-  mcp: [wcp]
-disable-model-invocation: true
 argument-hint: "<callsign>"
 allowed-tools:
   - Read

@@ -1304,7 +1304,7 @@ Make the pipeline executable by both Claude Code and OpenAI Codex CLI, so skills
 
 | Layer | Claude Code-Specific | What Needs Abstracting |
 |-------|---------------------|----------------------|
-| **Metadata** | YAML front matter (`name`, `allowed-tools`, `disable-model-invocation`, `argument-hint`) | Skill registration and capability declaration |
+| **Metadata** | YAML front matter (`name`, `allowed-tools`, `argument-hint`) | Skill registration and capability declaration |
 | **Tool calls** | `Read file.rb` → structured tool | `cat file.rb` or equivalent shell command |
 | **File editing** | `Edit` tool with old_string/new_string | `sed`, `patch`, or write-full-file |
 | **Search** | `Glob` and `Grep` tools | `find` and `grep`/`rg` commands |

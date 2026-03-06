@@ -5,7 +5,6 @@ category: orchestration
 tags: [approval, review, checkpoint]
 requires:
   mcp: [wcp]
-disable-model-invocation: true
 argument-hint: "<callsign>"
 allowed-tools:
   - Bash

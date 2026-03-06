@@ -1,12 +1,6 @@
 ---
 name: test-generation
 description: "Run pipeline Stage 4 (Test Generation) for a project. Writes failing TDD test suites in the primary repo from the approved gameplan."
-category: pipeline-stage
-stage: 4
-tags: [testing, tdd, test-generation]
-requires:
-  mcp: [wcp]
-disable-model-invocation: true
 argument-hint: "<callsign>"
 allowed-tools:
   - Read

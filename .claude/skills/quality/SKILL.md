@@ -1,11 +1,6 @@
 ---
 name: quality
 description: "Generate a code quality report for a pipeline project by reading quality frontmatter from progress.md and optionally running fresh analysis."
-category: metrics
-tags: [quality, analysis, code-quality]
-requires:
-  mcp: [wcp]
-disable-model-invocation: true
 argument-hint: "<callsign>"
 allowed-tools:
   - Read

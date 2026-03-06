@@ -1,12 +1,6 @@
 ---
 name: review
 description: "Run pipeline Stage 6 (Code Review) for a project. Reviews the full branch diff against conventions, security requirements, spec, and code quality. Produces a review-report.md with categorized findings and a verdict."
-category: pipeline-stage
-stage: 6
-tags: [review, code-quality, security]
-requires:
-  mcp: [wcp]
-disable-model-invocation: true
 argument-hint: "<callsign>"
 allowed-tools:
   - Bash

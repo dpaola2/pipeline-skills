@@ -1,12 +1,6 @@
 ---
 name: discovery
 description: "Run pipeline Stage 1 (Discovery) for a project. Explores the target codebase to understand current state before designing changes."
-category: pipeline-stage
-stage: 1
-tags: [discovery, analysis, codebase-exploration]
-requires:
-  mcp: [wcp]
-disable-model-invocation: true
 argument-hint: "<callsign>"
 allowed-tools:
   - Read

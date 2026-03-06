@@ -6,7 +6,6 @@ tags: [orchestration, automation, autonomous]
 requires:
   mcp: [wcp]
   skills: [pipeline-approve, pipeline-advance]
-disable-model-invocation: true
 argument-hint: "<callsign> [--from <stage>] [--to <stage>] [--auto-approve]"
 allowed-tools:
   - Read

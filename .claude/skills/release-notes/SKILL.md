@@ -1,11 +1,6 @@
 ---
 name: release-notes
 description: "Generate release notes from a Linear cycle — pulls completed issues, categorizes them, and formats the notes using the previous cycle's format as a template."
-category: utility
-tags: [release-notes, linear, documentation]
-requires:
-  mcp: [linear]
-disable-model-invocation: true
 argument-hint: "<cycle_number>"
 allowed-tools:
   - Read
@@ -195,8 +190,8 @@ Use this template when no previous release notes exist in the `release-notes/` d
 
 ## Links
 
-* [iOS in the App Store]({ios_app_store_url})
-* [Android in the Google Play Store]({google_play_store_url})
+* [iOS in the App Store](https://apps.apple.com/us/app/orangeqc/id324039524)
+* [OrangeQC in the Google Play Store](https://play.google.com/store/apps/details?id=com.orangeqc.native)
 
 ## New Features
 

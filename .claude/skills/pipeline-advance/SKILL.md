@@ -6,7 +6,6 @@ tags: [orchestration, automation, stage-management]
 requires:
   mcp: [wcp]
   skills: [pipeline-approve]
-disable-model-invocation: true
 argument-hint: "<callsign>"
 allowed-tools:
   - Read
