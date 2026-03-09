@@ -47,8 +47,9 @@ Run through this checklist top-to-bottom. For each artifact, check whether it ex
 1. prd.md missing?
    → NEXT ACTION: Run /prd $ARGUMENTS (Stage 0)
 
-2. discovery-report.md missing?
-   → NEXT ACTION: Run /discovery $ARGUMENTS (Stage 1)
+2. Discovery report(s) — check for `discovery-report.md` OR any `discovery-report-*.md` artifacts:
+   - If NO discovery reports exist at all → NEXT ACTION: Run /discovery $ARGUMENTS (Stage 1)
+   - If discovery reports exist but the gameplan's milestones reference repos without discovery reports → tell user which repos still need discovery
 
 3. architecture-proposal.md missing?
    → NEXT ACTION: Run /architecture $ARGUMENTS (Stage 2)
@@ -104,6 +105,7 @@ Tell the user what you found:
 
 **Current state:** [describe what's done and what's next]
 **Artifacts present:** [list existing artifacts with approval status for gated ones]
+**Multi-repo:** [Yes (N repos) / No]
 **Next action:** [what needs to happen]
 ```
 
@@ -187,16 +189,28 @@ After the skill completes, summarize:
 | Stage | Skill Name | Extra Args |
 |-------|-----------|------------|
 | 0 | prd | (none) |
-| 1 | discovery | (none) |
+| 1 | discovery | `--repo <path>` if multi-repo |
 | 2 | architecture | (none) |
 | 3 | gameplan | (none) |
-| 4 | test-generation | (none) |
-| 5 | implementation | milestone (e.g., "M1") |
-| 6 | review | (none) |
+| 4 | test-generation | `--repo <path>` if multi-repo |
+| 5 | implementation | milestone + `--repo <path>` if multi-repo |
+| 6 | review | `--repo <path>` if multi-repo |
 | 7 | qa-plan | (none) |
 | Final | create-pr | (none) |
 
 For Stage 5 (implementation), include the milestone: `args="$ARGUMENTS M1"` (or whichever milestone is next).
+
+**Multi-repo stage handling:**
+
+For stages that accept `--repo` (1, 4, 5, 6), detect whether this is a multi-repo project:
+- Check the work item's artifact list for multiple `discovery-report-*.md` artifacts, OR
+- Check the gameplan for milestones with `**Repo:**` fields
+
+When multi-repo is detected:
+- **Stage 1 (Discovery):** If any repos still need discovery, determine which repo to run next. Read the PRD or work item body for the list of repos involved. Run `/discovery CALLSIGN --repo <path>` for the next repo.
+- **Stage 4 (Test Generation):** Read the gameplan to find the first milestone's target repo. Run `/test-generation CALLSIGN --repo <repo-path>`. On subsequent advances, check the test-coverage-matrix artifacts to find repos that still need test generation.
+- **Stage 5 (Implementation):** Read the gameplan milestone's `**Repo:**` field. Pass `--repo <repo-path>` to `/implementation CALLSIGN <milestone> --repo <path>`.
+- **Stage 6 (Review):** Run once per repo that has implementation changes. Check for `progress-*.md` artifacts to determine which repos were implemented.
 
 4. When the Task agent returns, report the result to the user:
 

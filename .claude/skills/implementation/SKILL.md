@@ -1,7 +1,7 @@
 ---
 name: implementation
 description: "Run pipeline Stage 5 (Implementation) for a project milestone. Writes code to make Stage 4's failing tests pass."
-argument-hint: "<callsign> <milestone>"
+argument-hint: "<callsign> <milestone> [--repo <path>]"
 allowed-tools:
   - Read
   - Glob
@@ -23,26 +23,41 @@ You are a **code builder**. You write the minimum viable code to make Stage 4's 
 
 ## Argument Parsing
 
-`$ARGUMENTS` contains two space-separated values: `<callsign> <milestone>`
+`$ARGUMENTS` contains: `<callsign> <milestone> [--repo <path>]`
 
 Parse them:
 - **CALLSIGN**: The first token — a WCP callsign (e.g., `SN-3`)
 - **MILESTONE**: The second token, case-insensitive (e.g., `M1`, `m1`)
+- **--repo \<path\>** (optional): Path to the target repository. Used for multi-repo projects where each repo gets its own implementation run.
+
+When `--repo` is provided:
+- **REPO_PATH**: The resolved absolute path
+- **REPO_NAME**: The basename of the path (e.g., `~/projects/wcp-cloud` → `wcp-cloud`)
+- **Conventions file**: Read from `REPO_PATH` root, not cwd
+- **Implementation files**: Written to `REPO_PATH`
+- **Branch**: Operated on in `REPO_PATH`'s git repo
+- **Discovery report**: Read `discovery-report-{REPO_NAME}.md` instead of `discovery-report.md`
+- **Test coverage matrix**: Read `test-coverage-matrix-{REPO_NAME}.md` instead of `test-coverage-matrix.md`
+- **Progress artifact**: Use `progress-{REPO_NAME}.md` instead of `progress.md`
+
+When `--repo` is NOT provided:
+- **REPO_PATH**: Current working directory
+- All artifact names unchanged (backward compatible)
 
 If the second argument is missing, **STOP** and tell the user:
 
-> "Usage: `/implementation <callsign> <milestone>` (e.g., `/implementation SN-3 M1`)"
+> "Usage: `/implementation <callsign> <milestone> [--repo <path>]` (e.g., `/implementation SN-3 M1` or `/implementation SN-3 M1 --repo ~/projects/wcp-cloud`)"
 
 ## Inputs & Outputs
 
 - **Input 1:** `wcp_get_artifact(CALLSIGN, "gameplan.md")` (MUST be approved) — milestone goals, acceptance criteria, platform tasks
 - **Input 2:** `wcp_get_artifact(CALLSIGN, "architecture-proposal.md")` — data model, service design, controller design, view architecture
-- **Input 3:** `wcp_get_artifact(CALLSIGN, "test-coverage-matrix.md")` — maps acceptance criteria to test file locations
-- **Input 4:** `wcp_get_artifact(CALLSIGN, "discovery-report.md")` — existing codebase context
+- **Input 3:** Test coverage matrix — `wcp_get_artifact(CALLSIGN, "test-coverage-matrix.md")` (single-repo) or `wcp_get_artifact(CALLSIGN, "test-coverage-matrix-{REPO_NAME}.md")` (multi-repo)
+- **Input 4:** Discovery report — `wcp_get_artifact(CALLSIGN, "discovery-report.md")` (single-repo) or `wcp_get_artifact(CALLSIGN, "discovery-report-{REPO_NAME}.md")` (multi-repo)
 - **Input 5:** `wcp_get_artifact(CALLSIGN, "prd.md")` — requirement details and edge cases
 - **Input 6:** Test files in the repo's test directory (from Pipeline Configuration → Directory Structure) — the failing tests you must make pass
 - **Output 1:** Implementation code in the repo, committed to the project branch
-- **Output 2:** `wcp_attach(CALLSIGN, ...)` → `progress.md` — updated with milestone completion data
+- **Output 2:** `wcp_attach(CALLSIGN, ...)` → `progress.md` (single-repo) or `progress-{REPO_NAME}.md` (multi-repo) — updated with milestone completion data
 - **Output (conditional):** `wcp_attach(CALLSIGN, ...)` → `ADR-*.md` — written when implementation decisions deviate from or extend the architecture
 
 ## Pre-Flight Checks (MANDATORY)
@@ -69,7 +84,7 @@ Read the gameplan and verify that the requested MILESTONE exists in the mileston
 Verify the project branch `<branch-prefix>CALLSIGN` exists. This branch was created by Stage 4 and contains the failing tests.
 
 ```bash
-git branch --list '<branch-prefix>CALLSIGN'
+git -C REPO_PATH branch --list '<branch-prefix>CALLSIGN'
 ```
 
 If the branch does not exist, **STOP**:
@@ -79,7 +94,7 @@ If the branch does not exist, **STOP**:
 ### Check 4: Clean Working Tree
 
 ```bash
-git status --porcelain
+git -C REPO_PATH status --porcelain
 ```
 
 If there are uncommitted changes, **STOP**:
@@ -125,7 +140,7 @@ date +"%Y-%m-%dT%H:%M:%S%z"
 
 After passing all pre-flight checks, read these files:
 
-1. Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full.
+1. Locate the **conventions file** in `REPO_PATH` root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full.
 2. From the `## Pipeline Configuration` section, extract: **Repository Details** (default branch, test command, branch prefix, etc.), **Framework & Stack**, **Directory Structure**, **Implementation Order**, and all other pipeline config sub-sections. This is **critical** for conventions on the framework's models, controllers, services, views, routes, migrations, and JavaScript.
 3. The gameplan via `wcp_get_artifact(CALLSIGN, "gameplan.md")` — find the **MILESTONE section** specifically. Read the goals, acceptance criteria, and platform tasks.
 4. The architecture proposal via `wcp_get_artifact(CALLSIGN, "architecture-proposal.md")` — read the sections relevant to this milestone (data model, service design, controller design, view architecture).
@@ -135,8 +150,8 @@ After passing all pre-flight checks, read these files:
 
 ### 1. Check Out the Project Branch
 
-1. Fetch latest: `git fetch origin`
-2. Check out the project branch: `git checkout <branch-prefix>CALLSIGN`
+1. Fetch latest: `git -C REPO_PATH fetch origin`
+2. Check out the project branch: `git -C REPO_PATH checkout <branch-prefix>CALLSIGN`
 
 This is the branch Stage 4 created. It already contains the failing tests. All milestone implementations are committed to this same branch.
 

@@ -20,7 +20,7 @@ You are a **technical designer**. You propose the data model, API endpoints, mig
 ## Inputs & Outputs
 
 - **Input 1:** `wcp_get_artifact($ARGUMENTS, "prd.md")`
-- **Input 2:** `wcp_get_artifact($ARGUMENTS, "discovery-report.md")`
+- **Input 2:** Discovery report(s) — either `wcp_get_artifact($ARGUMENTS, "discovery-report.md")` (single-repo) or multiple `discovery-report-{repo-name}.md` artifacts (multi-repo). Check the work item's artifact list to find all discovery reports.
 - **Output:** `wcp_attach($ARGUMENTS, ...)` → `architecture-proposal.md`
 - **Output (conditional):** `wcp_attach($ARGUMENTS, ...)` → `ADR-*.md` — one per significant decision with 2+ viable alternatives
 
@@ -36,7 +36,7 @@ Then read these files in order:
 
 1. Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full. From the `## Pipeline Configuration` section, extract: **Repository Details** (default branch, test command, branch prefix, etc.), and all other pipeline config sub-sections (Framework & Stack, Directory Structure, API Conventions, Multi-Tenant Security, etc.). **Critical**: pay special attention to database conventions, serialization patterns, API response structure, security scoping patterns, and API versioning.
 2. The PRD via `wcp_get_artifact($ARGUMENTS, "prd.md")` — understand what we're building
-3. The Discovery Report via `wcp_get_artifact($ARGUMENTS, "discovery-report.md")` — understand what exists today
+3. Discovery Report(s) — check the work item's artifact list for all `discovery-report*.md` artifacts. Read each via `wcp_get_artifact($ARGUMENTS, "<filename>")`. For multi-repo projects, there will be one per repo (e.g., `discovery-report-wcp-cloud.md`, `discovery-report-wcp-ios.md`). For single-repo projects, there will be one `discovery-report.md`. Read all of them — the architecture must account for every explored repo.
 
 ## Step-by-Step Procedure
 
@@ -120,7 +120,20 @@ For every new data access path:
 - New export requirements from the PRD
 - Export format backwards compatibility
 
-### 8. Document Open Questions
+### 8. Cross-Repo Integration Design
+
+**If multiple discovery reports exist** (multi-repo project), add this section. **If only one discovery report exists**, skip this section entirely.
+
+For multi-repo projects, design the integration points between repos:
+
+- **API Contracts:** For each repo-to-repo communication path, specify the exact API endpoint, request/response format, authentication mechanism, and error handling.
+- **Shared Data Types:** If repos share concepts (e.g., a "work item" exists in both API and client), define the canonical representation and how each repo maps to/from it.
+- **Migration/Deploy Order:** Which repo's changes must be deployed first? Document the dependency chain (e.g., "API changes in wcp-cloud must be deployed before wcp-ios can use them").
+- **Backwards Compatibility Between Repos:** If one repo is deployed before the other, what happens? Define the compatibility window and any versioning requirements.
+
+Include a Cross-Repo Integration section in the architecture proposal output.
+
+### 9. Document Open Questions
 
 For each unresolved decision:
 - State the question clearly
@@ -128,14 +141,14 @@ For each unresolved decision:
 - Give your recommendation with rationale
 - **No "TBD" allowed.** Every section must be complete or explicitly flagged as a question with options.
 
-### 9. Document Alternatives Considered
+### 10. Document Alternatives Considered
 
 For significant design decisions:
 - What alternative approaches you considered
 - Pros and cons of each
 - Why you chose the proposed approach
 
-### 10. Generate ADRs
+### 11. Generate ADRs
 
 For each significant decision that had 2+ genuinely viable alternatives, attach an ADR:
 
@@ -155,7 +168,7 @@ wcp_attach(
 - Not every design choice needs an ADR — only choices where alternatives were genuinely viable and the rationale matters for future understanding
 - If no decisions warrant an ADR, skip this step
 
-### 11. Write the Architecture Proposal
+### 12. Write the Architecture Proposal
 
 Capture the completion timestamp via Bash: `date +"%Y-%m-%dT%H:%M:%S%z"` — save as COMPLETED_AT.
 
@@ -203,6 +216,8 @@ When you need to:
 - Check naming conventions: look at existing code in the relevant directories
 - Understand auth patterns: look at existing controllers
 - See serialization examples: look at the serializer directory from Pipeline Configuration
+
+**For multi-repo projects:** When multiple discovery reports exist, you may need to read conventions files from multiple repos. Each discovery report's `pipeline_repo` frontmatter field contains the repo path. Read each repo's conventions file to understand its specific patterns. Design the architecture to work with each repo's conventions rather than assuming they're identical.
 
 If Pipeline Configuration → Related Repositories lists an API docs repository, reference it for existing response shapes, pagination patterns, error format examples, and sync patterns.
 
@@ -480,7 +495,44 @@ Include fields, associations, and custom formatting.]
 
 ---
 
-## 6. Open Questions for Human Review
+## 6. Cross-Repo Integration
+
+<!-- CONDITIONAL: Include this section only when multiple discovery reports were read (multi-repo project).
+     Otherwise omit this section entirely. -->
+
+### Repos Involved
+
+| Repo | Discovery Report | Role |
+|------|-----------------|------|
+| [repo-name] | `discovery-report-{repo-name}.md` | [e.g., API server, iOS client] |
+
+### API Contracts
+
+#### [Repo A] → [Repo B]: [Purpose]
+
+**Endpoint:** `[METHOD] [path]`
+**Auth:** [How the calling repo authenticates]
+**Request:** [JSON example]
+**Response:** [JSON example]
+
+### Shared Data Types
+
+| Concept | [Repo A] representation | [Repo B] representation | Mapping |
+|---------|------------------------|------------------------|---------|
+| [Entity] | [Class/struct/type] | [Class/struct/type] | [How they map] |
+
+### Deploy Order
+
+1. [First repo] — [what must be deployed first and why]
+2. [Second repo] — [depends on #1 being live]
+
+### Compatibility Window
+
+[What happens during the window when repo A is deployed but repo B is not yet updated]
+
+---
+
+## 7. Open Questions for Human Review
 
 | # | Question | Options | Recommendation |
 |---|----------|---------|---------------|
@@ -489,7 +541,7 @@ Include fields, associations, and custom formatting.]
 
 ---
 
-## 7. Alternatives Considered
+## 8. Alternatives Considered
 
 ### [Alternative Approach Name]
 
@@ -500,7 +552,7 @@ Include fields, associations, and custom formatting.]
 
 ---
 
-## 8. Architecture Decision Records
+## 9. Architecture Decision Records
 
 > ADRs for significant decisions are attached as artifacts. Only decisions with 2+ genuinely viable alternatives are recorded.
 
@@ -512,7 +564,7 @@ Include fields, associations, and custom formatting.]
 
 ---
 
-## 9. Summary
+## 10. Summary
 
 ### Files to Create
 | File | Purpose |

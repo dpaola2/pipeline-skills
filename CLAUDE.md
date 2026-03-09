@@ -35,12 +35,12 @@ Each skill is a single `SKILL.md` file with YAML frontmatter + markdown. No subd
 | Stage | Skill | Input | Output (WCP artifact) |
 |-------|-------|-------|-----------------------|
 | 0 | `prd` | Work item body | `prd.md` |
-| 1 | `discovery` | `prd.md` + codebase | `discovery-report.md` |
-| 2 | `architecture` | PRD + discovery | `architecture-proposal.md` + optional ADRs |
-| 3 | `gameplan` | Approved architecture + discovery + PRD | `gameplan.md` |
-| 4 | `test-generation` | Approved gameplan | Test files in repo + `test-coverage-matrix.md` |
-| 5 | `implementation` | Failing tests + gameplan | Code in repo + `progress.md` |
-| 6 | `review` | Branch diff + all artifacts | `review-report.md` |
+| 1 | `discovery` | `prd.md` + codebase | `discovery-report.md` or `discovery-report-{repo}.md` |
+| 2 | `architecture` | PRD + all discovery reports | `architecture-proposal.md` + optional ADRs |
+| 3 | `gameplan` | Approved architecture + discovery + PRD | `gameplan.md` (milestones tagged with repo) |
+| 4 | `test-generation` | Approved gameplan | Test files + `test-coverage-matrix[-{repo}].md` |
+| 5 | `implementation` | Failing tests + gameplan | Code + `progress[-{repo}].md` |
+| 6 | `review` | Branch diff + all artifacts | `review-report[-{repo}].md` |
 | 7 | `qa-plan` | All artifacts + implementation | QA plan |
 
 **Orchestration:** `pipeline-advance`, `pipeline-approve`, `pipeline-autopilot`
@@ -69,15 +69,17 @@ Collections are defined in `registry.yaml`.
 - **The conventions file is the source of truth** for how a target repo works. Skills read it for all framework-specific details.
 - **WCP is the artifact store.** All stage inputs/outputs are WCP artifacts on the work item. Skills read via `wcp_get_artifact` and write via `wcp_attach`.
 
-### Known Limitation: Single-Repo Assumption
+### Multi-Repo Support
 
-All pipeline skills currently assume a single repo per pipeline run. This means:
-- One `discovery-report.md` per work item (second run overwrites first)
-- Architecture reads one conventions file from repo root
-- Implementation works in one directory
-- Progress tracking is linear (M1 → M2 → M3)
+The pipeline supports both single-repo and multi-repo projects. For multi-repo features (e.g., iOS + API changes):
 
-**PIPE-11** tracks the work to add multi-repo support. Cross-platform features (e.g., iOS + API changes) currently require manual coordination: run discovery per repo separately, write a unified architecture by hand, and run implementation per repo.
+- **Discovery:** Run per repo with `--repo <path>`. Produces `discovery-report-{repo-name}.md` artifacts.
+- **Architecture:** Reads all discovery reports, produces unified proposal with a Cross-Repo Integration section.
+- **Gameplan:** Milestones tagged with target repo, ordered by cross-repo dependency.
+- **Test Generation / Implementation / Review:** Run per repo with `--repo <path>`. Artifacts suffixed with repo name.
+- **Orchestrators:** Detect multi-repo from artifact list, loop over repos in dependency order.
+
+Single-repo projects are unaffected — all skills are backward compatible when `--repo` is omitted.
 
 ---
 

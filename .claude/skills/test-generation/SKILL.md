@@ -1,7 +1,7 @@
 ---
 name: test-generation
 description: "Run pipeline Stage 4 (Test Generation) for a project. Writes failing TDD test suites in the primary repo from the approved gameplan."
-argument-hint: "<callsign>"
+argument-hint: "<callsign> [--repo <path>]"
 allowed-tools:
   - Read
   - Glob
@@ -26,9 +26,33 @@ You are a **test writer**. You write comprehensive, failing test suites BEFORE a
 - **Input 1:** `wcp_get_artifact($ARGUMENTS, "gameplan.md")` (MUST be approved) — milestones and acceptance criteria
 - **Input 2:** `wcp_get_artifact($ARGUMENTS, "architecture-proposal.md")` — data model, query patterns, security design
 - **Input 3:** `wcp_get_artifact($ARGUMENTS, "prd.md")` — requirement IDs and edge cases (Section 10)
-- **Input 4:** `wcp_get_artifact($ARGUMENTS, "discovery-report.md")` — existing codebase context
+- **Input 4:** Discovery report — `wcp_get_artifact(CALLSIGN, "discovery-report.md")` (single-repo) or `wcp_get_artifact(CALLSIGN, "discovery-report-{REPO_NAME}.md")` (multi-repo, when `--repo` specified)
 - **Output 1:** Test files in the repo's test directory (from Pipeline Configuration → Directory Structure)
 - **Output 2:** `wcp_attach($ARGUMENTS, ...)` → `test-coverage-matrix.md` — maps acceptance criteria to test locations
+
+## Argument Parsing
+
+`$ARGUMENTS` contains: `<callsign> [--repo <path>]`
+
+Parse them:
+- **CALLSIGN**: The first token — a WCP callsign (e.g., `SN-3`)
+- **--repo \<path\>** (optional): Path to a specific repository to write tests in. Used for multi-repo projects where each repo gets its own test generation run.
+
+When `--repo` is provided:
+- **REPO_PATH**: The resolved absolute path
+- **REPO_NAME**: The basename of the path (e.g., `~/projects/wcp-cloud` → `wcp-cloud`)
+- **Conventions file**: Read from `REPO_PATH` root, not cwd
+- **Test files**: Written to `REPO_PATH`'s test directories
+- **Branch**: Created in `REPO_PATH`'s git repo
+- **Artifact suffix**: Use `test-coverage-matrix-{REPO_NAME}.md` instead of `test-coverage-matrix.md`
+- **Discovery report**: Read `discovery-report-{REPO_NAME}.md` instead of `discovery-report.md`
+
+When `--repo` is NOT provided:
+- **REPO_PATH**: Current working directory
+- All artifact names unchanged (backward compatible)
+- Discovery report: `discovery-report.md`
+
+Use CALLSIGN in place of $ARGUMENTS for all WCP calls. Use REPO_PATH for all file system operations.
 
 ## Pre-Flight Check (MANDATORY)
 
@@ -59,7 +83,7 @@ date +"%Y-%m-%dT%H:%M:%S%z"
 
 After passing the pre-flight check, read these files:
 
-1. Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full.
+1. Locate the **conventions file** in `REPO_PATH` root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full.
 2. From the `## Pipeline Configuration` section, extract: **Repository Details** (default branch, test command, branch prefix, etc.), **Framework & Stack**, **Directory Structure**, and all other pipeline config sub-sections. This is **critical** for test conventions, directory structure, factory patterns, and test framework configuration.
 3. The approved gameplan: `wcp_get_artifact($ARGUMENTS, "gameplan.md")` — your primary input (milestones, acceptance criteria, platform tasks)
 4. The architecture proposal: `wcp_get_artifact($ARGUMENTS, "architecture-proposal.md")` — data model, query patterns, serialization, security scoping
@@ -71,7 +95,7 @@ After passing the pre-flight check, read these files:
 
 Search the repo to understand how tests are currently written. **Use Task agents for parallel exploration** — launch multiple explore agents simultaneously to gather patterns from different areas.
 
-Read Pipeline Configuration → Directory Structure to identify which test directories exist. For each test directory listed, find 2-3 examples and study:
+Read Pipeline Configuration → Directory Structure to identify which test directories exist (rooted at `REPO_PATH`). For each test directory listed, find 2-3 examples and study:
 
 **Model/unit tests** — From the model test directory (from Pipeline Configuration → Directory Structure):
 - How validations, associations, and scopes/queries are tested
@@ -201,10 +225,10 @@ Attach to the work item via WCP:
 
 ```
 wcp_attach(
-  id=$ARGUMENTS,
+  id=CALLSIGN,
   type="test-matrix",
-  title="Test Coverage Matrix",
-  filename="test-coverage-matrix.md",
+  title="Test Coverage Matrix[ — REPO_NAME]",
+  filename="[test-coverage-matrix.md or test-coverage-matrix-{REPO_NAME}.md]",
   content="[full matrix content with frontmatter]"
 )
 ```
@@ -252,18 +276,18 @@ Fix any syntax errors before finishing.
 
 ### Branch Management
 
-**Before writing any files**, create a dedicated branch:
+**Before writing any files**, create a dedicated branch (in `REPO_PATH`):
 
-1. Verify the working tree is clean (`git status`). If there are uncommitted changes, **STOP** and ask the user how to proceed.
-2. Fetch the latest from origin: `git fetch origin`
-3. Create and check out a new branch: `git checkout -b <branch-prefix>$ARGUMENTS <default-branch>` (branch prefix and default branch from Pipeline Configuration → Repository Details)
+1. Verify the working tree is clean (`git -C REPO_PATH status`). If there are uncommitted changes, **STOP** and ask the user how to proceed.
+2. Fetch the latest from origin: `git -C REPO_PATH fetch origin`
+3. Create and check out a new branch: `git -C REPO_PATH checkout -b <branch-prefix>CALLSIGN <default-branch>` (branch prefix and default branch from Pipeline Configuration → Repository Details)
 
-If the branch `<branch-prefix>$ARGUMENTS` already exists, **STOP** and ask the user whether to overwrite it or use a different name. Do not delete existing branches without explicit approval.
+If the branch `<branch-prefix>CALLSIGN` already exists, **STOP** and ask the user whether to overwrite it or use a different name. Do not delete existing branches without explicit approval.
 
 ### Pre-Write Verification
 
 **Before writing any files**, verify:
-1. You're on the correct branch (`<branch-prefix>$ARGUMENTS`)
+1. You're on the correct branch (`<branch-prefix>CALLSIGN`)
 2. You're writing to the correct test directories (from Pipeline Configuration → Directory Structure — use `ls` and `Glob` to check structure)
 3. No existing file will be overwritten (use `Glob` to check)
 4. New test data files don't conflict with existing ones
@@ -285,28 +309,28 @@ If the branch `<branch-prefix>$ARGUMENTS` already exists, **STOP** and ask the u
 
 ### Commit the Test Files
 
-Commit all new files on the `<branch-prefix>$ARGUMENTS` branch:
+Commit all new files on the `<branch-prefix>CALLSIGN` branch:
 
 1. `git add` each new file by name (do NOT use `git add .` or `git add -A`)
-2. Commit with message: `Add Stage 4 test suite for $ARGUMENTS`
+2. Commit with message: `Add Stage 4 test suite for CALLSIGN`
 3. Do NOT push unless the user asks you to
 
 ### Log Completion
 
 ```
 wcp_comment(
-  id=$ARGUMENTS,
+  id=CALLSIGN,
   author="pipeline/test-generation",
-  body="Stage 4 complete — Test suite committed on branch `<branch-prefix>$ARGUMENTS`, coverage matrix attached as test-coverage-matrix.md"
+  body="Stage 4 complete — Test suite committed on branch `<branch-prefix>CALLSIGN`[ in REPO_NAME], coverage matrix attached as [ARTIFACT_NAME]"
 )
 ```
 
 ### Report to User
 
 Tell the user:
-1. The branch name: `<branch-prefix>$ARGUMENTS`
+1. The branch name: `<branch-prefix>CALLSIGN`
 2. List every file created with a brief description of what it tests
-3. The coverage matrix has been attached to `$ARGUMENTS` as `test-coverage-matrix.md`
+3. The coverage matrix has been attached to `CALLSIGN` as `[ARTIFACT_NAME]`
 4. How many acceptance criteria are covered and by how many test cases total
 5. Any acceptance criteria that couldn't be fully tested (and why)
 6. Results of the syntax check (syntax check command from Pipeline Configuration)

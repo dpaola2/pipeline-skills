@@ -79,19 +79,19 @@ Generate a structured PRD from a WCP work item.
 
 ---
 
-### `/discovery <callsign>`
+### `/discovery <callsign> [--repo <path>]`
 
 Explore the codebase to understand current state before designing changes.
 
 | | |
 |---|---|
-| **Invocation** | `/discovery <callsign>` |
-| **Arguments** | `callsign` — WCP work item identifier (e.g., `SN-3`) |
+| **Invocation** | `/discovery <callsign>` or `/discovery <callsign> --repo ~/projects/wcp-cloud` |
+| **Arguments** | `callsign` — WCP work item identifier (e.g., `SN-3`); `--repo <path>` — optional, target a specific repo for multi-repo projects |
 | **Prerequisites** | `wcp_get_artifact(callsign, "prd.md")` exists |
-| **Reads** | Conventions file (full Pipeline Configuration); PRD via `wcp_get_artifact(callsign, "prd.md")`; target repo codebase (read-only); API docs repo (if Related Repositories configured) |
-| **Produces** | `wcp_attach(callsign, ...)` → `discovery-report.md` |
+| **Reads** | Conventions file from target repo (or `--repo` path); PRD via `wcp_get_artifact(callsign, "prd.md")`; target repo codebase (read-only); API docs repo (if Related Repositories configured) |
+| **Produces** | `wcp_attach(callsign, ...)` → `discovery-report.md` (single-repo) or `discovery-report-{repo-name}.md` (when `--repo` specified) |
 | **Side Effects** | None — read-only exploration of target repo |
-| **Human Action** | Optional review of discovery report before proceeding |
+| **Human Action** | Optional review. For multi-repo, run once per repo before proceeding to architecture. |
 
 ---
 
@@ -103,8 +103,8 @@ Design data model, API endpoints, migrations, and security scoping.
 |---|---|
 | **Invocation** | `/architecture <callsign>` |
 | **Arguments** | `callsign` — WCP work item identifier (e.g., `SN-3`) |
-| **Prerequisites** | `wcp_get_artifact(callsign, "prd.md")` and `wcp_get_artifact(callsign, "discovery-report.md")` exist |
-| **Reads** | Conventions file (full Pipeline Configuration); PRD; discovery report; target repo codebase (read-only) — all artifacts via `wcp_get_artifact` |
+| **Prerequisites** | `wcp_get_artifact(callsign, "prd.md")` and at least one discovery report exist |
+| **Reads** | Conventions file(s) from target repo(s); PRD; all `discovery-report*.md` artifacts; target repo codebase(s) (read-only) — all artifacts via `wcp_get_artifact` |
 | **Produces** | `wcp_attach(callsign, ...)` → `architecture-proposal.md`; optionally `wcp_attach(callsign, ...)` → `decisions/ADR-*.md` |
 | **Side Effects** | None — read-only exploration of target repo |
 | **Human Action** | **REQUIRED.** Review and approve the architecture proposal. Read the `architecture-proposal.md` artifact, modify the Approval Checklist at the bottom to set Status to "Approved" (or "Approved with Modifications"), fill in the reviewer checklist, and reattach the updated artifact. |
@@ -120,40 +120,40 @@ Produce the engineering gameplan from PRD + discovery + approved architecture.
 | **Invocation** | `/gameplan <callsign>` |
 | **Arguments** | `callsign` — WCP work item identifier (e.g., `SN-3`) |
 | **Prerequisites** | Architecture proposal must be **approved** (Approval Checklist Status = "Approved" or "Approved with Modifications") |
-| **Reads** | Conventions file (full Pipeline Configuration); PRD; discovery report; architecture proposal — all artifacts via `wcp_get_artifact` |
+| **Reads** | Conventions file (full Pipeline Configuration); PRD; all discovery reports; architecture proposal — all artifacts via `wcp_get_artifact` |
 | **Produces** | `wcp_attach(callsign, ...)` → `gameplan.md`; backfills `pipeline_approved_at` in architecture-proposal.md artifact |
 | **Side Effects** | None |
 | **Human Action** | **REQUIRED.** Review and approve the gameplan. Read the `gameplan.md` artifact, modify the Approval Checklist near the bottom to set Status to "Approved", and reattach the updated artifact. |
 
 ---
 
-### `/test-generation <callsign>`
+### `/test-generation <callsign> [--repo <path>]`
 
 Write failing TDD test suites before any implementation code exists.
 
 | | |
 |---|---|
-| **Invocation** | `/test-generation <callsign>` |
-| **Arguments** | `callsign` — WCP work item identifier (e.g., `SN-3`) |
+| **Invocation** | `/test-generation <callsign>` or `/test-generation <callsign> --repo ~/projects/wcp-cloud` |
+| **Arguments** | `callsign` — WCP work item identifier (e.g., `SN-3`); `--repo <path>` — optional, target a specific repo for multi-repo projects |
 | **Prerequisites** | Gameplan must be **approved**; clean working tree in target repo |
-| **Reads** | Conventions file (full Pipeline Configuration); gameplan; architecture proposal; PRD; discovery report — all artifacts via `wcp_get_artifact`; existing test patterns in target repo |
-| **Produces** | Test files and test data files (factories/fixtures) in the target repo; `wcp_attach(callsign, ...)` → `test-coverage-matrix.md`; backfills `pipeline_approved_at` in gameplan.md artifact |
+| **Reads** | Conventions file from target repo (or `--repo` path); gameplan; architecture proposal; PRD; discovery report — all artifacts via `wcp_get_artifact`; existing test patterns in target repo |
+| **Produces** | Test files in the target repo; `wcp_attach(callsign, ...)` → `test-coverage-matrix.md` or `test-coverage-matrix-{repo-name}.md`; backfills `pipeline_approved_at` in gameplan.md artifact |
 | **Side Effects** | Creates branch `<branch-prefix><callsign>` in the target repo; commits test files to that branch |
-| **Human Action** | Optional review of tests before implementation |
+| **Human Action** | Optional review. For multi-repo, run once per repo. |
 
 ---
 
-### `/implementation <callsign> <milestone>`
+### `/implementation <callsign> <milestone> [--repo <path>]`
 
 Implement one milestone — write code to make Stage 4's failing tests pass.
 
 | | |
 |---|---|
-| **Invocation** | `/implementation <callsign> <milestone>` |
-| **Arguments** | `callsign` — WCP work item identifier (e.g., `SN-3`); `milestone` — positional, required (e.g., `M1`, `M2`, case-insensitive) |
-| **Prerequisites** | Gameplan approved; project branch `<branch-prefix><callsign>` exists (created by Stage 4); clean working tree; for M2+, prior milestone tests must pass |
-| **Reads** | Conventions file (full Pipeline Configuration); gameplan; architecture proposal; test-coverage-matrix; discovery report; PRD — all artifacts via `wcp_get_artifact`; test files for this milestone; existing codebase patterns |
-| **Produces** | Implementation code in target repo (on project branch); `wcp_attach(callsign, ...)` → `progress.md` (created or updated); optionally `wcp_attach(callsign, ...)` → `decisions/ADR-*.md` |
+| **Invocation** | `/implementation <callsign> <milestone>` or `/implementation <callsign> M1 --repo ~/projects/wcp-cloud` |
+| **Arguments** | `callsign` — WCP work item identifier (e.g., `SN-3`); `milestone` — positional, required (e.g., `M1`, `M2`, case-insensitive); `--repo <path>` — optional, target a specific repo for multi-repo projects |
+| **Prerequisites** | Gameplan approved; project branch exists in target repo; clean working tree; for M2+, prior milestone tests must pass |
+| **Reads** | Conventions file from target repo (or `--repo` path); gameplan; architecture proposal; test-coverage-matrix; discovery report; PRD — all artifacts via `wcp_get_artifact`; test files; existing codebase patterns |
+| **Produces** | Implementation code in target repo; `wcp_attach(callsign, ...)` → `progress.md` or `progress-{repo-name}.md`; optionally ADRs |
 | **Side Effects** | Commits implementation to project branch; may update conventions file with codebase insights; captures quality metrics if Complexity Analysis configured |
 | **Human Action** | None between milestones (run next milestone when ready) |
 
@@ -161,19 +161,19 @@ Implement one milestone — write code to make Stage 4's failing tests pass.
 
 ---
 
-### `/review <callsign>`
+### `/review <callsign> [--repo <path>]`
 
 Review the full branch diff against conventions, security, spec, and code quality.
 
 | | |
 |---|---|
-| **Invocation** | `/review <callsign>` |
-| **Arguments** | `callsign` — WCP work item identifier (e.g., `SN-3`) |
-| **Prerequisites** | All milestones marked Complete in progress.md; project branch exists; clean working tree |
-| **Reads** | Conventions file (full Pipeline Configuration); architecture proposal; gameplan; progress.md; test-coverage-matrix — all artifacts via `wcp_get_artifact`; all changed files on the project branch |
-| **Produces** | `wcp_attach(callsign, ...)` → `review-report.md` |
+| **Invocation** | `/review <callsign>` or `/review <callsign> --repo ~/projects/wcp-cloud` |
+| **Arguments** | `callsign` — WCP work item identifier (e.g., `SN-3`); `--repo <path>` — optional, review a specific repo for multi-repo projects |
+| **Prerequisites** | All milestones marked Complete in progress.md (or repo-specific progress file); project branch exists; clean working tree |
+| **Reads** | Conventions file from target repo (or `--repo` path); architecture proposal; gameplan; progress; test-coverage-matrix — all artifacts via `wcp_get_artifact`; all changed files on the project branch |
+| **Produces** | `wcp_attach(callsign, ...)` → `review-report.md` or `review-report-{repo-name}.md` |
 | **Side Effects** | None — report-only, does not modify target repo |
-| **Human Action** | If verdict is CHANGES REQUESTED, fix blocker/major findings and re-run. If APPROVED, proceed to Stage 7. |
+| **Human Action** | If verdict is CHANGES REQUESTED, fix blocker/major findings and re-run. For multi-repo, run once per repo. |
 
 ---
 

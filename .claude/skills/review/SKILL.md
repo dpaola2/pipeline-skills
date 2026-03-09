@@ -1,7 +1,7 @@
 ---
 name: review
 description: "Run pipeline Stage 6 (Code Review) for a project. Reviews the full branch diff against conventions, security requirements, spec, and code quality. Produces a review-report.md with categorized findings and a verdict."
-argument-hint: "<callsign>"
+argument-hint: "<callsign> [--repo <path>]"
 allowed-tools:
   - Bash
   - Read
@@ -11,6 +11,27 @@ allowed-tools:
   - mcp__wcp__wcp_attach
   - mcp__wcp__wcp_comment
 ---
+
+## Argument Parsing
+
+`$ARGUMENTS` contains: `<callsign> [--repo <path>]`
+
+Parse them:
+- **CALLSIGN**: The first token — a WCP callsign (e.g., `SN-3`)
+- **--repo \<path\>** (optional): Path to a specific repository to review. Used for multi-repo projects where each repo gets its own review.
+
+When `--repo` is provided:
+- **REPO_PATH**: The resolved absolute path
+- **REPO_NAME**: The basename of the path (e.g., `~/projects/wcp-cloud` → `wcp-cloud`)
+- **Conventions file**: Read from `REPO_PATH` root
+- **Branch diff**: From `REPO_PATH`'s git repo
+- **Artifact names**: `review-report-{REPO_NAME}.md`, reads `progress-{REPO_NAME}.md`, `test-coverage-matrix-{REPO_NAME}.md`, `discovery-report-{REPO_NAME}.md`
+
+When `--repo` is NOT provided:
+- **REPO_PATH**: Current working directory
+- All artifact names unchanged (backward compatible)
+
+Use CALLSIGN in place of $ARGUMENTS for all WCP calls. Use REPO_PATH for all file system and git operations.
 
 # Stage 6: Code Review
 
@@ -23,12 +44,12 @@ You are a **code reviewer**. You examine the full branch diff for a completed pr
 ## Inputs & Outputs
 
 - **Input 1:** Conventions file (`CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` in repo root) — framework, directory structure, test command, security config, convention standard
-- **Input 2:** `wcp_get_artifact($ARGUMENTS, "architecture-proposal.md")` — approved design
-- **Input 3:** `wcp_get_artifact($ARGUMENTS, "gameplan.md")` — acceptance criteria, milestone breakdown
-- **Input 4:** `wcp_get_artifact($ARGUMENTS, "progress.md")` — milestone completion data, spec gaps, notes
-- **Input 5:** `wcp_get_artifact($ARGUMENTS, "test-coverage-matrix.md")` — what should be tested
+- **Input 2:** `wcp_get_artifact(CALLSIGN, "architecture-proposal.md")` — approved design
+- **Input 3:** `wcp_get_artifact(CALLSIGN, "gameplan.md")` — acceptance criteria, milestone breakdown
+- **Input 4:** `wcp_get_artifact(CALLSIGN, "progress.md")` or `progress-{REPO_NAME}.md` — milestone completion data
+- **Input 5:** `wcp_get_artifact(CALLSIGN, "test-coverage-matrix.md")` or `test-coverage-matrix-{REPO_NAME}.md` — what should be tested
 - **Input 6:** Branch diff files — the actual code to review
-- **Output:** `wcp_attach($ARGUMENTS, ...)` → `review-report.md`
+- **Output:** `wcp_attach(CALLSIGN, ...)` → `review-report.md`
 
 ## Pre-Flight Check (MANDATORY)
 
@@ -37,7 +58,7 @@ You are a **code reviewer**. You examine the full branch diff for a completed pr
 Fetch the progress artifact:
 
 ```
-wcp_get_artifact($ARGUMENTS, "progress.md")
+wcp_get_artifact(CALLSIGN, "progress.md") [or progress-{REPO_NAME}.md for multi-repo]
 ```
 
 Check the **Milestone Status** table.
@@ -45,24 +66,24 @@ Check the **Milestone Status** table.
 - If ALL milestones are marked **Complete** → proceed.
 - If ANY milestone is still **Pending** or **In Progress** → **STOP**:
 
-> "Not all milestones are complete. Stage 6 runs after all implementation is done. Remaining milestones: [list pending milestones]. Run `/implementation $ARGUMENTS <milestone>` to complete them first."
+> "Not all milestones are complete. Stage 6 runs after all implementation is done. Remaining milestones: [list pending milestones]. Run `/implementation CALLSIGN <milestone>` to complete them first."
 
 ### 2. Project branch exists
 
 Check that the project branch exists in the repo:
 
 ```bash
-git branch --list '<branch-prefix>$ARGUMENTS'
+git -C REPO_PATH branch --list '<branch-prefix>CALLSIGN'
 ```
 
 If the branch doesn't exist, **STOP**:
 
-> "Branch `<branch-prefix>$ARGUMENTS` not found. Has Stage 5 been run?"
+> "Branch `<branch-prefix>CALLSIGN` not found. Has Stage 5 been run?"
 
 ### 3. Clean working tree
 
 ```bash
-git status --porcelain
+git -C REPO_PATH status --porcelain
 ```
 
 If there are uncommitted changes on the project branch, **STOP**:
@@ -79,11 +100,11 @@ date +"%Y-%m-%dT%H:%M:%S%z"
 
 After passing all pre-flight checks, read ALL of these:
 
-1. Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full. From the `## Pipeline Configuration` section, extract: **Repository Details** (default branch, branch prefix, test command), **Framework & Stack**, **Directory Structure**, **Multi-Tenant Security** (if present), **API Conventions** (if present), and **Platforms**.
-2. The architecture proposal: `wcp_get_artifact($ARGUMENTS, "architecture-proposal.md")` — the approved design
-3. The gameplan: `wcp_get_artifact($ARGUMENTS, "gameplan.md")` — acceptance criteria, milestone breakdown
-4. The progress file: `wcp_get_artifact($ARGUMENTS, "progress.md")` — spec gaps, implementation notes, test results
-5. The test-coverage-matrix: `wcp_get_artifact($ARGUMENTS, "test-coverage-matrix.md")` — what should be tested
+1. Locate the **conventions file** in `REPO_PATH` root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full. From the `## Pipeline Configuration` section, extract: **Repository Details** (default branch, branch prefix, test command), **Framework & Stack**, **Directory Structure**, **Multi-Tenant Security** (if present), **API Conventions** (if present), and **Platforms**.
+2. The architecture proposal: `wcp_get_artifact(CALLSIGN, "architecture-proposal.md")` — the approved design
+3. The gameplan: `wcp_get_artifact(CALLSIGN, "gameplan.md")` — acceptance criteria, milestone breakdown
+4. The progress file: `wcp_get_artifact(CALLSIGN, "progress.md")` — spec gaps, implementation notes, test results
+5. The test-coverage-matrix: `wcp_get_artifact(CALLSIGN, "test-coverage-matrix.md")` — what should be tested
 
 ## Step-by-Step Procedure
 
@@ -92,13 +113,13 @@ After passing all pre-flight checks, read ALL of these:
 Get the list of changed files:
 
 ```bash
-git diff --name-only origin/<base-branch>...<branch-prefix>$ARGUMENTS
+git -C REPO_PATH diff --name-only origin/<base-branch>...<branch-prefix>CALLSIGN
 ```
 
 Get the commit count:
 
 ```bash
-git log --oneline origin/<base-branch>...<branch-prefix>$ARGUMENTS | wc -l
+git -C REPO_PATH log --oneline origin/<base-branch>...<branch-prefix>CALLSIGN | wc -l
 ```
 
 Categorize the changed files into groups based on Pipeline Configuration → Directory Structure. Map each file to its purpose category (Models, Controllers, Services, Views, Migrations, Frontend JS, Routes, Tests, Other) using the paths from that section.
@@ -211,10 +232,10 @@ Attach the review report to the work item:
 
 ```
 wcp_attach(
-  id=$ARGUMENTS,
+  id=CALLSIGN,
   type="review",
-  title="Code Review Report",
-  filename="review-report.md",
+  title="Code Review Report[ — REPO_NAME]",
+  filename="[review-report.md or review-report-{REPO_NAME}.md]",
   content="[full report with frontmatter]"
 )
 ```
@@ -225,7 +246,7 @@ Prepend YAML frontmatter:
 ---
 pipeline_stage: 6
 pipeline_stage_name: review
-pipeline_project: "$ARGUMENTS"
+pipeline_project: "CALLSIGN"
 pipeline_started_at: "<STARTED_AT>"
 pipeline_completed_at: "<COMPLETED_AT>"
 pipeline_review_verdict: "<approved | changes_requested>"
@@ -256,9 +277,9 @@ Before finalizing, verify:
 
 ```
 wcp_comment(
-  id=$ARGUMENTS,
+  id=CALLSIGN,
   author="pipeline/review",
-  body="Stage 6 complete — Review report attached as review-report.md. Verdict: [APPROVED/CHANGES REQUESTED]"
+  body="Stage 6 complete — Review report attached as [ARTIFACT_NAME]. Verdict: [APPROVED/CHANGES REQUESTED][ (repo: REPO_NAME)]"
 )
 ```
 
@@ -277,15 +298,15 @@ wcp_comment(
 Tell the user:
 
 **If APPROVED:**
-1. The review report has been attached to `$ARGUMENTS` as `review-report.md`
+1. The review report has been attached to `CALLSIGN` as `review-report.md`
 2. Summarize: files reviewed, findings count by severity, verdict
-3. "The code review passed. Next step: `/qa-plan $ARGUMENTS`"
+3. "The code review passed. Next step: `/qa-plan CALLSIGN`"
 
 **If CHANGES REQUESTED:**
-1. The review report has been attached to `$ARGUMENTS` as `review-report.md`
+1. The review report has been attached to `CALLSIGN` as `review-report.md`
 2. Summarize: files reviewed, findings count by severity, verdict
 3. List the Blocker and Major findings with their suggestions
-4. "Fix the Blocker/Major findings and re-run `/review $ARGUMENTS`"
+4. "Fix the Blocker/Major findings and re-run `/review CALLSIGN`"
 
 ## Flag vs Escalate
 
@@ -318,10 +339,10 @@ pipeline_review_notes: "[count]"
 
 > **Generated by:** Pipeline Stage 6 (Review)
 > **Date:** [Date]
-> **Branch:** `<branch-prefix>$ARGUMENTS`
+> **Branch:** `<branch-prefix>CALLSIGN`
 > **Base:** `[base-branch]`
-> **Architecture:** `$ARGUMENTS` artifact `architecture-proposal.md`
-> **Gameplan:** `$ARGUMENTS` artifact `gameplan.md`
+> **Architecture:** `CALLSIGN` artifact `architecture-proposal.md`
+> **Gameplan:** `CALLSIGN` artifact `gameplan.md`
 
 ---
 
@@ -408,7 +429,7 @@ A dimension **Fails** if it has any Blocker or Major findings. **Pass** means Mi
 
 | Field | Value |
 |-------|-------|
-| **Branch** | `<branch-prefix>$ARGUMENTS` |
+| **Branch** | `<branch-prefix>CALLSIGN` |
 | **Base** | `[base-branch]` |
 | **Files reviewed** | [count] |
 | **Commits reviewed** | [count] |

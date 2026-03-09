@@ -44,7 +44,7 @@ Detect the current pipeline stage using the same artifact inspection logic as `/
 
 ```
 1. prd.md missing? → Stage 0
-2. discovery-report.md missing? → Stage 1
+2. No discovery reports (neither discovery-report.md nor any discovery-report-*.md)? → Stage 1
 3. architecture-proposal.md missing? → Stage 2
 4. architecture-proposal.md pending? → Architecture approval gate
 5. gameplan.md missing? → Stage 3
@@ -96,12 +96,12 @@ Execute stages sequentially. Each stage runs in a Task agent for context isolati
 ```
 STAGE_ORDER = [
   { num: 0, name: "PRD",            skill: "prd",             gate: false },
-  { num: 1, name: "Discovery",      skill: "discovery",       gate: false },
+  { num: 1, name: "Discovery",      skill: "discovery",       gate: false, per_repo: true },
   { num: 2, name: "Architecture",   skill: "architecture",    gate: true,  artifact: "architecture-proposal.md" },
   { num: 3, name: "Gameplan",       skill: "gameplan",        gate: true,  artifact: "gameplan.md" },
-  { num: 4, name: "Test Generation",skill: "test-generation", gate: false },
-  { num: 5, name: "Implementation", skill: "implementation",  gate: false, multi: true },
-  { num: 6, name: "Review",         skill: "review",          gate: false },
+  { num: 4, name: "Test Generation",skill: "test-generation", gate: false, per_repo: true },
+  { num: 5, name: "Implementation", skill: "implementation",  gate: false, multi: true, per_repo: true },
+  { num: 6, name: "Review",         skill: "review",          gate: false, per_repo: true },
   { num: 7, name: "QA Plan",        skill: "qa-plan",         gate: false },
 ]
 ```
@@ -182,7 +182,19 @@ Stage 5 is special: it runs once per milestone. After each milestone:
 
 This means Stage 5 may spawn multiple Task agents sequentially (one per milestone). Each gets a fresh context.
 
-**E. Check for stage failure:**
+**E. Handle per_repo stages (multi-repo projects):**
+
+For stages marked `per_repo: true`, detect whether this is a multi-repo project by checking the work item's artifact list for multiple `discovery-report-*.md` artifacts.
+
+**If multi-repo:**
+1. **Stage 1 (Discovery):** Determine all repos involved (from PRD body or work item). For each repo without a `discovery-report-{repo-name}.md` artifact, run `/discovery CALLSIGN --repo <path>` in a Task agent. Run these sequentially (each may need significant context).
+2. **Stage 4 (Test Generation):** Read the gameplan to identify all target repos. For each repo that doesn't yet have a `test-coverage-matrix-{repo-name}.md`, run `/test-generation CALLSIGN --repo <path>`.
+3. **Stage 5 (Implementation):** When iterating milestones, read each milestone's `**Repo:**` field from the gameplan. Pass `--repo <path>` to each `/implementation` invocation. Milestones are already ordered by cross-repo dependency in the gameplan.
+4. **Stage 6 (Review):** For each repo that has a `progress-{repo-name}.md` artifact, run `/review CALLSIGN --repo <path>`.
+
+**If single-repo:** Behave as before (no `--repo` flag).
+
+**F. Check for stage failure:**
 
 After each Task agent returns, check the result:
 - If the stage reported success → continue to next stage
@@ -191,7 +203,7 @@ After each Task agent returns, check the result:
   - Log it as a WCP comment
   - Tell the user what to fix
 
-**F. Log progress after each stage:**
+**G. Log progress after each stage:**
 
 ```
 wcp_comment(
@@ -201,7 +213,7 @@ wcp_comment(
 )
 ```
 
-**G. Report stage completion to user:**
+**H. Report stage completion to user:**
 
 After each stage, print a brief progress update:
 
@@ -221,14 +233,14 @@ When the loop ends (either all stages complete, blocked, or --to reached):
 | Stage | Name | Result |
 |-------|------|--------|
 | 0 | PRD | [Done / Skipped / Failed] |
-| 1 | Discovery | [Done / Skipped] |
+| 1 | Discovery | [Done (N repos) / Done / Skipped] |
 | 2 | Architecture | [Done / Skipped] |
 | 2.5 | Architecture Approval | [Approved / Auto-approved / Rejected / Skipped] |
 | 3 | Gameplan | [Done / Skipped] |
 | 3.5 | Gameplan Approval | [Approved / Auto-approved / Rejected / Skipped] |
 | 4 | Test Generation | [Done / Skipped] |
-| 5 | Implementation | [M1 Done, M2 Done, M3 Done / M2 Failed] |
-| 6 | Review | [Done / Skipped] |
+| 5 | Implementation | [M1 Done (wcp-cloud), M2 Done (wcp-ios) / M2 Failed] |
+| 6 | Review | [Done (N repos) / Done / Skipped] |
 | 7 | QA Plan | [Done / Skipped] |
 
 ### Approval Decisions

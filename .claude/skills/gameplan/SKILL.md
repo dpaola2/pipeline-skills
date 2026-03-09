@@ -19,7 +19,7 @@ You are a **project planner**. You synthesize the PRD, Discovery Report, and APP
 ## Inputs & Outputs
 
 - **Input 1:** `wcp_get_artifact($ARGUMENTS, "prd.md")`
-- **Input 2:** `wcp_get_artifact($ARGUMENTS, "discovery-report.md")`
+- **Input 2:** Discovery report(s) — either `wcp_get_artifact($ARGUMENTS, "discovery-report.md")` (single-repo) or multiple `discovery-report-{repo-name}.md` artifacts (multi-repo)
 - **Input 3:** `wcp_get_artifact($ARGUMENTS, "architecture-proposal.md")` (MUST be approved)
 - **Output:** `wcp_attach($ARGUMENTS, ...)` → `gameplan.md`
 
@@ -47,7 +47,7 @@ After passing the pre-flight check, read these files:
 1. Locate the **conventions file** in the current repo root — look for `CLAUDE.md`, `AGENTS.md`, or `CONVENTIONS.md` (use the first one found). Read it in full.
 2. From the `## Pipeline Configuration` section, extract: **Repository Details** (default branch, test command, branch prefix, etc.), **Platforms**, **Framework & Stack**, and all other pipeline config sub-sections. Understand which optional concerns apply (multi-tenant, feature flags, exports, backwards compat).
 3. The PRD via `wcp_get_artifact($ARGUMENTS, "prd.md")`
-4. The Discovery Report via `wcp_get_artifact($ARGUMENTS, "discovery-report.md")`
+4. Discovery Report(s) — check the work item's artifact list for all `discovery-report*.md` artifacts. Read each one. For multi-repo projects, there will be one per repo.
 5. The APPROVED Architecture Proposal via `wcp_get_artifact($ARGUMENTS, "architecture-proposal.md")`
 
 ## Step-by-Step Procedure
@@ -68,6 +68,12 @@ Guidelines:
 - If a milestone is L or XL, consider splitting it into smaller milestones
 - Progress from data/core → UI → integration
 
+**Multi-repo projects (multiple discovery reports exist):**
+- Tag each milestone with its **target repo** in the heading: `### M1: API Endpoint (wcp-cloud)`, `### M2: Share Sheet (wcp-ios)`
+- Order milestones by cross-repo dependency: API/backend milestones before client milestones
+- If the architecture proposal has a "Cross-Repo Integration" section, use its Deploy Order to sequence milestones
+- A milestone targets exactly ONE repo. If work spans repos, split into separate milestones with explicit dependencies.
+
 ### 2. Generate Acceptance Criteria Per Milestone
 
 For each milestone:
@@ -84,6 +90,9 @@ For each milestone, create one task section per **active platform** from Pipelin
 - **Additional platform tasks:** One section per additional active platform from Pipeline Configuration → Platforms. Mark "N/A" for platforms not in scope for this project level.
 
 Reference the approved architecture for the specific tables, endpoints, and serializers mentioned.
+
+**Multi-repo milestone tasks:**
+When a milestone targets a specific repo (tagged in the heading), the platform tasks within that milestone reference THAT repo's Pipeline Configuration — not the current repo's. The conventions file path for each repo is in the discovery report's `pipeline_repo` frontmatter field.
 
 ### 4. Fill Non-Functional Requirements Checklist
 
@@ -230,9 +239,19 @@ Every milestone (except M0) must have ALL of:
 
 No two milestones should both claim to **create** the same file. A file created in M1 can be **modified** in M3, but it should not appear as a creation task in both.
 
+#### Check 8: Multi-Repo Milestone Tagging (multi-repo projects only)
+
+Skip this check if only one discovery report exists.
+
+For multi-repo projects:
+- Every milestone (except M0) must have a `**Repo:**` field
+- Every repo that has a discovery report must appear as the target of at least one milestone
+- Cross-repo dependencies are explicit (e.g., M2 depends on M1 which targets a different repo)
+- No milestone targets a repo that has no discovery report
+
 ---
 
-If all 7 checks pass, the gameplan is ready for human review. If any check fails, fix the gameplan and re-run that check before proceeding.
+If all checks pass, the gameplan is ready for human review. If any check fails, fix the gameplan and re-run that check before proceeding.
 
 ## What NOT To Do
 
@@ -318,9 +337,9 @@ pipeline_approved_at: "[ISO 8601 timestamp — filled by Stage 4]"
 - [x] API endpoints designed with example payloads and **approved** (Stage 2 + Architecture Review)
 - [x] Open questions resolved (Stages 1-2)
 
-### M1: [Feature Area 1 - e.g., Data Model & Core API]
+### M1: [Feature Area 1 - e.g., Data Model & Core API][ (repo-name)]
 **What:** [Brief description]
-**Linear:** [LIN-XXX]
+**Repo:** [repo-name — include only for multi-repo projects]
 
 **Acceptance Criteria:**
 - [ ] [XX-001]: [Specific, testable criterion]
@@ -341,9 +360,9 @@ pipeline_approved_at: "[ISO 8601 timestamp — filled by Stage 4]"
 
 ---
 
-### M2: [Feature Area 2 - e.g., Admin UI]
+### M2: [Feature Area 2 - e.g., Admin UI][ (repo-name)]
 **What:** [Brief description]
-**Linear:** [LIN-XXX]
+**Repo:** [repo-name — include only for multi-repo projects]
 
 **Acceptance Criteria:**
 - [ ] [XX-010]: [Criterion]
@@ -356,9 +375,9 @@ pipeline_approved_at: "[ISO 8601 timestamp — filled by Stage 4]"
 
 ---
 
-### M3: [Feature Area 3]
+### M3: [Feature Area 3][ (repo-name)]
 **What:** [Brief description]
-**Linear:** [LIN-XXX]
+**Repo:** [repo-name — include only for multi-repo projects]
 
 **Acceptance Criteria:**
 - [ ] [XX-020]: [Criterion]
